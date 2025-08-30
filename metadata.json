@@ -1,0 +1,5 @@
+{
+  "name": "Crypto Monitor Pro",
+  "description": "A web-based dashboard for monitoring cryptocurrency prices and technical indicators.",
+  "requestFramePermissions": []
+}
