@@ -5,7 +5,7 @@ from tkinter import messagebox
 import ttkbootstrap as ttkb
 
 class ApiConfigWindow(ttkb.Toplevel):
-    def __init__(self, master, parent_app): 
+    def __init__(self, master, parent_app):
         super().__init__(master) # master já é a MainApplication
         self.parent_app = parent_app
         self.title("Configurações Gerais e Chaves de API")
@@ -36,18 +36,18 @@ class ApiConfigWindow(ttkb.Toplevel):
         ttkb.Label(bitquery_frame, text="Chave da API Bitquery:", width=20).pack(side='left', padx=(0, 10))
         self.bitquery_entry = ttkb.Entry(bitquery_frame, textvariable=self.bitquery_api_key_var)
         self.bitquery_entry.pack(side='left', fill='x', expand=True)
-        
+
         ttkb.Label(api_tab, text="\n(Espaço para futuras chaves, como Binance, etc.)", bootstyle="secondary").pack(pady=10)
 
         # --- Aba 2: Notificações ---
         notifications_tab = ttkb.Frame(notebook, padding=15)
         notebook.add(notifications_tab, text='Notificações')
-        
+
         telegram_header_frame = ttkb.Frame(notifications_tab)
         telegram_header_frame.pack(fill='x', pady=(5,10))
-        
+
         ttkb.Label(telegram_header_frame, text="Configuração do Telegram", font=("-size 10 -weight bold")).pack(side='left')
-        
+
         help_button = ttkb.Button(telegram_header_frame, text="❓", bootstyle="link", command=self.show_api_help)
         help_button.pack(side='left', padx=5)
 
@@ -66,7 +66,7 @@ class ApiConfigWindow(ttkb.Toplevel):
         # --- Botões de Ação ---
         button_frame = ttkb.Frame(main_frame)
         button_frame.pack(side='bottom', fill='x', pady=(15, 0), anchor='e')
-        
+
         save_button = ttkb.Button(button_frame, text="Salvar e Fechar", command=self.save_settings, bootstyle="success")
         save_button.pack(side='right')
 
@@ -81,9 +81,9 @@ class ApiConfigWindow(ttkb.Toplevel):
         self.parent_app.config['bitquery_api_key'] = self.bitquery_api_key_var.get()
         self.parent_app.config['telegram_bot_token'] = self.telegram_token_var.get()
         self.parent_app.config['telegram_chat_id'] = self.telegram_chat_id_var.get()
-        
+
         self.parent_app.save_config() # Chama o método save_config do MainApplication
-        
+
         messagebox.showinfo("Sucesso", "Configurações salvas com sucesso!", parent=self)
         self.destroy()
 
@@ -101,7 +101,7 @@ class ApiHelpWindow(ttkb.Toplevel):
         text_widget = tk.Text(main_frame, wrap='word', font=("Segoe UI", 11), relief='flat', state='disabled', padx=10, pady=10)
         scrollbar = ttkb.Scrollbar(main_frame, orient='vertical', command=text_widget.yview, bootstyle="round-dark")
         text_widget['yscrollcommand'] = scrollbar.set
-        
+
         scrollbar.pack(side='right', fill='y')
         text_widget.pack(side='left', expand=True, fill='both')
 

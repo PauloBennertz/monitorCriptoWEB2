@@ -4,9 +4,9 @@ import sys
 
 def build_exe():
     """Script para gerar o executável do Monitor de Criptomoedas"""
-    
+
     print("🚀 Iniciando build do executável...")
-    
+
     # Comando PyInstaller
     cmd = [
         'pyinstaller',
@@ -44,13 +44,13 @@ def build_exe():
         '--clean',  # Limpar cache
         'main_app.py'
     ]
-    
+
     try:
         print("📦 Executando PyInstaller...")
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
         print("✅ Executável gerado com sucesso!")
         print("📁 Arquivo criado em: dist/MonitorCriptomoedas.exe")
-        
+
         # Verificar se o arquivo foi criado
         exe_path = "dist/MonitorCriptomoedas.exe"
         if os.path.exists(exe_path):
@@ -58,7 +58,7 @@ def build_exe():
             print(f"📊 Tamanho do executável: {size:.1f} MB")
         else:
             print("❌ Erro: Executável não foi criado")
-            
+
     except subprocess.CalledProcessError as e:
         print(f"❌ Erro durante o build: {e}")
         print(f"📋 Saída de erro: {e.stderr}")
@@ -66,8 +66,8 @@ def build_exe():
     except Exception as e:
         print(f"❌ Erro inesperado: {e}")
         return False
-    
+
     return True
 
 if __name__ == "__main__":
-    build_exe() 
+    build_exe()

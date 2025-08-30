@@ -10,8 +10,8 @@ from tkinter import messagebox
 
 # Importa a função principal de análise de capital e a nova janela de configuração
 try:
-    from capital_flow import run_full_analysis 
-    from market_analysis_config_window import MarketAnalysisConfigWindow 
+    from capital_flow import run_full_analysis
+    from market_analysis_config_window import MarketAnalysisConfigWindow
 except ImportError as e:
     messagebox.showerror("Erro de Importação", f"Não foi possível carregar módulos essenciais de análise: {e}")
     # Fallback para caso os arquivos não sejam encontrados
@@ -32,12 +32,12 @@ class CapitalFlowWindow(ttkb.Toplevel): # CORREÇÃO: Usar ttkb.Toplevel para co
         self.title("Análise de Fluxo de Capital por Categoria")
         self.geometry("1200x750")
         self.minsize(900, 600)
-        
+
         self.setup_ui()
-        self.parent_app.center_toplevel_on_main(self) 
+        self.parent_app.center_toplevel_on_main(self)
         self.transient(self.master)
         self.grab_set()
-        
+
 
     def setup_ui(self):
         main_frame = ttkb.Frame(self, padding=15, relief="solid", borderwidth=1)
@@ -69,7 +69,7 @@ class CapitalFlowWindow(ttkb.Toplevel): # CORREÇÃO: Usar ttkb.Toplevel para co
         # Passa a instância do parent_app (MainApplication)
         if MarketAnalysisConfigWindow:
             # CORREÇÃO: Passa self.parent_app diretamente
-            MarketAnalysisConfigWindow(self.parent_app) 
+            MarketAnalysisConfigWindow(self.parent_app)
         else:
             messagebox.showerror("Erro", "A janela de configuração de análise de mercado não está disponível.", parent=self)
 
@@ -78,7 +78,7 @@ class CapitalFlowWindow(ttkb.Toplevel): # CORREÇÃO: Usar ttkb.Toplevel para co
         """Inicia a análise de fluxo de capital em uma thread separada para não bloquear a UI."""
         self.run_button['state'] = 'disabled'
         self.run_button['text'] = 'Analisando...'
-        threading.Thread(target=self.run_analysis, 
+        threading.Thread(target=self.run_analysis,
                          args=(self.parent_app.config, self.cg_client, self.data_cache, self.rate_limiter),
                          daemon=True).start()
 
@@ -101,7 +101,7 @@ class CapitalFlowWindow(ttkb.Toplevel): # CORREÇÃO: Usar ttkb.Toplevel para co
             print(f"\n--- ERRO INESPERADO NA JANELA ---\nOcorreu um erro não tratado: {e}")
         finally:
             sys.stdout = old_stdout
-        
+
         result_text = captured_output.getvalue()
         # CORREÇÃO: Chama after diretamente na instância da MainApplication
         self.after(0, self.update_text_widget, result_text)

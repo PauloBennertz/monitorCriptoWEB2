@@ -37,13 +37,13 @@ def run_token_analysis(config, cg_client: CoinGeckoAPI, data_cache_instance: Dat
         except Exception as e:
             logging.error(f"Erro ao buscar dados de mercado para Token Movers: {e}")
             return None, None, f"Erro ao buscar dados da API: {e}"
-    
+
     if not market_data: # Verifica novamente se market_data está vazio após a tentativa de busca
         return None, None, "A API não retornou dados de mercado ou ocorreu um erro na busca."
 
     df = pd.DataFrame(market_data)
     required_cols = ['id', 'symbol', 'name', 'current_price', 'market_cap', 'total_volume', 'price_change_percentage_24h']
-    
+
     # Garante que todas as colunas necessárias existem antes de prosseguir
     missing_cols = [col for col in required_cols if col not in df.columns]
     if missing_cols:
@@ -57,11 +57,11 @@ def run_token_analysis(config, cg_client: CoinGeckoAPI, data_cache_instance: Dat
     initial_count = len(df)
     df_filtered = df[(df['market_cap'] >= min_market_cap) & (df['total_volume'] >= min_volume_24h)].copy() # Usar .copy()
     filtered_count = len(df_filtered)
-    
+
     # Formata os números para o padrão brasileiro (ponto como separador de milhar)
     mcap_str = f"{min_market_cap:,.0f}".replace(',', '.')
     vol_str = f"{min_volume_24h:,.0f}".replace(',', '.')
-    
+
     status_message = (f"Filtros Usados: Top {top_n}, Cap. Mínima ${mcap_str}, Vol. Mínimo (24h) ${vol_str}\n"
                       f"Resultado: {initial_count} tokens iniciais -> {filtered_count} tokens restantes após filtros.")
 
@@ -70,7 +70,7 @@ def run_token_analysis(config, cg_client: CoinGeckoAPI, data_cache_instance: Dat
 
     top_gainers = df_filtered.nlargest(top_n, 'price_change_percentage_24h').copy()
     top_losers = df_filtered.nsmallest(top_n, 'price_change_percentage_24h').copy()
-    
+
     return top_gainers, top_losers, status_message
 
 # Para testes diretos (opcional) - Este bloco não será executado quando importado

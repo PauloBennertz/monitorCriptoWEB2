@@ -14,10 +14,10 @@ class MarketAnalysisConfigWindow(ttkb.Toplevel):
         self.minsize(400, 220)
         self.transient(self.master)
         self.grab_set()
-        
+
         # Carrega a configuração atual ou define padrões
         # CORREÇÃO: Acessa config do parent_app diretamente
-        self.market_analysis_config = self.parent_app.config.get('market_analysis_config', {}) 
+        self.market_analysis_config = self.parent_app.config.get('market_analysis_config', {})
         # CORREÇÃO: Garante que o valor seja uma string
         self.min_market_cap_var = tk.StringVar(value=str(self.market_analysis_config.get('min_market_cap', 50000000)))
         # CORREÇÃO: Adiciona a variável top_n_var que estava faltando
@@ -43,14 +43,14 @@ class MarketAnalysisConfigWindow(ttkb.Toplevel):
         ttkb.Label(mcap_frame, text="Capitalização Mínima ($):", width=25, font=("-weight bold")).pack(side='left')
         self.mcap_entry = ttkb.Entry(mcap_frame, textvariable=self.min_market_cap_var, font=("-weight bold"))
         self.mcap_entry.pack(side='left', fill='x', expand=True)
-        
+
         info_label = ttkb.Label(main_frame, text="Ex: 50000000 para $50 Milhões. Filtra o 'ruído'.", bootstyle="secondary")
         info_label.pack(pady=(0, 20))
 
         # --- Botões ---
         button_frame = ttkb.Frame(main_frame)
         button_frame.pack(side='bottom', fill='x', pady=(20, 0))
-        
+
         save_button = ttkb.Button(button_frame, text="Salvar e Fechar", command=self.save_settings, bootstyle="success")
         save_button.pack(side='right')
 
@@ -62,7 +62,7 @@ class MarketAnalysisConfigWindow(ttkb.Toplevel):
         try:
             top_n = self.top_n_var.get()
             min_mcap_str = self.min_market_cap_var.get()
-            
+
             if not min_mcap_str:
                 min_mcap = 0
             else:
@@ -84,10 +84,10 @@ class MarketAnalysisConfigWindow(ttkb.Toplevel):
                 'top_n': top_n,
                 'min_market_cap': min_mcap
             }
-            
+
             # Salva o arquivo config.json
             self.parent_app.save_config()
-            
+
             messagebox.showinfo("Sucesso", "Configurações salvas! A próxima análise usará os novos valores.", parent=self)
             self.destroy()
 

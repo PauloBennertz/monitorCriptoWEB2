@@ -40,7 +40,7 @@ MonitorCriptomoedas.exe
 ### 🔧 Solução de Problemas
 
 #### **Problema**: Programa não inicia
-**Solução**: 
+**Solução**:
 - Verifique se o antivírus não está bloqueando
 - Execute como administrador
 - Verifique se há espaço suficiente em disco
@@ -106,4 +106,4 @@ Se encontrar problemas:
 
 ---
 
-**🎉 Seu Monitor de Criptomoedas está pronto para uso!** 
+**🎉 Seu Monitor de Criptomoedas está pronto para uso!**

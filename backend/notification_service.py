@@ -35,11 +35,11 @@ class AlertConsolidator:
         self.is_showing = False
         self.suppress_alerts = False  # Nova flag para pausar alertas
         self.last_alert_time = 0  # Para agrupar alertas por tempo
-        
+
         # Inicia thread para processar alertas consolidados
         self.alert_thread = threading.Thread(target=self._process_alerts, daemon=True)
         self.alert_thread.start()
-    
+
     def add_alert(self, symbol, trigger, message, sound=None):
         """Adiciona um alerta à fila de consolidação."""
         with self.alert_lock:
@@ -52,7 +52,7 @@ class AlertConsolidator:
             }
             self.pending_alerts.append(alert_data)
             print(f"LOG: Alerta adicionado à fila de consolidação: {symbol} - {trigger}")
-    
+
     def _process_alerts(self):
         """Processa alertas em background sem bloquear a thread principal."""
         while True:
@@ -70,7 +70,7 @@ class AlertConsolidator:
             # Se decidimos mostrar, esperamos um pouco para agrupar mais alertas
             if should_show:
                 time.sleep(2.0) # Dorme fora do lock para não bloquear a adição de novos alertas
-                
+
                 with self.alert_lock:
                     # Coleta todos os alertas que chegaram nesse meio tempo
                     while self.pending_alerts:
@@ -82,23 +82,23 @@ class AlertConsolidator:
                         self.parent_window.after(0, self._show_consolidated_alerts, alerts_to_show)
 
             time.sleep(0.3) # Loop de verificação principal
-    
+
     def _show_consolidated_alerts(self, alerts):
         """Mostra uma janela consolidada com todos os alertas."""
         if self.consolidated_window:
             self.consolidated_window.destroy()
-        
+
         self.is_showing = True
-        
+
         # Cria janela consolidada
         self.consolidated_window = ttkb.Toplevel(self.parent_window)
         self.consolidated_window.title("🚨 Alertas Consolidados")
         self.consolidated_window.geometry("600x400")
         self.consolidated_window.resizable(True, True)
-        
+
         # Centraliza a janela
         self._center_window(self.consolidated_window)
-        
+
         # Configura a janela
         self.consolidated_window.transient(self.parent_window)
         # self.consolidated_window.grab_set() # Removido/comentado para evitar travamento
@@ -106,28 +106,28 @@ class AlertConsolidator:
         self.consolidated_window.attributes('-topmost', True)
         self.consolidated_window.after_idle(self.consolidated_window.attributes, '-topmost', False) # Opcional: para que não fique sempre no topo
         self.consolidated_window.focus_set() # Garante que a janela de alerta receba o foco
-        
+
         # Frame principal
         main_frame = ttkb.Frame(self.consolidated_window, padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
-        
+
         # Título
-        title_label = ttkb.Label(main_frame, text=f"🚨 {len(alerts)} Alerta(s) Detectado(s)", 
+        title_label = ttkb.Label(main_frame, text=f"🚨 {len(alerts)} Alerta(s) Detectado(s)",
                                 font=("-weight bold", 14), bootstyle="danger")
         title_label.pack(pady=(0, 10))
-        
+
         # Frame para scroll
         self.canvas = tk.Canvas(main_frame, highlightthickness=0, bg="#2a2a2a")
         scrollbar = ttkb.Scrollbar(main_frame, orient="vertical", command=self.canvas.yview, bootstyle="round-dark")
         scrollable_frame = ttkb.Frame(self.canvas, bootstyle="dark")
-        
+
         scrollable_frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
         self.canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=scrollbar.set)
-        
+
         self.canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
-        
+
         # Agrupa alertas por símbolo
         grouped_alerts = {}
         for alert in alerts:
@@ -141,15 +141,15 @@ class AlertConsolidator:
             # Frame para o grupo de alertas de uma moeda
             group_frame = ttkb.Frame(scrollable_frame, padding="10", bootstyle="dark")
             group_frame.pack(fill=tk.X, pady=5, padx=5)
-            
+
             # Cabeçalho da moeda
             coin_header_frame = ttkb.Frame(group_frame, bootstyle="dark")
             coin_header_frame.pack(fill=tk.X)
-            
+
             symbol_label = ttkb.Label(coin_header_frame, text=f"📊 {symbol}",
                                      font=("-weight bold", 14), bootstyle="primary")
             symbol_label.pack(side="left")
-            
+
             # Adiciona cada alerta individual para a moeda
             for alert in symbol_alerts:
                 alert_frame = ttkb.Frame(group_frame, padding="5", bootstyle="dark")
@@ -189,29 +189,29 @@ class AlertConsolidator:
             if i < len(grouped_alerts) - 1:
                 separator = ttkb.Separator(scrollable_frame, orient="horizontal")
                 separator.pack(fill=tk.X, pady=10)
-        
+
         # Botões de ação
         button_frame = ttkb.Frame(main_frame)
         button_frame.pack(fill=tk.X, pady=(10, 0))
-        
+
         # Botão OK
-        ok_button = ttkb.Button(button_frame, text="✅ OK", 
+        ok_button = ttkb.Button(button_frame, text="✅ OK",
                                command=self._close_consolidated_window,
                                bootstyle="success", width=15)
         ok_button.pack(side="right", padx=(5, 0))
-        
+
         # Configura fechamento da janela e rolagem do mouse
         self.consolidated_window.protocol("WM_DELETE_WINDOW", self._close_consolidated_window)
         self.consolidated_window.bind("<MouseWheel>", self._on_mousewheel)
-        
+
         # Toca som consolidado automaticamente
         self._play_consolidated_sound(alerts)
-        
+
         # Envia para Telegram se configurado
         self._send_consolidated_telegram(alerts)
-        
+
         print(f"LOG: Janela consolidada mostrada com {len(alerts)} alerta(s)")
-    
+
     def _play_consolidated_sound(self, alerts):
         """Toca som consolidado para todos os alertas."""
         # Se há múltiplos alertas, usa som especial
@@ -229,7 +229,7 @@ class AlertConsolidator:
                 if alert.get('sound'):
                     play_alert_sound(alert['sound'])
                     break
-    
+
     def _send_consolidated_telegram(self, alerts):
         """Envia alertas consolidados para o Telegram."""
         # Tenta acessar a configuração
@@ -246,10 +246,10 @@ class AlertConsolidator:
         except Exception as e:
             print(f"ERRO: Erro ao acessar configurações do Telegram: {e}")
             return
-        
+
         if not bot_token or "AQUI" in str(bot_token) or not chat_id or "AQUI" in str(chat_id):
             return
-        
+
         # Agrupa alertas por símbolo para uma mensagem mais clara
         grouped_alerts = {}
         for alert in alerts:
@@ -260,7 +260,7 @@ class AlertConsolidator:
 
         # Cria mensagem consolidada
         message = f"🚨 *{len(alerts)} Alerta(s) Consolidado(s)*\n\n"
-        
+
         # Resumo por moeda
         for symbol, symbol_alerts in grouped_alerts.items():
             message += f"📊 *{symbol}* ({len(symbol_alerts)} alerta(s))\n"
@@ -275,9 +275,9 @@ class AlertConsolidator:
             # Remove a parte inicial "ALERTA: ..." da mensagem para não ser redundante
             clean_message = alert['message'].split('\n\n', 1)[-1]
             message += f"```{clean_message}```\n\n"
-        
+
         send_telegram_alert(bot_token, chat_id, message)
-    
+
     def _on_mousewheel(self, event):
         """Permite a rolagem da janela de alertas com o scroll do mouse."""
         if hasattr(self, 'canvas'):
@@ -294,7 +294,7 @@ class AlertConsolidator:
             self.consolidated_window = None
         self.is_showing = False
         print("LOG: Janela consolidada fechada")
-    
+
     def _center_window(self, window):
         """Centraliza a janela na tela."""
         window.update_idletasks()
@@ -333,7 +333,7 @@ def send_telegram_alert(bot_token, chat_id, message):
     if not bot_token or "AQUI" in str(bot_token) or not chat_id or "AQUI" in str(chat_id):
         print("LOG: Token ou Chat ID do Telegram não configurado. Pulando notificação.")
         return
-        
+
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
     payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
     try:

@@ -23,15 +23,15 @@ class TokenMoversWindow(ttkb.Toplevel): # Usar ttkb.Toplevel para consistência 
         self.rate_limiter = rate_limiter_instance
 
         self.title("Análise de Ganhadores e Perdedores (Tokens)")
-        
+
         self.geometry("1200x750")
         self.minsize(900, 600)
-        
+
         self.setup_ui()
-        self.parent_app.center_toplevel_on_main(self) 
+        self.parent_app.center_toplevel_on_main(self)
         self.transient(self.master)
         self.grab_set()
-        
+
 
     def setup_ui(self):
         main_frame = ttkb.Frame(self, padding=15, relief="solid", borderwidth=1)
@@ -74,7 +74,7 @@ class TokenMoversWindow(ttkb.Toplevel): # Usar ttkb.Toplevel para consistência 
         self.text_widget['state'] = 'disabled'
         self.run_button['state'] = 'disabled'
         self.run_button['text'] = 'Analisando...'
-        threading.Thread(target=self.run_analysis, 
+        threading.Thread(target=self.run_analysis,
                          args=(self.parent_app.config, self.cg_client, self.data_cache, self.rate_limiter),
                          daemon=True).start()
 
@@ -108,16 +108,16 @@ class TokenMoversWindow(ttkb.Toplevel): # Usar ttkb.Toplevel para consistência 
             self.text_widget.insert(tk.END, f"\n❌ TOP {len(losers)} - MAIORES PERDEDORES (24h)\n", "header")
             for _, row in losers.iterrows():
                 self.format_and_insert_line(row, "loser")
-        
+
         self.text_widget['state'] = 'disabled'
 
     def format_and_insert_line(self, row, line_type):
         market_cap_f = f"${row['market_cap']/1_000_000_000:.2f}B" if row['market_cap'] >= 1_000_000_000 else f"${row['market_cap']/1_000_000:.2f}M"
         volume_f = f"${row['total_volume']/1_000_000_000:.2f}B" if row['total_volume'] >= 1_000_000_000 else f"${row['total_volume']/1_000_000:.2f}M"
-        
+
         symbol_text = f"  {row['name']} ({row['symbol'].upper()})".ljust(35)
         change_text = f"{row['price_change_percentage_24h']:+.2f}%".rjust(8)
-        
+
         self.text_widget.insert(tk.END, symbol_text, "symbol")
         self.text_widget.insert(tk.END, f" {change_text} ", "gainer_icon" if line_type == "gainer" else "loser_icon")
         self.text_widget.insert(tk.END, f"| Cap: {market_cap_f.rjust(8)} | Vol: {volume_f.rjust(8)}\n", "faint")

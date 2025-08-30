@@ -13,19 +13,19 @@ try:
     # Timeout de 15 segundos para não esperar para sempre
     response = requests.get(url, timeout=15)
     end_time = time.time()
-    
+
     # Verifica se a resposta foi bem-sucedida (código 200)
-    response.raise_for_status() 
-    
+    response.raise_for_status()
+
     print("\n--- SUCESSO! ---")
     print(f"Resposta recebida em: {end_time - start_time:.2f} segundos.")
     print(f"Status da API: {response.json()}")
-    
+
 except requests.exceptions.Timeout:
     print("\n--- FALHA ---")
     print("Erro: A conexão demorou demais para responder (Timeout).")
     print("Isso geralmente indica um bloqueio de firewall ou problema de rede.")
-    
+
 except requests.exceptions.RequestException as e:
     print("\n--- FALHA ---")
     print(f"Erro de conexão: {e}")

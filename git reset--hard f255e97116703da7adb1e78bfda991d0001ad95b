@@ -22,9 +22,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Thu Aug 28 13:33:50 2025 +0000
 
     feat: Overhaul and secure the auto-update process
-    
+
     The automatic update mechanism has been significantly improved to be more robust, secure, and user-friendly.
-    
+
     Key improvements include:
     - **Checksum Verification**: The updater now verifies the SHA256 checksum of the downloaded executable against a checksum file from the release assets to prevent corrupted or tampered updates.
     - **Robust Updater Script**: The `updater.bat` script is now dynamically generated with enhanced logic. It includes reliable process termination checks, atomic backup and restore operations, and error handling at each step.
@@ -37,9 +37,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 26 20:51:14 2025 +0000
 
     Fix: Implement file-based versioning to resolve update loop
-    
+
     The application was using a hardcoded version string, which caused a perpetual update notification loop when the distributed version did not match the latest release tag.
-    
+
     This commit resolves the issue by:
     1.  Introducing a `version.txt` file to store the application version.
     2.  Modifying `main_app.py` to read the version from this file, making it the single source of truth.
@@ -62,7 +62,7 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 26 19:02:45 2025 +0000
 
     feat: Add dynamic cryptocurrency view screen
-    
+
     - Creates a new 'Dynamic View' window to display the top 100 cryptocurrencies by market cap in a sortable table.
     - Adds a new data fetching function to `monitoring_service.py` to get data from the CoinGecko API.
     - Integrates the new screen into the main application under the 'Market Analysis' menu.
@@ -73,11 +73,11 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 26 12:41:11 2025 +0000
 
     fix(update): Aumenta janela de download e atualiza versão do app
-    
+
     Esta alteração corrige dois problemas relacionados ao processo de atualização:
-    
+
     1. A janela de progresso do download da atualização foi aumentada de 400x150 para 500x200. Isso garante que todos os elementos da interface, incluindo ícones e texto, sejam exibidos corretamente, resolvendo o problema reportado pelo usuário.
-    
+
     2. A versão do aplicativo (APP_VERSION) em `main_app.py` foi atualizada de "3.1" para "3.2". Isso corrige o problema em que o aplicativo solicitava uma atualização mesmo quando já estava na versão mais recente, pois a versão no código estava dessincronizada com a versão do release no GitHub.
 
 [33mcommit db0e99912aea07e8e2bd6135f6b4a8e202ac9fdf[m
@@ -85,7 +85,7 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 26 11:58:01 2025 +0000
 
     fix(ui): Aumenta o tamanho da janela de download da atualização
-    
+
     A janela de download da atualização estava com um tamanho de 400x150, o que fazia com que alguns elementos da interface, como ícones, não fossem exibidos corretamente. O tamanho da janela foi aumentado para 500x200 para garantir que todos os elementos sejam visíveis.
 
 [33mcommit 6405c2bcccd62da6a1c2cfecd6192fd660aa4649[m
@@ -112,7 +112,7 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Fri Aug 22 11:21:37 2025 +0000
 
     Fix: Adjust update window size and change message
-    
+
     - Increased the height of the update notification window to 500px to ensure all elements are visible.
     - Changed the post-download confirmation message as requested.
 
@@ -121,13 +121,13 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Fri Aug 22 06:29:21 2025 +0000
 
     Fix: Corrige a janela de atualização e melhora o fluxo de alertas
-    
+
     Esta modificação aborda três problemas relacionados à funcionalidade de atualização do aplicativo:
-    
+
     1.  **Aumenta o Tamanho da Janela de Atualização**: A altura da janela de notificação de atualização foi aumentada para 600x550 pixels. Isso corrige um problema de layout em que os botões de ação podiam não ser visíveis, especialmente quando as notas de lançamento eram extensas.
-    
+
     2.  **Melhora a Mensagem Pós-Download**: A mensagem exibida após a conclusão do download da atualização foi alterada para "Download concluido, o programa sera reiniciado.". Além disso, o diálogo foi alterado de um `askokcancel` para um `showinfo`, apresentando ao usuário apenas um botão "OK" e iniciando o processo de atualização sem a opção de cancelar, conforme solicitado.
-    
+
     3.  **Suprime Alertas Durante a Atualização**: Foi implementada uma lógica para impedir que novas janelas de alerta de monitoramento de criptomoedas apareçam enquanto a notificação de atualização de software está sendo exibida. Isso evita que as janelas se sobreponham e melhora a experiência do usuário. Um sinalizador `suppress_alerts` foi adicionado ao `AlertConsolidator` para pausar e retomar a exibição de alertas de forma controlada.
 
 [33mcommit 9eb0d0d92c814ee41477c75c14b91b12c0e79d62[m
@@ -141,7 +141,7 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Fri Aug 22 02:10:29 2025 +0000
 
     feat: Update copyright year and add update checker
-    
+
     - Update copyright year to 2025 in the main application window.
     - Add a 'Check for Updates' option to the 'Help' menu.
     - Modify the update checker to accept the current application version as a parameter.
@@ -170,9 +170,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Thu Aug 21 10:17:44 2025 +0000
 
     feat: Adiciona verificação de atualização automática
-    
+
     Adiciona um novo módulo `update_checker.py` que implementa a funcionalidade de verificação de atualizações.
-    
+
     - Verifica no GitHub por novas versões da aplicação ao iniciar.
     - Exibe uma janela de notificação para o usuário com as notas da nova versão.
     - Oferece as opções de "Atualizar Agora", "Atualizar ao Reiniciar" ou "Lembrar Depois".
@@ -191,11 +191,11 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Thu Aug 21 02:18:19 2025 +0000
 
     feat: Adiciona botão de feedback via e-mail
-    
+
     Adiciona um item de menu "Enviar Feedback, Erros e Sugestões" no menu "Ajuda".
-    
+
     Esta funcionalidade abre o cliente de e-mail padrão do usuário com um e-mail pré-preenchido, facilitando o envio de feedback, relatos de erros ou sugestões para a equipe de desenvolvimento.
-    
+
     A implementação inclui:
     - Um novo método `send_feedback` na classe `CryptoApp`.
     - Uso do módulo `webbrowser` para abrir o cliente de e-mail.
@@ -207,9 +207,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 16:02:31 2025 +0000
 
     feat: Adiciona o indicador de alerta Custom HiLo
-    
+
     Adiciona um novo indicador de alerta chamado 'Custom HiLo Indicator'.
-    
+
     - Adiciona a lógica de cálculo para os sinais de compra e venda do HiLo em `indicators.py`.
     - Integra o novo indicador no serviço de monitoramento em `monitoring_service.py` para gerar alertas.
     - Adiciona o novo alerta na interface de configuração de alertas em `core_components.py`, permitindo que os usuários o habilitem e configurem.
@@ -220,9 +220,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 14:58:05 2025 +0000
 
     feat: Adiciona contador regressivo para atualização de preços
-    
+
     Adiciona um contador regressivo na interface do usuário que mostra o tempo restante para a próxima atualização dos preços das moedas.
-    
+
     - Adicionado um novo label na janela principal para exibir o contador.
     - Implementada a lógica de contagem regressiva que é atualizada a cada segundo.
     - O serviço de monitoramento agora envia um sinal para a aplicação principal para iniciar o contador no início de cada ciclo de atualização.
@@ -232,9 +232,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 14:43:09 2025 +0000
 
     feat: Adiciona opção de cooldown para alertas
-    
+
     Adiciona uma opção de tempo na página de configuração dos alertas para o usuário informar de quanto em quanto tempo deseja receber o alerta daquela moeda.
-    
+
     - Adicionado um spinbox na janela de configuração de alertas para definir o tempo de cooldown em minutos.
     - A lógica de monitoramento agora respeita o tempo de cooldown antes de enviar um novo alerta para a mesma condição.
     - A estrutura de dados para `triggered_conditions` foi alterada de uma lista para um dicionário para armazenar os timestamps dos últimos alertas.
@@ -245,7 +245,7 @@ Author: Paulo Bennertz <paulobennertz@gmail.com>
 Date:   Tue Aug 19 10:46:44 2025 -0300
 
     Revert "Fix: Correct startup dialog functionality"
-    
+
     This reverts commit 103f4eff6296d8361d94bc4b7fff2d086cb44a87.
 
 [33mcommit 385343867f7c67104f7367c027f5bec098fc7cb5[m
@@ -254,7 +254,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Tue Aug 19 08:10:06 2025 -0300
 
     Merge pull request #27 from PauloBennertz/fix-startup-dialog
-    
+
     Fix: Correct startup dialog functionality
 
 [33mcommit 103f4eff6296d8361d94bc4b7fff2d086cb44a87[m[33m ([m[1;31morigin/fix-startup-dialog[m[33m)[m
@@ -262,13 +262,13 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 11:08:29 2025 +0000
 
     Fix: Correct startup dialog functionality
-    
+
     This commit addresses two issues in the initial coin selection dialog:
-    
+
     1.  The 'Iniciar Monitoramento' button was unresponsive because it was linked to a non-existent `on_start` method. This has been fixed by implementing the `on_start` method in the `StartupConfigDialog` class. The method now correctly saves the user's initial coin selection and Telegram settings, allowing the application to start.
-    
+
     2.  The list of available currencies would only appear after the user started typing in the search box. This has been resolved by modifying the list population logic to ensure the list is filtered and displayed immediately when the dialog opens.
-    
+
     Additionally, the methods for adding and removing coins from the monitoring list have been improved for better sorting and efficiency.
 
 [33mcommit 2a6ad9c88f774ec1571685d723134d33482a9939[m
@@ -277,7 +277,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Tue Aug 19 07:46:13 2025 -0300
 
     Merge pull request #25 from PauloBennertz/fix/error-logs
-    
+
     Fix additional errors from logs
 
 [33mcommit f88c5e7b0dc54fa4c107845b10246131488db0bf[m
@@ -285,7 +285,7 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 10:44:30 2025 +0000
 
     Fix additional errors from logs
-    
+
     - Add workaround for `placeholder` option in `ttkb.Entry` to support older versions of `ttkbootstrap`.
     - Add a `try...except` block to `_pulse_label` to gracefully handle cases where `bootstyle` is not available.
     - Fix `invalid command name` error in `sound_config_window` by correctly scoping the mouse wheel event binding.
@@ -296,7 +296,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Tue Aug 19 07:32:34 2025 -0300
 
     Merge pull request #24 from PauloBennertz/fix/error-logs
-    
+
     Fix errors found in logs
 
 [33mcommit f3a977ff6548038c82c49c6e3fdd36dd01789267[m
@@ -304,7 +304,7 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 10:32:07 2025 +0000
 
     Fix errors found in logs
-    
+
     - Fix `_tkinter.TclError: unknown option "-bootstyle"` by changing the way the `bootstyle` attribute is accessed in `main_app.py`.
     - Fix file path errors for sounds by using `os.path.join` and `os.path.normpath` in `notification_service.py` and `core_components.py` to ensure cross-platform compatibility.
 
@@ -314,7 +314,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Tue Aug 19 07:13:27 2025 -0300
 
     Merge pull request #23 from PauloBennertz/group-alerts-by-currency
-    
+
     feat: Increase font sizes in CryptoCard
 
 [33mcommit 96141573f817540dd878d605e4d73c07a17dd4b3[m[33m ([m[1;31morigin/group-alerts-by-currency[m[33m)[m
@@ -322,9 +322,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 10:12:35 2025 +0000
 
     feat: Increase font sizes in CryptoCard
-    
+
     This commit increases the font sizes for various labels within the `CryptoCard` component in `core_components.py`.
-    
+
     The font sizes for the symbol, price, and indicator labels have been increased to make the text more visible and improve the user experience on the main application window.
 
 [33mcommit a8d3b1e2e01cbee710dfc01b8626df8587fa95ac[m
@@ -333,7 +333,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Tue Aug 19 06:55:49 2025 -0300
 
     Merge pull request #22 from PauloBennertz/group-alerts-by-currency
-    
+
     fix: Correct alert window theme and enable mouse scroll
 
 [33mcommit 14c03c2910e18d39e822fa61fbb8a4ee2124d3c2[m
@@ -341,11 +341,11 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 09:55:10 2025 +0000
 
     fix: Correct alert window theme and enable mouse scroll
-    
+
     This commit addresses two UI issues in the consolidated alert window:
-    
+
     1.  The background color of the alert frames is changed from 'light' to 'dark' to match the application's dark theme. This provides a consistent look and feel.
-    
+
     2.  Mouse wheel scrolling is now enabled for the alert window. An `_on_mousewheel` event handler has been added to the `AlertConsolidator` class and bound to the window, allowing users to scroll through the list of alerts using their mouse wheel.
 
 [33mcommit 5e379fc7e8710e0f055464f8caacbaad5ffb2868[m
@@ -354,7 +354,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Tue Aug 19 06:44:22 2025 -0300
 
     Merge pull request #21 from PauloBennertz/group-alerts-by-currency
-    
+
     feat: Group alerts by currency in notification window
 
 [33mcommit 6d0add82b6140a2d32f9b128c303fd94d8778fb5[m
@@ -362,14 +362,14 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 09:39:25 2025 +0000
 
     feat: Group alerts by currency in notification window
-    
+
     This commit modifies the `AlertConsolidator` in `notification_service.py` to group alerts by their cryptocurrency symbol before displaying them.
-    
+
     The changes affect both the graphical user interface and the Telegram notifications.
-    
+
     - In the consolidated alert window, alerts are now grouped under a single header for each currency.
     - The Telegram notification message is also updated to first list the currencies with alerts and then provide the details for each alert.
-    
+
     This improves the readability and organization of alerts when multiple triggers occur for the same currency.
 
 [33mcommit bc9a0f6c7de4d0ace621ed3e134b1e3eb5c4fc4e[m
@@ -378,7 +378,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Tue Aug 19 05:16:26 2025 -0300
 
     Merge pull request #20 from PauloBennertz/fix/tkinter-errors
-    
+
     Feat: Adiciona sumário do alerta nas observações da notificação
 
 [33mcommit d4029b6e7478a24e94af17295ebbc23265a35787[m[33m ([m[1;31morigin/fix/tkinter-errors[m[33m)[m
@@ -386,17 +386,17 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 08:15:58 2025 +0000
 
     Feat: Adiciona sumário do alerta nas observações da notificação
-    
+
     Refatora o sistema de geração de alertas para incluir o texto de ajuda (sumário) diretamente na notificação do alerta, enriquecendo a informação para o usuário.
-    
+
     - **Centralização de Constantes:**
       - O dicionário `ALERT_SUMMARIES` foi movido de `help_window.py` para `core_components.py`, permitindo que seja acessado globalmente sem causar importações circulares.
-    
+
     - **Refatoração da Lógica de Alertas:**
       - A geração de alertas em `monitoring_service.py` foi refatorada para usar chaves programáticas (ex: `RSI_SOBRECOMPRA`) em vez de comparar strings de mensagens.
       - A função de seleção de som (`_get_sound_for_trigger`) agora usa essas chaves, tornando o código mais robusto e menos propenso a erros.
       - A mensagem do alerta foi atualizada para buscar a descrição correspondente em `ALERT_SUMMARIES` e adicioná-la ao campo "Observações".
-    
+
     Esta alteração melhora a usabilidade dos alertas, fornecendo contexto imediato sobre o que cada gatilho significa, e melhora a qualidade do código através da refatoração.
 
 [33mcommit dfc5304cb5db371c50de6c4ba06e0214a0393569[m
@@ -405,7 +405,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Tue Aug 19 05:11:36 2025 -0300
 
     Merge pull request #19 from PauloBennertz/fix/tkinter-errors
-    
+
     Feat: Adiciona cache diário para o mapeamento de nomes de moedas
 
 [33mcommit a007b2f5c39308c8fb66efc9c6bdd424933877d6[m
@@ -413,17 +413,17 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 08:07:46 2025 +0000
 
     Feat: Adiciona cache diário para o mapeamento de nomes de moedas
-    
+
     Implementa um sistema de cache para o mapeamento de nomes de moedas da CoinGecko para acelerar a inicialização da aplicação.
-    
+
     - **Gerenciamento de Cache em `app_state.py`:**
       - Adiciona as funções `load_coin_mapping_cache` e `save_coin_mapping_cache`.
       - O cache é armazenado no arquivo `coin_mapping.json` e contém o mapeamento e um timestamp.
-    
+
     - **Integração em `monitoring_service.py`:**
       - A função `get_coingecko_global_mapping` agora verifica o cache antes de fazer uma chamada à API.
       - O cache é considerado válido por 24 horas. Se o cache for válido, os dados são carregados localmente; caso contrário, uma nova busca é realizada e o cache é atualizado.
-    
+
     Esta alteração reduz o número de chamadas à API da CoinGecko e melhora significativamente o tempo de inicialização da aplicação em execuções subsequentes.
 
 [33mcommit c53d904379ac69326b9a7ff0b4f427bc96fcd2ea[m
@@ -432,7 +432,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Tue Aug 19 05:00:18 2025 -0300
 
     Merge pull request #18 from PauloBennertz/fix/tkinter-errors
-    
+
     Fix: Corrige AttributeError e erro de caminho de arquivo
 
 [33mcommit cd469695db7555c531a29fc3bdeb80971a2940f0[m
@@ -440,12 +440,12 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Tue Aug 19 07:58:27 2025 +0000
 
     Fix: Corrige AttributeError e erro de caminho de arquivo
-    
+
     Corrige dois erros que ocorriam durante a execução da aplicação:
-    
+
     1.  **AttributeError em HelpWindow:**
         O `HelpWindow` era instanciado com a janela raiz do Tkinter (`root`) em vez da instância principal da aplicação (`CryptoApp`). Isso causava um `AttributeError` ao tentar chamar o método `center_toplevel_on_main`, que pertence à `CryptoApp`. A correção envolve passar a instância da aplicação para `HelpWindow` e ajustar seu construtor para usar `parent_app.root` como o pai do widget, resolvendo o erro.
-    
+
     2.  **FileNotFoundError para arquivos de som:**
         Os caminhos para os arquivos de som padrão eram salvos na configuração com barras (`/`) codificadas, resultando em caminhos inválidos no Windows (e.g., `D:\path\to\sons/arquivo.wav`). A correção utiliza `os.path.join()` para construir os caminhos de forma independente de plataforma, garantindo que os separadores corretos sejam usados e que os arquivos de som sejam encontrados.
 
@@ -455,7 +455,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Mon Aug 18 00:22:25 2025 -0300
 
     Merge pull request #17 from PauloBennertz/fix/startup-freeze
-    
+
     Fix/startup freeze
 
 [33mcommit a1740fb4776e93181b2ff26cbf6384f89befbbac[m[33m ([m[1;31morigin/fix/startup-freeze[m[33m)[m
@@ -463,13 +463,13 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Mon Aug 18 03:21:55 2025 +0000
 
     feat: Add startup API call caching to avoid rate limits
-    
+
     This commit introduces a new feature to cache the timestamp of the last successful API data fetch. On subsequent startups, the application checks this timestamp. If the last fetch was within the last 5 minutes, it skips the initial data loading to avoid hitting API rate limits.
-    
+
     - A new `app_state.py` module was created to handle persisting the `last_api_fetch_timestamp` to an `app_state.json` file.
     - The startup logic in `main_app.py` was modified to check this timestamp and conditionally skip the initial data fetch, informing the user via the loading screen.
     - The timestamp is updated only after a new successful data fetch.
-    
+
     This change improves the application's robustness and provides a faster startup experience when restarted frequently.
 
 [33mcommit 370562af2e52139494ad9d90f114b4e84345e7ab[m
@@ -477,11 +477,11 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Mon Aug 18 03:18:04 2025 +0000
 
     Fix: Resolve application freeze when displaying alerts
-    
+
     This commit addresses a deadlock issue in the `AlertConsolidator` class that caused the application to freeze when an alert was triggered.
-    
+
     The `_process_alerts` method, running in a background thread, was holding a lock while sleeping (`time.sleep`). This blocked the main thread when it tried to add a new alert via the `add_alert` method, which also needs the same lock, leading to a GUI freeze.
-    
+
     The fix refactors the `_process_alerts` method to ensure that `time.sleep` is called outside the lock's scope. This prevents the deadlock and ensures the main application thread remains responsive.
 
 [33mcommit 99f9795689c67feb9a2890396ce5fd7fb6a1d45b[m
@@ -490,7 +490,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Mon Aug 18 00:09:50 2025 -0300
 
     Merge pull request #16 from PauloBennertz/fix/startup-freeze
-    
+
     Fix: Prevent application freeze on startup by loading data asynchrono…
 
 [33mcommit 6b925d0b83d99c4e9eb0d3e39e0fc41a32c8d763[m
@@ -498,9 +498,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Mon Aug 18 03:09:05 2025 +0000
 
     Fix: Prevent application freeze on startup by loading data asynchronously
-    
+
     The application would freeze upon launch because it was fetching initial data (Binance symbols, CoinGecko mappings) synchronously on the main GUI thread. This blocked the Tkinter event loop from running, making the window unresponsive until the network requests were complete.
-    
+
     This commit refactors the startup sequence to be asynchronous:
     - A new `LoadingWindow` is displayed immediately to provide user feedback.
     - The long-running data fetching operations are moved to a separate background thread.
@@ -513,7 +513,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sun Aug 17 01:19:05 2025 -0300
 
     Merge pull request #15 from PauloBennertz/feat/add-help-menu-and-alert-summaries
-    
+
     feat: Adiciona menu de ajuda e resumos nos alertas
 
 [33mcommit 71b3ba2941b9c86ac81c377fc36d607536c98c81[m[33m ([m[1;31morigin/feat/add-help-menu-and-alert-summaries[m[33m)[m
@@ -521,9 +521,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sun Aug 17 04:14:42 2025 +0000
 
     feat: Adiciona menu de ajuda e resumos nos alertas
-    
+
     Adiciona um novo menu "Ajuda" na aplicação, que abre uma janela com um guia de indicadores e seus significados.
-    
+
     Além disso, os pop-ups de alerta agora exibem um resumo conciso do gatilho do alerta, fornecendo ao usuário um contexto imediato sobre a notificação recebida.
 
 [33mcommit ed59a94e0c492bac0a1119081ddecf95e01a6c01[m
@@ -532,7 +532,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 23:51:01 2025 -0300
 
     Merge pull request #14 from PauloBennertz/ui-standardization
-    
+
     fix: UI standardization, responsiveness, and application freeze
 
 [33mcommit c97174d1077e6e42e0d2c29ad63415e256ab40c3[m[33m ([m[1;31morigin/ui-standardization[m[33m)[m
@@ -540,23 +540,23 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sun Aug 17 02:48:11 2025 +0000
 
     fix: UI standardization, responsiveness, and application freeze
-    
+
     This commit addresses several UI/UX issues and a critical bug that caused the application to freeze.
-    
+
     The following changes were made:
-    
+
     1.  **Fix Main Screen Scrolling:**
         -   In `main_app.py`, a missing event binding on the main canvas was added. This fixes a bug where the scrollable area for the crypto cards did not resize correctly, making some cards inaccessible on smaller window sizes.
-    
+
     2.  **Standardize Window Layout and Borders:**
         -   The main frames of all secondary windows in `capital_flow_window.py`, `token_movers_window.py`, `sound_config_window.py`, and `core_components.py` (for all Toplevel windows) have been updated.
         -   Padding has been standardized to 15 pixels for a consistent look.
         -   A solid 1-pixel border has been added to each window's main frame to ensure they are clearly delineated.
-    
+
     3.  **Standardize Icon Placement and Style:**
         -   Action buttons in all windows have been moved to the bottom for consistent placement.
         -   The mixed use of emoji and other symbols as icons has been removed from all buttons. Buttons now use a clean, text-only style, which improves visual consistency across the application.
-    
+
     4.  **Fix Application Freeze:**
         -   The application was freezing on startup due to incorrect parsing of the BTC dominance data from the CoinGecko API. The `get_btc_dominance` function in `monitoring_service.py` has been corrected to handle the API response properly. This resolves the freeze and ensures the BTC dominance is displayed correctly.
 
@@ -566,7 +566,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 23:41:11 2025 -0300
 
     Merge pull request #13 from PauloBennertz/ui-standardization
-    
+
     feat: Standardize UI and fix responsiveness
 
 [33mcommit 859a57d25c5a05a9cd89915582af73d905371df3[m
@@ -574,23 +574,23 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sun Aug 17 02:40:18 2025 +0000
 
     feat: Standardize UI and fix responsiveness
-    
+
     This commit addresses several UI/UX issues to create a more consistent and robust application experience.
-    
+
     The following changes were made:
-    
+
     1.  **Fix Main Screen Scrolling:**
         -   In `main_app.py`, a missing event binding on the main canvas was added. This fixes a bug where the scrollable area for the crypto cards did not resize correctly, making some cards inaccessible on smaller window sizes.
-    
+
     2.  **Standardize Window Layout and Borders:**
         -   The main frames of all secondary windows in `capital_flow_window.py`, `token_movers_window.py`, `sound_config_window.py`, and `core_components.py` (for all Toplevel windows) have been updated.
         -   Padding has been standardized to 15 pixels for a consistent look.
         -   A solid 1-pixel border has been added to each window's main frame to ensure they are clearly delineated, as per the user's request.
-    
+
     3.  **Standardize Icon Placement and Style:**
         -   Action buttons in all windows have been moved to the bottom for consistent placement.
         -   The mixed use of emoji and other symbols as icons has been removed from all buttons. Buttons now use a clean, text-only style, which improves visual consistency across the application.
-    
+
     An attempt to visually test the application was made, but it failed due to the lack of a display in the execution environment. The code changes are complete and based on the initial request and analysis.
 
 [33mcommit 919f6ca30408763535c4973d8097b8a038999f89[m
@@ -599,7 +599,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 19:01:51 2025 -0300
 
     Merge pull request #12 from PauloBennertz/fix-ui-and-data-issues
-    
+
     Debug: Add logging to diagnose BTC dominance issue
 
 [33mcommit 3987c84e801d1ed03fd3e99db9ed1aedad9639a8[m[33m ([m[1;31morigin/fix-ui-and-data-issues[m[33m)[m
@@ -607,7 +607,7 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sat Aug 16 21:59:08 2025 +0000
 
     Debug: Add logging to diagnose BTC dominance issue
-    
+
     This commit adds diagnostic logging to the `update_dominance_display` function in `main_app.py`. This will help determine why the BTC dominance value is not being displayed correctly for the user by logging the value received from the API before it is displayed.
 
 [33mcommit 73527bace3aa1d64c1e6e8db966c5328d10bde3c[m
@@ -616,7 +616,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 17:55:03 2025 -0300
 
     Merge pull request #11 from PauloBennertz/fix-ui-and-data-issues
-    
+
     Design: Redesign CryptoCard for a modern look
 
 [33mcommit 0d929de90e24f3345883bec5ed5f389a61cf0c4f[m
@@ -624,14 +624,14 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sat Aug 16 20:53:44 2025 +0000
 
     Design: Redesign CryptoCard for a modern look
-    
+
     This commit redesigns the `CryptoCard` component to be more elegant, minimalist, and futuristic, as requested by the user.
-    
+
     Changes include:
     - A consistent, slightly lighter dark background (`secondary` bootstyle).
     - Removal of card borders for a flatter, cleaner appearance.
     - A new color scheme using cyan for the symbol, and a clear contrast between labels and values for better readability.
-    
+
     This resolves the visual inconsistencies and provides a more polished user interface.
 
 [33mcommit 192d90d12af3e3b918a3a67756541bf62073667c[m
@@ -640,7 +640,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 16:01:10 2025 -0300
 
     Merge pull request #10 from PauloBennertz/fix-ui-and-data-issues
-    
+
     Feat: Add scrolling and resizing to all dialog windows
 
 [33mcommit f019ab25bb82fcf87aceebcb54d0b3e0ff0bca2e[m
@@ -648,13 +648,13 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sat Aug 16 18:59:36 2025 +0000
 
     Feat: Add scrolling and resizing to all dialog windows
-    
+
     This commit improves the usability of all dialog windows by:
     1.  Making the Sound Configuration window resizable and increasing its default size.
     2.  Adding mouse wheel scrolling to the Sound Configuration window.
     3.  Adding mouse wheel scrolling to the Alert History window.
     4.  Adding context-aware mouse wheel scrolling to the Alert Manager and Manage Symbols dialogs.
-    
+
     These changes ensure that all scrollable content in the application can be easily accessed with the mouse wheel, providing a consistent and improved user experience.
 
 [33mcommit 62038ae42748492e6b41d0ba1a6ea6c6ad444aa5[m
@@ -663,7 +663,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 15:52:21 2025 -0300
 
     Merge pull request #9 from PauloBennertz/fix-ui-and-data-issues
-    
+
     Feat: Add context-aware mouse scrolling to all dialogs
 
 [33mcommit 5db9f36559f85a7777da19d36f8bdf6ec0a5b462[m
@@ -671,14 +671,14 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sat Aug 16 18:51:52 2025 +0000
 
     Feat: Add context-aware mouse scrolling to all dialogs
-    
+
     This commit enhances the user experience by adding mouse wheel scrolling to all dialog windows that contain scrollable lists. The scrolling is context-aware, meaning it will scroll the specific list that the user's mouse is currently over.
-    
+
     This applies to the following windows:
     - AlertHistoryWindow
     - AlertManagerWindow
     - ManageSymbolsDialog
-    
+
     This change addresses the user's follow-up request to enable scrolling on all necessary windows.
 
 [33mcommit 22bd8c7e9faf88a3892c88e5b26db2a89fa8f868[m
@@ -687,7 +687,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 15:43:30 2025 -0300
 
     Merge pull request #8 from PauloBennertz/fix-ui-and-data-issues
-    
+
     Feat: Add mouse wheel scrolling to Alert Config window
 
 [33mcommit 6a0b4d508425f8c61d07b59ec230dcb8571624d5[m
@@ -695,9 +695,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sat Aug 16 18:40:33 2025 +0000
 
     Feat: Add mouse wheel scrolling to Alert Config window
-    
+
     This commit adds mouse wheel scrolling to the alert configuration dialog. This improves usability by allowing the user to scroll through the list of alert conditions without needing to use the scrollbar directly.
-    
+
     This is a follow-up to the previous fix for UI and data display issues.
 
 [33mcommit 50abc0e9a3f658a14e35ca9c78216c7661f3653a[m
@@ -706,7 +706,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 15:34:18 2025 -0300
 
     Merge pull request #7 from PauloBennertz/fix-ui-and-data-issues
-    
+
     Merge pull request #6 from PauloBennertz/main
 
 [33mcommit a4449f1c507fe90e813564db6e6e6bfc89d911b6[m
@@ -715,7 +715,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 15:33:48 2025 -0300
 
     Merge pull request #6 from PauloBennertz/main
-    
+
     Merge pull request #5 from PauloBennertz/fix-ui-and-data-issues
 
 [33mcommit 19f04992d6de04380b69da4c575469b73008eafc[m
@@ -724,7 +724,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 12:21:35 2025 -0300
 
     Merge pull request #5 from PauloBennertz/fix-ui-and-data-issues
-    
+
     Fix: Resolve UI and data display issues
 
 [33mcommit 021352fa272d75d980dbeea0c969ceaa07a09df5[m
@@ -732,7 +732,7 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sat Aug 16 15:20:54 2025 +0000
 
     Fix: Resolve UI and data display issues
-    
+
     This commit addresses three main issues:
     1.  **BTC Dominance:** The function for fetching BTC dominance in `monitoring_service.py` has been corrected to properly parse the API response from CoinGecko. This ensures the value is now displayed on the main screen.
     2.  **Popup Windows:** The popup windows, particularly the Alert History window in `core_components.py`, have been made resizable and maximizable. Text wrapping has been added to labels to prevent content from being cut off, ensuring all information is visible.
@@ -744,7 +744,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 10:22:48 2025 -0300
 
     Merge pull request #4 from PauloBennertz/fix-multiple-ui-errors
-    
+
     Fix multiple UI and data handling errors
 
 [33mcommit be86f6f18d373a4d36f5f182d9a817f767d30313[m[33m ([m[1;31morigin/fix-multiple-ui-errors[m[33m)[m
@@ -752,9 +752,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sat Aug 16 13:22:16 2025 +0000
 
     Fix multiple UI and data handling errors
-    
+
     This commit addresses several issues reported by the user:
-    
+
     - Fixes an `AttributeError` in `AlertManagerWindow` by implementing the missing `_filter_symbols` method for searching monitored coins.
     - Fixes a `TclError` in `AlertConfigDialog` by replacing an incompatible background color property with a hardcoded value that matches the application's theme.
     - Corrects the coin selection logic in `ManageSymbolsDialog` to use the list of symbols from the Binance API as the source of truth. This prevents users from adding coins that cannot be monitored, resolving API errors caused by incorrect symbol formatting.
@@ -766,7 +766,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 10:05:31 2025 -0300
 
     Merge pull request #3 from PauloBennertz/fix-coin-list
-    
+
     Fix: Coin list not appearing and add periodic updates
 
 [33mcommit a3018e79ca96458211403290523eec8f4cada8ac[m[33m ([m[1;31morigin/fix-coin-list[m[33m)[m
@@ -774,14 +774,14 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sat Aug 16 11:48:23 2025 +0000
 
     Fix: Coin list not appearing and add periodic updates
-    
+
     This commit fixes a bug where the list of available cryptocurrencies was not appearing when trying to add a new coin to monitor.
-    
+
     The main changes are:
     - A new `CoinManager` class was created to handle fetching, caching, and updating the list of all cryptocurrencies from the CoinGecko API. The list is cached locally in `all_coins.json` and updated every 24 hours.
     - The `ManageSymbolsDialog` was updated to use the `CoinManager` to populate the list of available coins, showing both the symbol and the full name of each currency.
     - The `winsound` import error on non-Windows systems is now handled gracefully, allowing the application to run without sound support on other platforms.
-    
+
     These changes fix the reported bug and implement the requested feature for periodic updates of the coin list, improving the user experience and the robustness of the application.
 
 [33mcommit 98cad81b77b2bf95e4e433e8492b0b66165aee8b[m
@@ -790,7 +790,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 02:04:45 2025 -0300
 
     Merge pull request #2 from PauloBennertz/fix-pyinstaller-path
-    
+
     Refactor: Limpa e refatora a base de código principal
 
 [33mcommit bb46ff4eaf62fd42275a3173dde476809c3b019a[m
@@ -798,9 +798,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sat Aug 16 04:56:07 2025 +0000
 
     Refactor: Limpa e refatora a base de código principal
-    
+
     Esta submissão realiza uma limpeza e refatoração significativa nos principais arquivos da aplicação (`main_app.py`, `core_components.py`, `monitoring_service.py`, `indicators.py`).
-    
+
     As principais mudanças incluem:
     - Remoção de importações e variáveis não utilizadas.
     - Substituição de todos os `print()` de depuração por um sistema de `logging` padronizado.
@@ -815,7 +815,7 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Sat Aug 16 01:28:01 2025 -0300
 
     Merge pull request #1 from PauloBennertz/fix-pyinstaller-path
-    
+
     Fix(core): Corrige o caminho de busca de recursos em executável
 
 [33mcommit 05bc133d955436c5086020164658fcfc0d210ab7[m
@@ -823,9 +823,9 @@ Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.g
 Date:   Sat Aug 16 04:27:03 2025 +0000
 
     Fix(core): Corrige o caminho de busca de recursos em executável
-    
+
     A função `get_application_path` estava utilizando `os.path.dirname(sys.executable)`, que não funciona corretamente para executáveis criados com PyInstaller no modo `--onefile`. Quando em modo `onefile`, os arquivos de dados são extraídos para um diretório temporário cujo caminho é armazenado em `sys._MEIPASS`.
-    
+
     Esta correção atualiza a função para usar `sys._MEIPASS` quando o atributo existir, garantindo que o `config.json` e outros recursos sejam encontrados corretamente quando o programa é executado como um arquivo único. Isso resolve o problema em que a lista de criptomoedas não aparecia no início.
 
 [33mcommit a40026bd4d5787637c971533c55e736624bf6636[m
@@ -845,5 +845,5 @@ Author: Paulo Ricardo Bennertz <97566970+PauloBennertz@users.noreply.github.com>
 Date:   Wed Jul 30 18:00:39 2025 -0300
 
     Add files via upload
-    
+
     alteração na parte grafica

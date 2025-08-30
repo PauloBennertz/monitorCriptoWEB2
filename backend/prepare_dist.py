@@ -4,20 +4,20 @@ import sys
 
 def prepare_dist():
     """Prepara a pasta dist com todos os arquivos necessários"""
-    
+
     print("Preparando pasta de distribuicao...")
-    
+
     # Criar pasta dist se não existir
     if not os.path.exists('dist'):
         os.makedirs('dist')
-    
+
     # Arquivos e pastas para copiar
     files_to_copy = [
         ('config.json', 'dist/'),
         ('icons', 'dist/'),
         ('sons', 'dist/'),
     ]
-    
+
     # Copiar arquivos
     for src, dst in files_to_copy:
         try:
@@ -31,7 +31,7 @@ def prepare_dist():
                 print(f"Arquivo copiado: {src} -> {dst}")
         except Exception as e:
             print(f"Erro ao copiar {src}: {e}")
-    
+
     # Criar arquivo de instruções
     instructions = """# Monitor de Criptomoedas
 
@@ -63,13 +63,13 @@ Se houver problemas:
 
 **Pronto para usar!**
 """
-    
+
     with open('dist/LEIA-ME.txt', 'w', encoding='utf-8') as f:
         f.write(instructions)
-    
+
     print("Pasta dist preparada com sucesso!")
     print("Arquivos na pasta dist:")
-    
+
     # Listar arquivos na pasta dist
     for item in os.listdir('dist'):
         path = os.path.join('dist', item)
@@ -80,4 +80,4 @@ Se houver problemas:
             print(f"   {item}/")
 
 if __name__ == "__main__":
-    prepare_dist() 
+    prepare_dist()

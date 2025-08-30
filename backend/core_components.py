@@ -64,7 +64,7 @@ class CryptoCard(ttkb.Frame):
 
         header_frame = ttkb.Frame(self, bootstyle="secondary")
         header_frame.pack(fill='x', pady=(0, 10))
-        
+
         self.symbol_label = ttkb.Label(header_frame, text=symbol, font=("Segoe UI", 16, "bold"), bootstyle="info")
         self.symbol_label.pack(side='left')
         self.full_name_label = ttkb.Label(header_frame, text=f"({coin_name})", font=("Segoe UI", 11), bootstyle="secondary")
@@ -74,7 +74,7 @@ class CryptoCard(ttkb.Frame):
 
         price_frame = ttkb.Frame(self, bootstyle="secondary")
         price_frame.pack(fill='x', pady=(0, 10))
-        
+
         ttkb.Label(price_frame, text="Preço:", font=("Segoe UI", 12), bootstyle="secondary").pack(side='left')
         self.price_value = ttkb.Label(price_frame, text="Carregando...", font=("Segoe UI", 14, "bold"), bootstyle="light")
         self.price_value.pack(side='right')
@@ -82,12 +82,12 @@ class CryptoCard(ttkb.Frame):
         self.data_labels = {"current_price": self.price_value}
         data_frame = ttkb.Frame(self, bootstyle="secondary")
         data_frame.pack(fill='x', pady=5)
-        
+
         left_col = ttkb.Frame(data_frame, bootstyle="secondary")
         right_col = ttkb.Frame(data_frame, bootstyle="secondary")
         left_col.pack(side='left', fill='x', expand=True, padx=(0, 5))
         right_col.pack(side='right', fill='x', expand=True, padx=(5, 0))
-        
+
         left_labels = {"price_change_24h": "Variação (24h):", "volume_24h": "Volume (24h):", "rsi_value": "RSI:"}
         right_labels = {"bollinger_signal": "Bollinger:", "macd_signal": "MACD:", "mme_cross": "MME:", "hilo_signal": "HiLo:"}
 
@@ -148,12 +148,12 @@ class StartupConfigDialog(ttkb.Toplevel):
 
         telegram_frame = ttkb.LabelFrame(main_frame, text="Configuração do Telegram", padding=15)
         telegram_frame.pack(fill='x', pady=(0, 15))
-        
+
         ttkb.Label(telegram_frame, text="Bot Token:").grid(row=0, column=0, sticky='w', padx=5, pady=5)
         self.token_var = tk.StringVar(value=self.config.get("telegram_bot_token", ""))
         self.token_entry = ttkb.Entry(telegram_frame, textvariable=self.token_var, width=60)
         self.token_entry.grid(row=0, column=1, sticky='ew', padx=5)
-        
+
         ttkb.Label(telegram_frame, text="Chat ID:").grid(row=1, column=0, sticky='w', padx=5, pady=5)
         self.chat_id_var = tk.StringVar(value=self.config.get("telegram_chat_id", ""))
         self.chat_id_entry = ttkb.Entry(telegram_frame, textvariable=self.chat_id_var, width=60)
@@ -171,19 +171,19 @@ class StartupConfigDialog(ttkb.Toplevel):
         self.search_var.trace_add("write", self._filter_available_list)
         search_entry = ttkb.Entry(left_pane, textvariable=self.search_var)
         search_entry.pack(fill='x', pady=(5, 10))
-        
+
         self.available_listbox = tk.Listbox(left_pane, selectmode='extended', exportselection=False, height=15)
         self.available_listbox.pack(fill='both', expand=True)
 
         buttons_frame = ttkb.Frame(paned_window)
         paned_window.add(buttons_frame)
-        
+
         ttkb.Button(buttons_frame, text=">>", command=self._add_symbols, bootstyle="outline").pack(pady=20, padx=10)
         ttkb.Button(buttons_frame, text="<<", command=self._remove_symbols, bootstyle="outline").pack(pady=20, padx=10)
 
         right_pane = ttkb.Frame(paned_window, padding=5)
         paned_window.add(right_pane, weight=1)
-        
+
         ttkb.Label(right_pane, text="Moedas Monitoradas").pack(anchor='w')
         self.monitored_listbox = tk.Listbox(right_pane, selectmode='extended', exportselection=False)
         self.monitored_listbox.pack(fill='both', expand=True, pady=(5,0))
@@ -259,7 +259,7 @@ class StartupConfigDialog(ttkb.Toplevel):
         """Define o estado da sessão como não iniciada ao fechar a janela."""
         self.session_started = False
         self.destroy()
-    
+
     def center_window(self):
         """Centraliza a janela na tela."""
         self.update_idletasks()
@@ -276,7 +276,7 @@ class AlertConfigDialog(ttkb.Toplevel):
     """Janela de diálogo para configurar os alertas de uma moeda específica."""
     def __init__(self, parent_app, symbol, alert_config_data=None):
         """Inicializa a janela de configuração de alertas."""
-        super().__init__(parent_app) 
+        super().__init__(parent_app)
         self.parent_app = parent_app
         self.result = None
         self.title(f"Configurar Alertas para {symbol}")
@@ -285,40 +285,40 @@ class AlertConfigDialog(ttkb.Toplevel):
         self.grab_set()
         self.symbol = symbol
         self.config_data = alert_config_data if alert_config_data else self._get_default_config()
-        self.vars = {} 
-        
+        self.vars = {}
+
         main_container = ttkb.Frame(self, bootstyle="dark", padding=15, relief="solid", borderwidth=1)
         main_container.pack(expand=True, fill="both")
-        
+
         header_frame = ttkb.Frame(main_container, bootstyle="dark")
         header_frame.pack(fill="x", pady=(0, 15))
-        
+
         ttkb.Label(header_frame, text=f"Alertas para {symbol}", font=("Segoe UI", 16, "bold"), bootstyle="info").pack(side="left")
         ttkb.Label(header_frame, text="Configure os parâmetros dos alertas", font=("Segoe UI", 12), bootstyle="secondary").pack(side="left", padx=(10, 0))
 
         common_frame = ttkb.LabelFrame(main_container, text="Configurações Gerais", padding=15, bootstyle="dark")
         common_frame.pack(side="top", fill="x", pady=(0, 15))
-        
+
         notes_frame = ttkb.Frame(common_frame, bootstyle="dark")
         notes_frame.pack(fill="x", pady=5)
-        
+
         ttkb.Label(notes_frame, text="Observações:", font=("Segoe UI", 10, "bold"), bootstyle="light").pack(side="left")
         self.notes_var = ttkb.StringVar(value=self.config_data.get('notes', ''))
         self.notes_entry = ttkb.Entry(notes_frame, textvariable=self.notes_var, font=("Segoe UI", 10), bootstyle="dark")
         self.notes_entry.pack(side="left", fill="x", expand=True, padx=(10, 0))
-        
+
         sound_frame = ttkb.Frame(common_frame, bootstyle="dark")
         sound_frame.pack(fill="x", pady=10)
-        
+
         ttkb.Label(sound_frame, text="Arquivo de Som:", font=("Segoe UI", 10, "bold"), bootstyle="light").pack(side="left")
-        
+
         sound_controls = ttkb.Frame(sound_frame, bootstyle="dark")
         sound_controls.pack(side="left", fill="x", expand=True, padx=(10, 0))
-        
+
         self.sound_var = ttkb.StringVar(value=self.config_data.get('sound', 'sons/Alerta.mp3'))
         self.sound_entry = ttkb.Entry(sound_controls, textvariable=self.sound_var, state="readonly", font=("Segoe UI", 10), bootstyle="dark")
         self.sound_entry.pack(side="left", fill="x", expand=True)
-        
+
         ttkb.Button(sound_controls, text="Procurar", command=self.browse_sound_file, bootstyle="info").pack(side="left", padx=5)
         ttkb.Button(sound_controls, text="Testar", command=self.preview_sound, bootstyle="success").pack(side="left")
 
@@ -336,42 +336,42 @@ class AlertConfigDialog(ttkb.Toplevel):
         cooldown_spinbox.bind("<Leave>", lambda e, tt=cooldown_tooltip: tt.hide_tooltip())
 
         ttkb.Separator(main_container, bootstyle="info").pack(fill="x", pady=10)
-        
+
         conditions_header = ttkb.Frame(main_container, bootstyle="dark")
         conditions_header.pack(fill="x", pady=(0, 10))
-        
+
         ttkb.Label(conditions_header, text="Gatilhos de Alerta", font=("Segoe UI", 14, "bold"), bootstyle="info").pack(side="left")
 
         help_button = ttkb.Button(conditions_header, text="Ajuda", bootstyle="secondary")
         help_button.pack(side="right")
-        
+
         tooltip = Tooltip(help_button)
         help_button.bind("<Enter>", lambda e: tooltip.show_tooltip("Configure os alertas que deseja receber para esta moeda."))
         help_button.bind("<Leave>", lambda e: tooltip.hide_tooltip())
-        
+
         conditions_outer_frame = ttkb.Frame(main_container, bootstyle="dark")
         conditions_outer_frame.pack(side="top", fill="both", expand=True)
-        
+
         canvas = tk.Canvas(conditions_outer_frame, borderwidth=0, highlightthickness=0, bg="#2a2a2a")
         scrollbar = ttkb.Scrollbar(conditions_outer_frame, orient="vertical", command=canvas.yview, bootstyle="round-dark")
         conditions_frame = ttkb.Frame(canvas, bootstyle="dark", padding=(10, 0))
-        
+
         canvas.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side="right", fill="y")
         canvas.pack(side="left", fill="both", expand=True)
-        
+
         canvas_frame_id = canvas.create_window((0, 0), window=conditions_frame, anchor="nw")
         conditions_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_frame_id, width=e.width))
-        
+
         self.canvas = canvas  # Salvar referência do canvas
         self.bind_all("<MouseWheel>", self._on_mousewheel)
 
         self._create_condition_widgets(conditions_frame)
-        
+
         btn_frame = ttkb.Frame(main_container, bootstyle="dark", padding=(0, 15, 0, 0))
         btn_frame.pack(side="bottom", fill="x")
-        
+
         ttkb.Button(btn_frame, text="Salvar", command=self.on_save, bootstyle="success").pack(side="left", padx=5)
         ttkb.Button(btn_frame, text="Cancelar", command=self.destroy, bootstyle="danger-outline").pack(side="left", padx=5)
 
@@ -402,7 +402,7 @@ class AlertConfigDialog(ttkb.Toplevel):
             category = details.get('category', 'other')
             if category not in categorized_conditions: categorized_conditions[category] = []
             categorized_conditions[category].append((key, details))
-        
+
         row = 0
         for category, cat_info in categories.items():
             if category in categorized_conditions:
@@ -411,31 +411,31 @@ class AlertConfigDialog(ttkb.Toplevel):
                 ttkb.Label(category_frame, text=f"{cat_info['icon']} {cat_info['title']}", font=("Segoe UI", 12, "bold"), bootstyle=cat_info['color']).pack(side="left")
                 ttkb.Separator(parent_frame, bootstyle=cat_info['color']).grid(row=row+1, column=0, columnspan=2, sticky='ew', pady=(0, 10))
                 row += 2
-                
+
                 for key, details in categorized_conditions[category]:
                     current_cond_config = self.config_data.get('conditions', {}).get(key, {})
                     enabled_var = tk.BooleanVar(value=current_cond_config.get('enabled', False))
                     value_var = None
-                    
+
                     condition_frame = ttkb.Frame(parent_frame, bootstyle="dark")
                     condition_frame.grid(row=row, column=0, columnspan=2, sticky='ew', pady=5)
-                    
+
                     if details['has_value']:
                         default_value = str(details.get('default', 0.0))
                         current_value = current_cond_config.get('value', default_value)
                         value_var = tk.StringVar(value=current_value) if key in ['fuga_capital_significativa', 'entrada_capital_significativa'] else tk.DoubleVar(value=float(current_value))
-                    
+
                     self.vars[key] = {'enabled': enabled_var, 'value': value_var}
-                    
+
                     cb = ttkb.Checkbutton(condition_frame, text=f"{details.get('icon', '')} {details['text']}", variable=enabled_var, bootstyle=f"{cat_info['color']}")
                     cb.pack(side="left", padx=(5, 10))
-                    
+
                     tooltip_text = TOOLTIP_DEFINITIONS.get(key, "Sem descrição.")
                     if 'info_tooltip' in details: tooltip_text += f"\n\nDica: {details['info_tooltip']}"
                     tooltip = Tooltip(cb)
                     cb.bind("<Enter>", lambda e, text=tooltip_text, tt=tooltip: tt.show_tooltip(text))
                     cb.bind("<Leave>", lambda e, tt=tooltip: tt.hide_tooltip())
-                    
+
                     if details['has_value']:
                         entry = ttkb.Entry(condition_frame, textvariable=value_var, width=15, font=("Segoe UI", 10), bootstyle="dark")
                         entry.pack(side="right", padx=5)
@@ -466,7 +466,7 @@ class AlertConfigDialog(ttkb.Toplevel):
             try: winsound.PlaySound(sound_path, winsound.SND_FILENAME | winsound.SND_ASYNC)
             except Exception as e: messagebox.showerror("Erro", f"Não foi possível tocar o som:\n{e}", parent=self)
         else: messagebox.showerror("Erro", "Arquivo de som não encontrado.", parent=self)
-    
+
     def on_save(self):
         """Valida e salva a configuração de alerta."""
         final_config = {"symbol": self.symbol, "alert_config": {"notes": self.notes_var.get(), "sound": self.sound_var.get(), "alert_cooldown_minutes": self.cooldown_var.get(), "conditions": {}, "triggered_conditions": self.config_data.get('triggered_conditions', [])}}
@@ -509,87 +509,87 @@ class AlertManagerWindow(ttkb.Toplevel):
         self.resizable(True, True)
         self.transient(self.master)
         self.grab_set()
-        
+
         main_container = ttkb.Frame(self, padding=15, bootstyle="dark", relief="solid", borderwidth=1)
         main_container.pack(expand=True, fill='both')
-        
+
         header_frame = ttkb.Frame(main_container, bootstyle="dark")
         header_frame.pack(fill='x', pady=(0, 15))
-        
+
         ttkb.Label(header_frame, text="GERENCIADOR DE ALERTAS", font=("Segoe UI", 16, "bold"), bootstyle="info").pack(side="left")
         ttkb.Label(header_frame, text="Configuração personalizada por moeda", font=("Segoe UI", 12), bootstyle="secondary").pack(side="left", padx=(10, 0))
 
         self.paned_window = ttk.PanedWindow(main_container, orient=tk.HORIZONTAL)
         self.paned_window.pack(expand=True, fill='both')
-        
+
         symbols_container = ttkb.Frame(self.paned_window, padding=5, bootstyle="dark")
         self.paned_window.add(symbols_container, weight=1)
-        
+
         symbols_header = ttkb.Frame(symbols_container, bootstyle="dark")
         symbols_header.pack(fill='x', pady=(0, 10))
-        
+
         ttkb.Label(symbols_header, text="Moedas Monitoradas", font=("Segoe UI", 13, "bold"), bootstyle="light").pack(side="left")
-        
+
         search_frame = ttkb.Frame(symbols_container, bootstyle="dark")
         search_frame.pack(fill='x', pady=(0, 10))
-        
+
         ttkb.Label(search_frame, text="🔍", font=("Segoe UI", 12), bootstyle="secondary").pack(side="left", padx=(0, 5))
         self.search_var = tk.StringVar()
         search_entry = ttkb.Entry(search_frame, textvariable=self.search_var, bootstyle="dark")
         search_entry.pack(side="left", fill="x", expand=True)
-        
+
         symbols_frame = ttkb.Frame(symbols_container, bootstyle="dark")
         symbols_frame.pack(fill='both', expand=True)
-        
+
         self.symbols_tree = ttkb.Treeview(symbols_frame, columns=('symbol',), show='headings', bootstyle="dark", height=20)
         self.symbols_tree.heading('symbol', text='Símbolo')
         self.symbols_tree.column('symbol', width=150, anchor=tk.W)
-        
+
         symbols_scrollbar = ttkb.Scrollbar(symbols_frame, orient="vertical", command=self.symbols_tree.yview, bootstyle="round-dark")
         self.symbols_tree.configure(yscrollcommand=symbols_scrollbar.set)
         self.symbols_tree.pack(side="left", expand=True, fill='both')
         symbols_scrollbar.pack(side="right", fill='y')
         self.symbols_tree.bind("<<TreeviewSelect>>", self.on_symbol_selected)
-        
+
         ttkb.Button(symbols_container, text="Adicionar/Remover Moedas", command=self.manage_monitored_symbols, bootstyle="success").pack(side='bottom', fill='x', pady=(10, 0))
 
         alerts_container = ttkb.Frame(self.paned_window, padding=5, bootstyle="dark")
         self.paned_window.add(alerts_container, weight=2)
-        
+
         alerts_header = ttkb.Frame(alerts_container, bootstyle="dark")
         alerts_header.pack(fill='x', pady=(0, 10))
-        
+
         self.alert_title = ttkb.Label(alerts_header, text="Condições de Alerta", font=("Segoe UI", 13, "bold"), bootstyle="light")
         self.alert_title.pack(side="left")
         self.selected_coin = ttkb.Label(alerts_header, text="", font=("Segoe UI", 13, "bold"), bootstyle="warning")
         self.selected_coin.pack(side="left", padx=(10, 0))
-        
+
         alerts_table_frame = ttkb.LabelFrame(alerts_container, text="Condições de Alerta Ativadas", padding=15, bootstyle="dark")
         alerts_table_frame.pack(expand=True, fill='both', pady=(0, 15))
-        
+
         self.conditions_tree = ttkb.Treeview(alerts_table_frame, columns=('condition', 'value'), show='headings', bootstyle="dark", height=15)
         self.conditions_tree.heading('condition', text='Condição')
         self.conditions_tree.column('condition', width=300, anchor=tk.W)
         self.conditions_tree.heading('value', text='Valor/Estado')
         self.conditions_tree.column('value', width=200, anchor=tk.W)
-        
+
         conditions_scrollbar = ttkb.Scrollbar(alerts_table_frame, orient="vertical", command=self.conditions_tree.yview, bootstyle="round-dark")
         self.conditions_tree.configure(yscrollcommand=conditions_scrollbar.set)
         self.conditions_tree.pack(side="left", expand=True, fill='both')
         conditions_scrollbar.pack(side="right", fill='y')
-        
+
         alerts_controls_frame = ttkb.Frame(alerts_container, bootstyle="dark", padding=5)
         alerts_controls_frame.pack(fill='x')
-        
+
         self.config_alert_btn = ttkb.Button(alerts_controls_frame, text="Configurar Alertas", command=self.open_config_alert_dialog, bootstyle="info", state="disabled")
         self.config_alert_btn.pack(side='left', padx=5)
-        
+
         ttkb.Button(alerts_controls_frame, text="Ajuda", bootstyle="secondary").pack(side='right', padx=5)
-        
+
         status_bar = ttkb.Frame(main_container, bootstyle="dark", padding=(0, 10, 0, 0))
         status_bar.pack(fill='x', side="bottom")
         ttkb.Label(status_bar, text="Selecione uma moeda para visualizar ou configurar seus alertas", font=("Segoe UI", 10), bootstyle="secondary").pack(side="left")
-        
+
         self._populate_symbols_tree()
         self.search_var.trace_add("write", self._filter_symbols)
         self.parent_app.center_toplevel_on_main(self)
@@ -629,7 +629,7 @@ class AlertManagerWindow(ttkb.Toplevel):
                 self.symbols_tree.insert('', tk.END, iid=symbol, values=(f"💰 {symbol}",))
 
         self.on_symbol_selected()
-        
+
     def _populate_symbols_tree(self):
         """Preenche a árvore de símbolos com as moedas atualmente monitoradas."""
         self.symbols_tree.selection_remove(self.symbols_tree.selection())
@@ -647,7 +647,7 @@ class AlertManagerWindow(ttkb.Toplevel):
             return
         self.config_alert_btn['state'] = 'normal'
         self._populate_conditions_summary(selected_items[0])
-        
+
     def _populate_conditions_summary(self, symbol):
         """Preenche a tabela de resumo de condições para o símbolo selecionado."""
         for i in self.conditions_tree.get_children(): self.conditions_tree.delete(i)
@@ -667,7 +667,7 @@ class AlertManagerWindow(ttkb.Toplevel):
     def get_selected_symbol(self):
         """Retorna o símbolo atualmente selecionado na árvore."""
         return self.symbols_tree.selection()[0] if self.symbols_tree.selection() else None
-        
+
     def open_config_alert_dialog(self):
         """Abre a janela de configuração de alertas para o símbolo selecionado."""
         if not (selected_symbol := self.get_selected_symbol()): return
@@ -750,7 +750,7 @@ class ManageSymbolsDialog(ttkb.Toplevel):
             target_listbox.yview_scroll(1, "units")
         elif event.num == 4 or event.delta == 120:
             target_listbox.yview_scroll(-1, "units")
-            
+
     def _populate_lists(self):
         """Preenche as listas de moedas disponíveis e monitoradas usando a lista da Binance."""
         self.all_symbols_master = sorted(self.parent_app.all_symbols)
@@ -765,7 +765,7 @@ class ManageSymbolsDialog(ttkb.Toplevel):
 
         for symbol in sorted(list(monitored_symbols)):
             self.monitored_listbox.insert(tk.END, symbol)
-        
+
     def _filter_available(self, *args):
         """Filtra a lista de moedas disponíveis com base na busca."""
         search_term = self.available_search_var.get().lower()
@@ -819,7 +819,7 @@ class ManageSymbolsDialog(ttkb.Toplevel):
         for symbol in symbols_to_move:
             if symbol not in current_available:
                 current_available.append(symbol)
-        
+
         self.available_listbox.delete(0, tk.END)
         for symbol in sorted(current_available):
             self.available_listbox.insert(tk.END, symbol)
@@ -890,22 +890,22 @@ class AlertHistoryWindow(ttkb.Toplevel):
 
         # Adiciona a capacidade de maximizar a janela
         self.maximizable = True
-        
+
         main_container = ttkb.Frame(self, padding=15, bootstyle="dark", relief="solid", borderwidth=1)
         main_container.pack(expand=True, fill='both')
-        
+
         header_frame = ttkb.Frame(main_container, bootstyle="dark")
         header_frame.pack(fill='x', pady=(0, 15))
-        
+
         ttkb.Label(header_frame, text="HISTÓRICO DE ALERTAS", font=("Segoe UI", 16, "bold"), bootstyle="info").pack(side="left")
         ttkb.Label(header_frame, text="Registro cronológico de todos os alertas disparados", font=("Segoe UI", 12), bootstyle="secondary").pack(side="left", padx=(15, 0))
 
         filter_frame = ttkb.Frame(main_container, bootstyle="dark")
         filter_frame.pack(fill='x', pady=(0, 15))
-        
+
         search_frame = ttkb.Frame(filter_frame, bootstyle="dark")
         search_frame.pack(side="left", fill='x', expand=True)
-        
+
         ttkb.Label(search_frame, text="🔍", font=("Segoe UI", 12), bootstyle="secondary").pack(side="left", padx=(0, 5))
         self.search_var = tk.StringVar()
         self.search_entry = ttkb.Entry(search_frame, textvariable=self.search_var, width=30, font=("Segoe UI", 10), bootstyle="dark")
@@ -916,44 +916,44 @@ class AlertHistoryWindow(ttkb.Toplevel):
 
         self.search_entry.bind("<FocusIn>", self._clear_placeholder)
         self.search_entry.bind("<FocusOut>", self._add_placeholder)
-        
+
         period_frame = ttkb.Frame(filter_frame, bootstyle="dark")
         period_frame.pack(side="right")
-        
+
         ttkb.Label(period_frame, text="Período:", font=("Segoe UI", 10), bootstyle="light").pack(side="left", padx=(0, 5))
         self.period_var = tk.StringVar(value="all")
         period_combobox = ttkb.Combobox(period_frame, values=["Todos", "Hoje", "7 dias", "30 dias"], textvariable=self.period_var, width=10, bootstyle="dark")
         period_combobox.pack(side="left", padx=(0, 10))
         period_combobox.current(0)
-        
+
         tree_container = ttkb.Frame(main_container, bootstyle="dark")
         tree_container.pack(expand=True, fill='both', pady=(0, 15))
-        
+
         self.tree = ttkb.Treeview(tree_container, columns=('timestamp', 'symbol', 'trigger'), show='headings', bootstyle="dark", height=15)
         self.tree.heading('timestamp', text='Data/Hora'); self.tree.column('timestamp', width=180, anchor='w')
         self.tree.heading('symbol', text='Símbolo'); self.tree.column('symbol', width=120, anchor='w')
         self.tree.heading('trigger', text='Gatilho do Alerta'); self.tree.column('trigger', width=450, anchor='w')
-        
+
         vsb = ttkb.Scrollbar(tree_container, orient="vertical", command=self.tree.yview, bootstyle="round-dark")
         self.tree.configure(yscrollcommand=vsb.set)
         self.tree.pack(side='left', expand=True, fill='both')
         vsb.pack(side='right', fill='y')
-        
+
         self.details_frame = ttkb.LabelFrame(main_container, text="Detalhes do Alerta", padding=15, height=150, bootstyle="dark")
         self.details_frame.pack(fill='x')
         self.details_frame.pack_propagate(False)
         self.details_placeholder = ttkb.Label(self.details_frame, text="Selecione um alerta para ver os detalhes", font=("Segoe UI", 11), bootstyle="secondary")
         self.details_placeholder.pack(pady=40)
-        
+
         btn_frame = ttkb.Frame(main_container, bootstyle="dark", padding=(0, 15, 0, 0))
         btn_frame.pack(fill='x')
-        
+
         self.analyze_btn = ttkb.Button(btn_frame, text="Análise Detalhada", command=self._open_analysis, bootstyle="info", state="disabled")
         self.analyze_btn.pack(side='left', padx=5)
         ttkb.Button(btn_frame, text="Atualizar", command=self._load_history, bootstyle="secondary").pack(side='left', padx=5)
         ttkb.Button(btn_frame, text="Limpar Histórico", command=self._clear_history, bootstyle="danger-outline").pack(side='left', padx=5)
         ttkb.Button(btn_frame, text="Fechar", command=self.destroy, bootstyle="secondary-outline").pack(side='right', padx=5)
-        
+
         status_bar = ttkb.Frame(main_container, bootstyle="dark", padding=(0, 15, 0, 0))
         status_bar.pack(fill='x', side="bottom")
         self.status_label = ttkb.Label(status_bar, text="", font=("Segoe UI", 10), bootstyle="secondary")
@@ -1008,7 +1008,7 @@ class AlertHistoryWindow(ttkb.Toplevel):
             search_term = ""
 
         period = self.period_var.get()
-        
+
         from datetime import datetime, timedelta
         filtered_data = self.history_data
         if period != "Todos":
@@ -1016,10 +1016,10 @@ class AlertHistoryWindow(ttkb.Toplevel):
             if period == "7 dias": cutoff -= timedelta(days=7)
             elif period == "30 dias": cutoff -= timedelta(days=30)
             filtered_data = [r for r in self.history_data if self._get_date_from_record(r) >= cutoff]
-            
+
         if search_term:
             filtered_data = [r for r in filtered_data if search_term in r.get('symbol','').lower() or search_term in r.get('trigger','').lower()]
-            
+
         for i, record in enumerate(filtered_data):
             try:
                 dt = datetime.fromisoformat(record.get('timestamp', ''))
@@ -1032,9 +1032,9 @@ class AlertHistoryWindow(ttkb.Toplevel):
 
             # Usar um iid único para cada item na visualização filtrada
             self.tree.insert('', tk.END, iid=f"item_{i}", values=(formatted_time, record.get('symbol', 'N/A'), f"{trigger_icon} {trigger}"), tags=('alert',))
-            
+
         self.status_label.config(text=f"{len(self.tree.get_children())} alertas encontrados")
-            
+
     def _get_date_from_record(self, record):
         """Extrai um objeto de data de um registro de alerta para filtragem."""
         try: return datetime.fromisoformat(record.get('timestamp', '')).date()
@@ -1044,24 +1044,24 @@ class AlertHistoryWindow(ttkb.Toplevel):
         """Exibe detalhes resumidos de um alerta quando ele é selecionado na tabela."""
         selected_item = self.tree.selection()
         for widget in self.details_frame.winfo_children(): widget.destroy()
-        
+
         if not selected_item:
             self.analyze_btn['state'] = 'disabled'
             ttkb.Label(self.details_frame, text="Selecione um alerta para ver os detalhes", font=("Segoe UI", 11), bootstyle="secondary").pack(pady=40)
             return
-            
+
         self.analyze_btn['state'] = 'normal'
         record = self.history_data[int(selected_item[0])]
-        
+
         details_content = ttkb.Frame(self.details_frame, bootstyle="dark")
         details_content.pack(fill="both", expand=True)
         left_col, right_col = ttkb.Frame(details_content, bootstyle="dark"), ttkb.Frame(details_content, bootstyle="dark")
         left_col.pack(side="left", fill="both", expand=True, padx=(0, 10))
         right_col.pack(side="left", fill="both", expand=True)
-        
+
         try: dt = datetime.fromisoformat(record.get('timestamp', '')); formatted_time = dt.strftime("%d/%m/%Y %H:%M:%S")
         except: formatted_time = record.get('timestamp', 'N/A')
-            
+
         ttkb.Label(left_col, text="Símbolo:", font=("Segoe UI", 10, "bold"), bootstyle="secondary").grid(row=0, column=0, sticky="w", pady=3)
         ttkb.Label(left_col, text=record.get('symbol', 'N/A'), font=("Segoe UI", 10, "bold"), bootstyle="info").grid(row=0, column=1, sticky="w", pady=3, padx=5)
         ttkb.Label(left_col, text="Gatilho:", font=("Segoe UI", 10, "bold"), bootstyle="secondary").grid(row=1, column=0, sticky="w", pady=3)
@@ -1104,18 +1104,18 @@ class AlertAnalysisWindow(ttkb.Toplevel):
         self.geometry("700x500")
         self.transient(parent)
         self.grab_set()
-        
+
         main_container = ttkb.Frame(self, bootstyle="dark", padding=15, relief="solid", borderwidth=1)
         main_container.pack(expand=True, fill='both')
-        
+
         header_frame = ttkb.Frame(main_container, bootstyle="dark")
         header_frame.pack(fill='x', pady=(0, 20))
         ttkb.Label(header_frame, text=f"Análise Detalhada: {symbol}", font=("Segoe UI", 16, "bold"), bootstyle="info").pack(side="left")
-        
+
         data = analysis_data
         price_panel = ttkb.Frame(main_container, bootstyle="dark")
         price_panel.pack(fill='x', pady=(0, 20))
-        
+
         price_value = data.get('current_price', 0.0)
         price_change = data.get('price_change_24h', 0.0)
         price_change_color = "success" if price_change >= 0 else "danger"
@@ -1124,24 +1124,24 @@ class AlertAnalysisWindow(ttkb.Toplevel):
         price_frame = ttkb.LabelFrame(price_panel, text="Preço no Alerta", bootstyle="dark", padding=10)
         price_frame.pack(side="left", fill='y', expand=True, padx=(0, 10))
         ttkb.Label(price_frame, text=f"${price_value:,.4f}" if price_value else "N/A", font=("Segoe UI", 22, "bold"), bootstyle="light").pack(pady=5)
-        
+
         change_frame = ttkb.LabelFrame(price_panel, text="Variação 24h", bootstyle="dark", padding=10)
         change_frame.pack(side="left", fill='y', expand=True, padx=10)
         ttkb.Label(change_frame, text=f"{price_change_icon} {price_change:.2f}%" if price_change else "N/A", font=("Segoe UI", 22, "bold"), bootstyle=price_change_color).pack(pady=5)
-        
+
         volume_value = data.get('volume_24h', 0.0)
         volume_text = f"${volume_value/1_000_000_000:.2f}B" if volume_value >= 1e9 else f"${volume_value/1_000_000:.2f}M" if volume_value >= 1e6 else f"${volume_value/1_000:.2f}K" if volume_value else "N/A"
         volume_frame = ttkb.LabelFrame(price_panel, text="Volume 24h", bootstyle="dark", padding=10)
         volume_frame.pack(side="left", fill='y', expand=True, padx=(10, 0))
         ttkb.Label(volume_frame, text=volume_text, font=("Segoe UI", 22, "bold"), bootstyle="secondary").pack(pady=5)
-        
+
         ttkb.Separator(main_container, bootstyle="info").pack(fill='x', pady=10)
-        
+
         ttkb.Label(main_container, text="Indicadores Técnicos", font=("Segoe UI", 14, "bold"), bootstyle="light").pack(anchor="w", pady=(10, 15))
-        
+
         indicators_grid = ttkb.Frame(main_container, bootstyle="dark")
         indicators_grid.pack(fill='both', expand=True)
-        
+
         indicators = {"rsi_value": {"label": "RSI", "icon": "📊", "format": lambda v: f"{v:.2f}" if v else "N/A", "color": lambda v: "success" if v and v <= 30 else "danger" if v and v >= 70 else "light"}, "bollinger_signal": {"label": "Bollinger", "icon": "📈", "format": str, "color": lambda v: "light"}, "macd_signal": {"label": "MACD", "icon": "📉", "format": str, "color": lambda v: "success" if v == "Cruzamento de Alta" else "danger" if v == "Cruzamento de Baixa" else "light"}, "mme_cross": {"label": "MME", "icon": "✖️", "format": str, "color": lambda v: "success" if v == "Cruz Dourada" else "danger" if v == "Cruz da Morte" else "light"}}
 
         for i, (key, details) in enumerate(indicators.items()):
@@ -1149,12 +1149,12 @@ class AlertAnalysisWindow(ttkb.Toplevel):
             indicator_card = ttkb.LabelFrame(indicators_grid, text=f"{details['icon']} {details['label']}", bootstyle="dark", padding=10)
             indicator_card.grid(row=i//2, column=i%2, padx=5, pady=5, sticky="nsew")
             ttkb.Label(indicator_card, text=details["format"](value), font=("Segoe UI", 14, "bold"), bootstyle=details["color"](value)).pack(pady=5)
-                
+
         indicators_grid.columnconfigure((0, 1), weight=1)
 
         notes_frame = ttkb.LabelFrame(main_container, text="Conclusão da Análise", bootstyle="dark", padding=15)
         notes_frame.pack(fill='x', pady=(15, 0))
-        
+
         trigger_text = "Alerta gerado com base nos critérios configurados."
         if (value := data.get('rsi_value')) and value <= 30: trigger_text = f"RSI em condição de sobrevendido ({value:.2f}). Potencial ponto de reversão de baixa."
         elif (value := data.get('rsi_value')) and value >= 70: trigger_text = f"RSI em condição de sobrecomprado ({value:.2f}). Potencial ponto de reversão de alta."
@@ -1162,5 +1162,5 @@ class AlertAnalysisWindow(ttkb.Toplevel):
         elif data.get("macd_signal") == "Cruzamento de Baixa": trigger_text = "Cruzamento de baixa no MACD. Possível tendência de baixa."
 
         ttkb.Label(notes_frame, text=trigger_text, font=("Segoe UI", 11), bootstyle="light", wraplength=620).pack(pady=10, fill='x')
-        
+
         ttkb.Button(main_container, text="Fechar", command=self.destroy, bootstyle="secondary").pack(side="right", pady=(15, 0))

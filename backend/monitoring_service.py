@@ -19,16 +19,16 @@ def get_klines_data(symbol, interval='1h', limit=300):
     if not robust_services.DataValidator.validate_symbol(symbol):
         logging.warning(f"Tentativa de busca por símbolo inválido: {symbol}")
         return None
-    
+
     cache_args = {'func': 'get_klines_data', 'symbol': symbol, 'interval': interval, 'limit': limit}
     cached_df = robust_services.data_cache.get(cache_args, ttl=180)
     if cached_df is not None:
         return cached_df
-    
+
     robust_services.rate_limiter.wait_if_needed()
     url = "https://api.binance.com/api/v3/klines"
     params = {'symbol': symbol, 'interval': interval, 'limit': limit}
-    
+
     try:
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
@@ -47,7 +47,7 @@ def get_ticker_data():
     cache_args = {'func': 'get_ticker_data'}
     cached_data = robust_services.data_cache.get(cache_args, ttl=60)
     if cached_data is not None: return cached_data
-        
+
     robust_services.rate_limiter.wait_if_needed()
     try:
         response = requests.get("https://api.binance.com/api/v3/ticker/24hr", timeout=10)
@@ -305,23 +305,23 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None):
     analysis_result['hilo_signal'] = hilo_signal
     analysis_result['rsi_value'] = rsi_value if rsi_value else 0.0
     analysis_result['rsi_signal'] = f"{rsi_value:.2f}" if rsi_value else "N/A"
-    
+
     if upper_band > 0 and analysis_result['current_price'] > 0:
         if analysis_result['current_price'] > upper_band: analysis_result['bollinger_signal'] = "Acima da Banda"
         elif analysis_result['current_price'] < lower_band: analysis_result['bollinger_signal'] = "Abaixo da Banda"
-            
+
     analysis_result['macd_signal'] = macd_cross
-    
+
     if 50 in emas and 200 in emas and len(emas[50]) > 1 and len(emas[200]) > 1:
         if emas[50].iloc[-2] < emas[200].iloc[-2] and emas[50].iloc[-1] > emas[200].iloc[-1]: analysis_result['mme_cross'] = "Cruz Dourada"
         elif emas[50].iloc[-2] > emas[200].iloc[-2] and emas[50].iloc[-1] < emas[200].iloc[-1]: analysis_result['mme_cross'] = "Cruz da Morte"
-    
+
     return analysis_result
 
 def run_monitoring_cycle(config, data_queue, stop_event, coingecko_mapping):
     """Ciclo principal de monitoramento que roda em segundo plano para buscar e analisar dados."""
     logging.info("Ciclo de monitoramento iniciado.")
-    
+
     while not stop_event.is_set():
         check_interval = config.get("check_interval_seconds", 300)
         data_queue.put({'type': 'start_countdown', 'payload': {'seconds': check_interval}})
@@ -380,7 +380,7 @@ def get_btc_dominance():
         # A API da CoinGecko retorna um dicionário diretamente.
         # A chave 'data' contém as informações globais.
         global_data = cg_client.get_global()
-        
+
         # O valor da dominância do BTC está em 'data' -> 'market_cap_percentage' -> 'btc'
         btc_dominance = global_data.get('market_cap_percentage', {}).get('btc')
 
@@ -391,7 +391,7 @@ def get_btc_dominance():
         else:
             logging.warning(f"Dominância BTC não encontrada ou em formato inválido na resposta da API: {global_data}")
             return "N/A"
-            
+
     except Exception as e:
         logging.error(f"Não foi possível buscar a dominância do BTC: {e}")
         return "Erro"

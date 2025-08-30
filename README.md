@@ -120,4 +120,4 @@ Se encontrar problemas:
 4. Abra uma issue no GitHub
 
 ---
-**Desenvolvido com ❤️ para a comunidade crypto** 
+**Desenvolvido com ❤️ para a comunidade crypto**

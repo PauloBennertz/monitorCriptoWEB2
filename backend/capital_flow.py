@@ -67,7 +67,7 @@ def print_results(results_df):
 
     print("\n--- Análise de Fluxo de Capital por Categoria (Top N) ---")
     print("-" * 80)
-    
+
     # MUDANÇA: Cabeçalho sem a coluna "Variação (24h)"
     header = f"{'Rank':<5} {'Categoria':<35} {'Market Cap':>20} {'Volume (24h)':>20}"
     print(header)
@@ -84,7 +84,7 @@ def print_results(results_df):
                 f"{mcap_formatted:>20} "
                 f"{vol_formatted:>20}")
         print(line)
-        
+
     print("-" * 80)
     print("\nAnálise concluída.")
 
@@ -93,12 +93,12 @@ def run_full_analysis(config, cg_client: CoinGeckoAPI, data_cache_instance: Data
     Função principal que orquestra todo o processo de análise de fluxo de capital.
     """
     start_time = time.time()
-    
+
     categories_data = get_categories_data(cg_client, data_cache_instance, rate_limiter_instance)
     if categories_data is None:
         print("Não foi possível obter os dados das categorias. Abortando análise.")
         return
-        
+
     categories_df = pd.DataFrame(categories_data)
     # Adiciona o 'rank' para manter a ordem da API (que é por market cap)
     if 'rank' not in categories_df.columns:
@@ -107,6 +107,6 @@ def run_full_analysis(config, cg_client: CoinGeckoAPI, data_cache_instance: Data
     analysis_results = analyze_capital_flow(categories_df, config)
 
     print_results(analysis_results)
-    
+
     end_time = time.time()
     print(f"\nTempo total da análise: {end_time - start_time:.2f} segundos.")
