@@ -1,0 +1,1190 @@
+<<<<<<< HEAD
+[]
+=======
+[
+  {
+    "timestamp": "2025-08-28T10:22:11.837684",
+    "symbol": "ETHUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4612.48,
+      "price_change_24h": 0.203,
+      "volume_24h": 2459356706.802385,
+      "rsi_value": 75.5630739487674,
+      "rsi_signal": "75.56",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 77644
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:22:11.837038",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4612.48,
+      "price_change_24h": 0.203,
+      "volume_24h": 2459356706.802385,
+      "rsi_value": 75.5630739487674,
+      "rsi_signal": "75.56",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 77644
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:22:11.022680",
+    "symbol": "BTCUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 113450.77,
+      "price_change_24h": 1.959,
+      "volume_24h": 1473067704.0080087,
+      "rsi_value": 78.10492367454401,
+      "rsi_signal": "78.10",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12797601
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:17:07.794127",
+    "symbol": "ETHUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4598.87,
+      "price_change_24h": 0.082,
+      "volume_24h": 2430048026.019953,
+      "rsi_value": 73.17346367292893,
+      "rsi_signal": "73.17",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 78018
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:17:07.793733",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4598.87,
+      "price_change_24h": 0.082,
+      "volume_24h": 2430048026.019953,
+      "rsi_value": 73.17346367292893,
+      "rsi_signal": "73.17",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 78018
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:17:06.770748",
+    "symbol": "BTCUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 113170.82,
+      "price_change_24h": 1.809,
+      "volume_24h": 1467802305.162848,
+      "rsi_value": 75.47810998398302,
+      "rsi_signal": "75.48",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12797601
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:12:03.958548",
+    "symbol": "ETHUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4599.0,
+      "price_change_24h": 0.189,
+      "volume_24h": 2427980675.911959,
+      "rsi_value": 73.64968740391515,
+      "rsi_signal": "73.65",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 78125
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:12:03.958128",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4599.0,
+      "price_change_24h": 0.189,
+      "volume_24h": 2427980675.911959,
+      "rsi_value": 73.64968740391515,
+      "rsi_signal": "73.65",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 78125
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:12:02.934796",
+    "symbol": "BTCUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 113116.04,
+      "price_change_24h": 1.806,
+      "volume_24h": 1466442053.4435222,
+      "rsi_value": 74.38986529151761,
+      "rsi_signal": "74.39",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12797601
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:07:00.104199",
+    "symbol": "ETHUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4602.3,
+      "price_change_24h": -0.069,
+      "volume_24h": 2433760662.257424,
+      "rsi_value": 74.2984953233021,
+      "rsi_signal": "74.30",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 78191
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:07:00.103817",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4602.3,
+      "price_change_24h": -0.069,
+      "volume_24h": 2433760662.257424,
+      "rsi_value": 74.2984953233021,
+      "rsi_signal": "74.30",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 78191
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:06:59.083515",
+    "symbol": "BTCUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 113181.62,
+      "price_change_24h": 1.756,
+      "volume_24h": 1466030392.1605008,
+      "rsi_value": 75.69634825444436,
+      "rsi_signal": "75.70",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12797601
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:01:56.183554",
+    "symbol": "ETHUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4595.59,
+      "price_change_24h": -0.382,
+      "volume_24h": 2434831429.304815,
+      "rsi_value": 72.57119773783054,
+      "rsi_signal": "72.57",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 77792
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:01:56.183277",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4595.59,
+      "price_change_24h": -0.382,
+      "volume_24h": 2434831429.304815,
+      "rsi_value": 72.57119773783054,
+      "rsi_signal": "72.57",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 77792
+    }
+  },
+  {
+    "timestamp": "2025-08-28T10:01:55.366969",
+    "symbol": "BTCUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 113132.01,
+      "price_change_24h": 1.633,
+      "volume_24h": 1466462841.9734783,
+      "rsi_value": 74.70375155555209,
+      "rsi_signal": "74.70",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12797601
+    }
+  },
+  {
+    "timestamp": "2025-08-28T09:56:52.373367",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4608.97,
+      "price_change_24h": 0.055,
+      "volume_24h": 2438134468.663752,
+      "rsi_value": 69.29530201342286,
+      "rsi_signal": "69.30",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 77768
+    }
+  },
+  {
+    "timestamp": "2025-08-28T09:56:51.560272",
+    "symbol": "BTCUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 113307.45,
+      "price_change_24h": 1.822,
+      "volume_24h": 1463834219.3169384,
+      "rsi_value": 74.34678174280704,
+      "rsi_signal": "74.35",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12830130
+    }
+  },
+  {
+    "timestamp": "2025-08-28T09:51:48.502505",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4613.67,
+      "price_change_24h": 0.337,
+      "volume_24h": 2430016850.413485,
+      "rsi_value": 69.9026536871583,
+      "rsi_signal": "69.90",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 77390
+    }
+  },
+  {
+    "timestamp": "2025-08-28T09:51:47.685374",
+    "symbol": "BTCUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 113245.11,
+      "price_change_24h": 1.851,
+      "volume_24h": 1456783560.7190256,
+      "rsi_value": 73.95943194277666,
+      "rsi_signal": "73.96",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12771517
+    }
+  },
+  {
+    "timestamp": "2025-08-28T09:46:44.794656",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4612.24,
+      "price_change_24h": 0.542,
+      "volume_24h": 2426302028.886713,
+      "rsi_value": 69.74666011348916,
+      "rsi_signal": "69.75",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 77390
+    }
+  },
+  {
+    "timestamp": "2025-08-28T09:46:43.780021",
+    "symbol": "BTCUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 113134.23,
+      "price_change_24h": 1.846,
+      "volume_24h": 1455270223.8509786,
+      "rsi_value": 73.1831244908878,
+      "rsi_signal": "73.18",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12771517
+    }
+  },
+  {
+    "timestamp": "2025-08-28T09:25:49.134837",
+    "symbol": "BTCUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 112903.1,
+      "price_change_24h": 1.508,
+      "volume_24h": 1439794357.991442,
+      "rsi_value": 71.33226498473198,
+      "rsi_signal": "71.33",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12817442
+    }
+  },
+  {
+    "timestamp": "2025-08-26T18:07:42.262361",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4577.93,
+      "price_change_24h": 5.058,
+      "volume_24h": 4123776960.509623,
+      "rsi_value": 68.55426211040195,
+      "rsi_signal": "68.55",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 72917
+    }
+  },
+  {
+    "timestamp": "2025-08-26T18:07:41.249346",
+    "symbol": "BTCUSDT",
+    "trigger": "PRECO_ACIMA_BANDA_SUPERIOR",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 111244.97,
+      "price_change_24h": 1.5,
+      "volume_24h": 2112214236.5110729,
+      "rsi_value": 61.382953007155386,
+      "rsi_signal": "61.38",
+      "bollinger_signal": "Acima da Banda",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12606591
+    }
+  },
+  {
+    "timestamp": "2025-08-26T17:59:56.186451",
+    "symbol": "ETHUSDT",
+    "trigger": "RSI_SOBRECOMPRA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4586.06,
+      "price_change_24h": 5.352,
+      "volume_24h": 4169756984.836008,
+      "rsi_value": 70.97083323095072,
+      "rsi_signal": "70.97",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 72893
+    }
+  },
+  {
+    "timestamp": "2025-08-26T17:59:56.185961",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4586.06,
+      "price_change_24h": 5.352,
+      "volume_24h": 4169756984.836008,
+      "rsi_value": 70.97083323095072,
+      "rsi_signal": "70.97",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 72893
+    }
+  },
+  {
+    "timestamp": "2025-08-26T17:59:55.348674",
+    "symbol": "BTCUSDT",
+    "trigger": "PRECO_ACIMA_BANDA_SUPERIOR",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 111321.58,
+      "price_change_24h": 1.589,
+      "volume_24h": 2161484374.188245,
+      "rsi_value": 65.23809088457291,
+      "rsi_signal": "65.24",
+      "bollinger_signal": "Acima da Banda",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "HiLo Buy",
+      "market_cap": 12586978
+    }
+  },
+  {
+    "timestamp": "2025-08-26T16:57:16.561644",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4592.64,
+      "price_change_24h": 3.249,
+      "volume_24h": 4434574856.903367,
+      "rsi_value": 69.89936180657841,
+      "rsi_signal": "69.90",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 72599
+    }
+  },
+  {
+    "timestamp": "2025-08-26T16:57:15.550706",
+    "symbol": "BTCUSDT",
+    "trigger": "PRECO_ACIMA_BANDA_SUPERIOR",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 111160.72,
+      "price_change_24h": 0.227,
+      "volume_24h": 2568895709.8700714,
+      "rsi_value": 60.907516202416225,
+      "rsi_signal": "60.91",
+      "bollinger_signal": "Acima da Banda",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "HiLo Buy",
+      "market_cap": 12588303
+    }
+  },
+  {
+    "timestamp": "2025-08-26T16:53:20.229188",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4588.23,
+      "price_change_24h": 2.739,
+      "volume_24h": 4448535510.674595,
+      "rsi_value": 69.64679092101689,
+      "rsi_signal": "69.65",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 72864
+    }
+  },
+  {
+    "timestamp": "2025-08-26T16:53:19.214673",
+    "symbol": "BTCUSDT",
+    "trigger": "PRECO_ACIMA_BANDA_SUPERIOR",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 111108.19,
+      "price_change_24h": -0.089,
+      "volume_24h": 2575332684.5611115,
+      "rsi_value": 60.445529489558616,
+      "rsi_signal": "60.45",
+      "bollinger_signal": "Acima da Banda",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12588303
+    }
+  },
+  {
+    "timestamp": "2025-08-26T16:48:15.104214",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4576.15,
+      "price_change_24h": 2.211,
+      "volume_24h": 4387397475.032189,
+      "rsi_value": 68.6079254556626,
+      "rsi_signal": "68.61",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 72864
+    }
+  },
+  {
+    "timestamp": "2025-08-26T16:48:14.239211",
+    "symbol": "BTCUSDT",
+    "trigger": "PRECO_ACIMA_BANDA_SUPERIOR",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 111050.9,
+      "price_change_24h": -0.261,
+      "volume_24h": 2570099560.05349,
+      "rsi_value": 59.911973953937206,
+      "rsi_signal": "59.91",
+      "bollinger_signal": "Acima da Banda",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12588303
+    }
+  },
+  {
+    "timestamp": "2025-08-26T16:44:39.981221",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4556.76,
+      "price_change_24h": 2.053,
+      "volume_24h": 4388019192.797912,
+      "rsi_value": 66.99324415255845,
+      "rsi_signal": "66.99",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 72569
+    }
+  },
+  {
+    "timestamp": "2025-08-26T16:44:39.530853",
+    "symbol": "BTCUSDT",
+    "trigger": "PRECO_ACIMA_BANDA_SUPERIOR",
+    "data": {
+      "symbol": "BTCUSDT",
+      "current_price": 110889.97,
+      "price_change_24h": -0.225,
+      "volume_24h": 2568615442.4030724,
+      "rsi_value": 58.35806370801473,
+      "rsi_signal": "58.36",
+      "bollinger_signal": "Acima da Banda",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 12588302
+    }
+  },
+  {
+    "timestamp": "2025-08-22T08:21:15.482481",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4282.01,
+      "price_change_24h": -0.334,
+      "volume_24h": 2103471140.4891,
+      "rsi_value": 59.081685621254266,
+      "rsi_signal": "59.08",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 68489
+    }
+  },
+  {
+    "timestamp": "2025-08-22T03:17:04.242076",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4309.02,
+      "price_change_24h": 0.294,
+      "volume_24h": 1852122932.073779,
+      "rsi_value": 67.88229900387614,
+      "rsi_signal": "67.88",
+      "bollinger_signal": "Acima da Banda",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 69269
+    }
+  },
+  {
+    "timestamp": "2025-08-22T03:11:36.279539",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4296.98,
+      "price_change_24h": 0.073,
+      "volume_24h": 1834714430.009954,
+      "rsi_value": 66.58717426180459,
+      "rsi_signal": "66.59",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 69269
+    }
+  },
+  {
+    "timestamp": "2025-08-21T23:13:18.765143",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4279.31,
+      "price_change_24h": -0.671,
+      "volume_24h": 1823800722.700448,
+      "rsi_value": 55.62507109543854,
+      "rsi_signal": "55.63",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Cruzamento de Alta",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 69136
+    }
+  },
+  {
+    "timestamp": "2025-08-21T10:10:00.481059",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4264.84,
+      "price_change_24h": 1.795,
+      "volume_24h": 2737943051.85349,
+      "rsi_value": 32.4336304979562,
+      "rsi_signal": "32.43",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 70225
+    }
+  },
+  {
+    "timestamp": "2025-08-21T10:04:56.416266",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4259.87,
+      "price_change_24h": 1.498,
+      "volume_24h": 2735384338.88129,
+      "rsi_value": 30.678659861539387,
+      "rsi_signal": "30.68",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 69777
+    }
+  },
+  {
+    "timestamp": "2025-08-21T09:59:52.655600",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4249.56,
+      "price_change_24h": 1.087,
+      "volume_24h": 2726142740.794752,
+      "rsi_value": 23.248012499425798,
+      "rsi_signal": "23.25",
+      "bollinger_signal": "Abaixo da Banda",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "HiLo Sell",
+      "market_cap": 70145
+    }
+  },
+  {
+    "timestamp": "2025-08-21T09:54:48.941809",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4246.05,
+      "price_change_24h": 1.015,
+      "volume_24h": 2728249792.312791,
+      "rsi_value": 22.87173922871763,
+      "rsi_signal": "22.87",
+      "bollinger_signal": "Abaixo da Banda",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "HiLo Sell",
+      "market_cap": 70145
+    }
+  },
+  {
+    "timestamp": "2025-08-21T07:42:22.174480",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4296.63,
+      "price_change_24h": 1.822,
+      "volume_24h": 2796016071.698818,
+      "rsi_value": 36.68146249942797,
+      "rsi_signal": "36.68",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 70182
+    }
+  },
+  {
+    "timestamp": "2025-08-21T07:37:18.494815",
+    "symbol": "ETHUSDT",
+    "trigger": "PRECO_ACIMA",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 4279.11,
+      "price_change_24h": 1.533,
+      "volume_24h": 2788145974.777695,
+      "rsi_value": 30.96687287966496,
+      "rsi_signal": "30.97",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "market_cap": 70182
+    }
+  },
+  {
+    "timestamp": "2025-07-30T18:15:45.115523",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3765.32)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3765.32,
+      "price_change_24h": -0.051,
+      "volume_24h": 1927238160.546767,
+      "rsi_value": 41.70761000109179,
+      "rsi_signal": "41.71",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 59539
+    }
+  },
+  {
+    "timestamp": "2025-07-30T18:10:42.400644",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3768.56)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3768.56,
+      "price_change_24h": 0.095,
+      "volume_24h": 1928432282.949805,
+      "rsi_value": 42.11996471625991,
+      "rsi_signal": "42.12",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 59859
+    }
+  },
+  {
+    "timestamp": "2025-07-30T18:05:54.815339",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3768.62)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3768.62,
+      "price_change_24h": 0.3,
+      "volume_24h": 1932252909.83469,
+      "rsi_value": 42.12925520182337,
+      "rsi_signal": "42.13",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 59507
+    }
+  },
+  {
+    "timestamp": "2025-07-30T17:48:12.148012",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3767.07)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3767.07,
+      "price_change_24h": 0.342,
+      "volume_24h": 1932612690.084934,
+      "rsi_value": 39.66422575459905,
+      "rsi_signal": "39.66",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 59475
+    }
+  },
+  {
+    "timestamp": "2025-07-30T17:43:09.372769",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3775.44)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3775.44,
+      "price_change_24h": 0.65,
+      "volume_24h": 1931276494.861901,
+      "rsi_value": 41.34662129314541,
+      "rsi_signal": "41.35",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 59652
+    }
+  },
+  {
+    "timestamp": "2025-07-30T17:34:19.922704",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3770.12)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3770.12,
+      "price_change_24h": 0.519,
+      "volume_24h": 1933965553.304014,
+      "rsi_value": 40.312378529276664,
+      "rsi_signal": "40.31",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 59730
+    }
+  },
+  {
+    "timestamp": "2025-07-30T17:29:17.422617",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3772.75)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3772.75,
+      "price_change_24h": 0.138,
+      "volume_24h": 1936145991.537643,
+      "rsi_value": 40.83712784588447,
+      "rsi_signal": "40.84",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 60075
+    }
+  },
+  {
+    "timestamp": "2025-07-30T15:05:27.932582",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3798.01)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3798.01,
+      "price_change_24h": 0.951,
+      "volume_24h": 1557226592.47222,
+      "rsi_value": 47.04060236370565,
+      "rsi_signal": "47.04",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 63869
+    }
+  },
+  {
+    "timestamp": "2025-07-30T15:00:25.453566",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3813.14)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3813.14,
+      "price_change_24h": 1.189,
+      "volume_24h": 1535141065.201419,
+      "rsi_value": 51.43359802196752,
+      "rsi_signal": "51.43",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 64072
+    }
+  },
+  {
+    "timestamp": "2025-07-26T21:31:07.161892",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3741.05)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3741.05,
+      "price_change_24h": 0.454,
+      "volume_24h": 1525470845.670226,
+      "rsi_value": 42.212518195051,
+      "rsi_signal": "42.21",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 62758
+    }
+  },
+  {
+    "timestamp": "2025-07-26T21:26:06.012267",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3740.00)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3740.0,
+      "price_change_24h": 0.419,
+      "volume_24h": 1526052796.337693,
+      "rsi_value": 41.98841698841709,
+      "rsi_signal": "41.99",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 62737
+    }
+  },
+  {
+    "timestamp": "2025-07-26T19:59:35.503697",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3750.41)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3750.41,
+      "price_change_24h": 0.805,
+      "volume_24h": 1537196715.791241,
+      "rsi_value": 44.92164337145266,
+      "rsi_signal": "44.92",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 62892
+    }
+  },
+  {
+    "timestamp": "2025-07-26T19:24:10.156697",
+    "symbol": "SOLUSDT",
+    "trigger": "Pre\u00e7o Abaixo de $299.00 (Atual: $186.41)",
+    "data": {
+      "symbol": "SOLUSDT",
+      "current_price": 186.41,
+      "price_change_24h": 0.621,
+      "volume_24h": 336168166.97877,
+      "rsi_value": 41.13636363636358,
+      "rsi_signal": "41.14",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 0.0
+    }
+  },
+  {
+    "timestamp": "2025-07-26T19:24:09.735777",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3778.60)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3778.6,
+      "price_change_24h": 1.616,
+      "volume_24h": 1486645760.953261,
+      "rsi_value": 56.16153846153848,
+      "rsi_signal": "56.16",
+      "bollinger_signal": "Acima da Banda",
+      "macd_signal": "Cruzamento de Alta",
+      "mme_cross": "Nenhum",
+      "market_cap": 63063
+    }
+  },
+  {
+    "timestamp": "2025-07-26T19:20:32.757966",
+    "symbol": "SOLUSDT",
+    "trigger": "Pre\u00e7o Abaixo de $299.00 (Atual: $186.23)",
+    "data": {
+      "symbol": "SOLUSDT",
+      "current_price": 186.23,
+      "price_change_24h": 0.496,
+      "volume_24h": 335109253.96793,
+      "rsi_value": 40.181611804767336,
+      "rsi_signal": "40.18",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 0.0
+    }
+  },
+  {
+    "timestamp": "2025-07-26T19:20:32.139717",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3763.20)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3763.2,
+      "price_change_24h": 1.218,
+      "volume_24h": 1460549597.853445,
+      "rsi_value": 52.65038218677307,
+      "rsi_signal": "52.65",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 62771
+    }
+  },
+  {
+    "timestamp": "2025-07-26T19:17:05.790355",
+    "symbol": "SOLUSDT",
+    "trigger": "Pre\u00e7o Abaixo de $299.00 (Atual: $185.92)",
+    "data": {
+      "symbol": "SOLUSDT",
+      "current_price": 185.92,
+      "price_change_24h": 0.313,
+      "volume_24h": 335003148.79278,
+      "rsi_value": 38.688524590163944,
+      "rsi_signal": "38.69",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 0.0
+    }
+  },
+  {
+    "timestamp": "2025-07-26T19:17:05.329516",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3756.42)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3756.42,
+      "price_change_24h": 0.997,
+      "volume_24h": 1460851558.586373,
+      "rsi_value": 47.18811176365893,
+      "rsi_signal": "47.19",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 62832
+    }
+  },
+  {
+    "timestamp": "2025-07-26T19:14:41.309406",
+    "symbol": "SOLUSDT",
+    "trigger": "Pre\u00e7o Abaixo de $299.00 (Atual: $186.19)",
+    "data": {
+      "symbol": "SOLUSDT",
+      "current_price": 186.19,
+      "price_change_24h": 0.372,
+      "volume_24h": 335613804.13359,
+      "rsi_value": 39.820022497187814,
+      "rsi_signal": "39.82",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 0.0
+    }
+  },
+  {
+    "timestamp": "2025-07-26T19:14:12.998494",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3760.60)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3760.6,
+      "price_change_24h": 0.986,
+      "volume_24h": 1465551099.388579,
+      "rsi_value": 49.043276108726815,
+      "rsi_signal": "49.04",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 62832
+    }
+  },
+  {
+    "timestamp": "2025-07-26T19:11:07.754896",
+    "symbol": "SOLUSDT",
+    "trigger": "Pre\u00e7o Abaixo de $299.00 (Atual: $186.51)",
+    "data": {
+      "symbol": "SOLUSDT",
+      "current_price": 186.51,
+      "price_change_24h": 0.773,
+      "volume_24h": 335280640.08854,
+      "rsi_value": 41.60090191657262,
+      "rsi_signal": "41.60",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 0.0
+    }
+  },
+  {
+    "timestamp": "2025-07-26T19:10:43.593775",
+    "symbol": "ETHUSDT",
+    "trigger": "Pre\u00e7o Acima de $3500.00 (Atual: $3760.69)",
+    "data": {
+      "symbol": "ETHUSDT",
+      "current_price": 3760.69,
+      "price_change_24h": 1.095,
+      "volume_24h": 1465743302.774183,
+      "rsi_value": 49.20224618949997,
+      "rsi_signal": "49.20",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "market_cap": 63219
+    }
+  }
+]
+>>>>>>> 5a3c4d9ed36f27d633ecb036c91a610a2d933fad

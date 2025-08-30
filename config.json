@@ -1,0 +1,174 @@
+{
+  "telegram_bot_token": "SEU_TOKEN_AQUI",
+  "telegram_chat_id": "SEU_CHAT_ID_AQUI",
+  "check_interval_seconds": 300,
+  "bitquery_api_key": "",
+  "market_analysis_config": {
+    "top_n": 60,
+    "min_market_cap": 5000000
+  },
+  "cryptos_to_monitor": [
+    {
+      "symbol": "BTCUSDT",
+      "alert_config": {
+        "notes": "Monitorando para o pr\u00f3ximo ciclo.",
+        "sound": "sons/cruzamentoAlta.wav",
+        "conditions": {
+          "preco_baixo": {
+            "enabled": false,
+            "value": 11400.0
+          },
+          "preco_alto": {
+            "enabled": false,
+            "value": 11900.0
+          },
+          "rsi_sobrevendido": {
+            "enabled": false,
+            "value": 30.0
+          },
+          "rsi_sobrecomprado": {
+            "enabled": true,
+            "value": 70.0
+          },
+          "bollinger_abaixo": {
+            "enabled": true
+          },
+          "bollinger_acima": {
+            "enabled": true
+          },
+          "macd_cruz_baixa": {
+            "enabled": true
+          },
+          "macd_cruz_alta": {
+            "enabled": true
+          },
+          "mme_cruz_morte": {
+            "enabled": true
+          },
+          "mme_cruz_dourada": {
+            "enabled": true
+          },
+          "fuga_capital_significativa": {
+            "enabled": false,
+            "value": "0.5, -2.0"
+          },
+          "entrada_capital_significativa": {
+            "enabled": false,
+            "value": "0.3, 1.0"
+          }
+        },
+        "triggered_conditions": []
+      }
+    },
+    {
+      "symbol": "ETHUSDT",
+      "alert_config": {
+        "notes": "",
+        "sound": "sons/sobrecomprado.wav",
+        "conditions": {
+          "preco_baixo": {
+            "enabled": true,
+            "value": 2800.0
+          },
+          "preco_alto": {
+            "enabled": true,
+            "value": 3500.0
+          },
+          "rsi_sobrevendido": {
+            "enabled": false,
+            "value": 30.0
+          },
+          "rsi_sobrecomprado": {
+            "enabled": true,
+            "value": 70.0
+          },
+          "bollinger_abaixo": {
+            "enabled": false
+          },
+          "bollinger_acima": {
+            "enabled": false
+          },
+          "macd_cruz_baixa": {
+            "enabled": false
+          },
+          "macd_cruz_alta": {
+            "enabled": false
+          },
+          "mme_cruz_morte": {
+            "enabled": false
+          },
+          "mme_cruz_dourada": {
+            "enabled": false
+          }
+        },
+        "triggered_conditions": [
+          "Pre\u00e7o Acima de $3500.00 (Atual: $3765.32)"
+        ]
+      }
+    },
+    {
+      "symbol": "SOLUSDT",
+      "alert_config": {
+        "notes": "",
+        "sound": "sons/Alerta.mp3",
+        "conditions": {
+          "preco_baixo": {
+            "enabled": false,
+            "value": 0.0
+          },
+          "preco_alto": {
+            "enabled": false,
+            "value": 0.0
+          },
+          "rsi_sobrevendido": {
+            "enabled": false,
+            "value": 30.0
+          },
+          "rsi_sobrecomprado": {
+            "enabled": false,
+            "value": 70.0
+          },
+          "bollinger_abaixo": {
+            "enabled": false
+          },
+          "bollinger_acima": {
+            "enabled": false
+          },
+          "macd_cruz_baixa": {
+            "enabled": false
+          },
+          "macd_cruz_alta": {
+            "enabled": true
+          },
+          "mme_cruz_morte": {
+            "enabled": true
+          },
+          "mme_cruz_dourada": {
+            "enabled": false
+          },
+          "fuga_capital_significativa": {
+            "enabled": false,
+            "value": "0.5, -2.0"
+          },
+          "entrada_capital_significativa": {
+            "enabled": false,
+            "value": "0.3, 1.0"
+          }
+        },
+        "triggered_conditions": []
+      }
+    }
+  ],
+  "sound_config": {
+    "default_alert": "D:/Importantes/MonitorCriptomoedas3.1/sons/cruzamentoAlta.wav",
+    "overbought": "sons/sobrecomprado.wav",
+    "overbought_alt": "sons/sobrecomprado2.wav",
+    "golden_cross": "sons/cruzamentoAlta.wav",
+    "death_cross": "sons/cruzamentoBaixa.wav",
+    "price_above": "sons/precoAcima.wav",
+    "price_below": "sons/precoAbaixo.wav",
+    "high_volume": "sons/volumeAlto.wav",
+    "multiple_alerts": "sons/multiplos_alertas.wav",
+    "critical_alert": "sons/alertaCritico.wav"
+  }
+}

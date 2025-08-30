@@ -1,0 +1,7 @@
+ttkbootstrap
+Pillow
+pandas
+numpy
+requests
+pycoingecko
+pyinstaller 
