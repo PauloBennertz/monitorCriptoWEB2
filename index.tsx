@@ -126,6 +126,12 @@ const formatLargeNumber = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 2 }).format(value);
 };
 
+const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
+
 const Tooltip = ({ text, children }: { text: string; children: React.ReactNode }) => (
     <div className="tooltip">
         {children}
@@ -610,11 +616,10 @@ const App = () => {
                 </div>
                 <div className="header-status-bar">
                     <div className="status-item"><span className="label">Moedas:</span><span className="value">{cryptoData.length}</span></div>
-                    <div className="status-item"><span className="label">Capitalização Total:</span><span className="value">{formatLargeNumber(cryptoData.reduce((acc, c) => acc + c.market_cap, 0))}</span></div>
                     <div className="status-item"><span className="label">Dominância BTC:</span><span className="value btc-dominance">45.8%</span></div>
                     <div className="status-item"><span className="label">Status API:</span><span className="api-ok">OK</span></div>
                     <div className="status-item"><span className="label">Última Atualização:</span><span className="value">{lastUpdated ? lastUpdated.toLocaleTimeString('pt-BR') : 'Carregando...'}</span></div>
-                    <div className="status-item"><span className="label">Próxima em:</span><span className="value">{secondsToNextUpdate}s</span></div>
+                    <div className="status-item"><span className="label">Próxima em:</span><span className="value">{formatTime(secondsToNextUpdate)}</span></div>
                 </div>
             </header>
             <main className="main-content">
