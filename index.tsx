@@ -51,6 +51,8 @@ interface GroundingChunk {
   };
 }
 
+type BasicCoin = Pick<CryptoData, 'symbol' | 'name'>;
+
 // --- ALERT CONFIGURATION CONSTANTS ---
 const ALERT_DEFINITIONS: Record<string, { name: string; description: string }> = {
     PRECO_ACIMA_ETH: { name: 'Preço Alvo Atingido (ETH)', description: 'Dispara quando o preço do Ethereum (ETH) ultrapassa um limiar pré-definido.' },
@@ -113,18 +115,9 @@ const INDICATOR_TOOLTIPS: Record<string, Record<string, string>> = {
 };
 
 
-// --- EXPANDED MOCK DATA POOL ---
-const ALL_MOCK_CRYPTO_DATA: CryptoData[] = [
-  { symbol: 'BTCUSDT', name: 'Bitcoin', price: 68134.75, price_change_24h: 1.5, volume_24h: 35_000_000_000, market_cap: 1_350_000_000_000, rsi_value: 65, bollinger_signal: 'Nenhum', macd_signal: 'Cruzamento de Alta', mme_cross: 'Nenhum', hilo_signal: 'HiLo Buy' },
-  { symbol: 'ETHUSDT', name: 'Ethereum', price: 3550.21, price_change_24h: -0.8, volume_24h: 18_000_000_000, market_cap: 426_000_000_000, rsi_value: 45, bollinger_signal: 'Nenhum', macd_signal: 'Nenhum', mme_cross: 'Nenhum', hilo_signal: 'Nenhum' },
-  { symbol: 'SOLUSDT', name: 'Solana', price: 165.80, price_change_24h: 5.2, volume_24h: 2_500_000_000, market_cap: 76_000_000_000, rsi_value: 72, bollinger_signal: 'Acima da Banda', macd_signal: 'Cruzamento de Alta', mme_cross: 'Nenhum', hilo_signal: 'HiLo Buy' },
-  { symbol: 'XRPUSDT', name: 'XRP', price: 0.5234, price_change_24h: -2.1, volume_24h: 1_200_000_000, market_cap: 29_000_000_000, rsi_value: 28, bollinger_signal: 'Abaixo da Banda', macd_signal: 'Cruzamento de Baixa', mme_cross: 'Cruz da Morte', hilo_signal: 'HiLo Sell' },
-  { symbol: 'DOGEUSDT', name: 'Dogecoin', price: 0.1588, price_change_24h: 3.5, volume_24h: 900_000_000, market_cap: 23_000_000_000, rsi_value: 55, bollinger_signal: 'Nenhum', macd_signal: 'Nenhum', mme_cross: 'Nenhum', hilo_signal: 'Nenhum' },
-  { symbol: 'ADAUSDT', name: 'Cardano', price: 0.4567, price_change_24h: -1.5, volume_24h: 400_000_000, market_cap: 16_000_000_000, rsi_value: 35, bollinger_signal: 'Nenhum', macd_signal: 'Cruzamento de Baixa', mme_cross: 'Nenhum', hilo_signal: 'Nenhum' },
-  { symbol: 'AVAXUSDT', name: 'Avalanche', price: 36.70, price_change_24h: 6.8, volume_24h: 600_000_000, market_cap: 14_500_000_000, rsi_value: 68, bollinger_signal: 'Nenhum', macd_signal: 'Cruzamento de Alta', mme_cross: 'Nenhum', hilo_signal: 'HiLo Buy' },
-  { symbol: 'LINKUSDT', name: 'Chainlink', price: 17.85, price_change_24h: 0.5, volume_24h: 350_000_000, market_cap: 10_500_000_000, rsi_value: 51, bollinger_signal: 'Nenhum', macd_signal: 'Nenhum', mme_cross: 'Nenhum', hilo_signal: 'Nenhum' },
-];
+const API_BASE_URL = 'http://localhost:8000';
 
+// --- HELPER FUNCTIONS ---
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD' }).format(value);
 };
@@ -229,12 +222,14 @@ const SettingsModal = ({
     isOpen,
     onClose,
     alertConfigs,
-    onConfigChange
+    onConfigChange,
+    allCoins
 }: {
     isOpen: boolean;
     onClose: () => void;
     alertConfigs: AlertConfigs;
     onConfigChange: (symbol: string, alertType: string, newConfig: AlertConfig) => void;
+    allCoins: BasicCoin[];
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCryptoSymbol, setSelectedCryptoSymbol] = useState<string | null>(null);
@@ -251,20 +246,20 @@ const SettingsModal = ({
 
     const filteredCryptos = useMemo(() => {
         if (!searchTerm.trim()) {
-            return ALL_MOCK_CRYPTO_DATA;
+            return allCoins;
         }
         const lowercasedFilter = searchTerm.toLowerCase().trim();
-        return ALL_MOCK_CRYPTO_DATA.filter(
+        return allCoins.filter(
             crypto =>
                 crypto.name.toLowerCase().includes(lowercasedFilter) ||
                 crypto.symbol.toLowerCase().replace('usdt', '').includes(lowercasedFilter)
         );
-    }, [searchTerm]);
+    }, [searchTerm, allCoins]);
 
     const selectedCrypto = useMemo(() => {
         if (!selectedCryptoSymbol) return null;
-        return ALL_MOCK_CRYPTO_DATA.find(c => c.symbol === selectedCryptoSymbol);
-    }, [selectedCryptoSymbol]);
+        return allCoins.find(c => c.symbol === selectedCryptoSymbol);
+    }, [selectedCryptoSymbol, allCoins]);
 
 
     if (!isOpen) return null;
@@ -388,23 +383,57 @@ const AlertsPanel = ({ isOpen, onClose, alerts, onClearAlerts }) => {
 };
 
 const App = () => {
-    const [cryptoData, setCryptoData] = useState<CryptoData[]>(ALL_MOCK_CRYPTO_DATA);
+    const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
+    const [allCoins, setAllCoins] = useState<BasicCoin[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [sortKey, setSortKey] = useState<keyof CryptoData | 'symbol'>('market_cap');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [mutedAlerts, setMutedAlerts] = useState<MutedAlert[]>([]);
     const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
     const [isAlertsPanelOpen, setAlertsPanelOpen] = useState(false);
+    const [alertConfigs, setAlertConfigs] = useState<AlertConfigs>({});
 
-    const [alertConfigs, setAlertConfigs] = useState<AlertConfigs>(() => {
+    const fetchCryptoData = async () => {
+        setIsLoading(true);
+        setError(null);
         try {
-            const savedConfigs = localStorage.getItem('cryptoAlertConfigs');
-            return savedConfigs ? JSON.parse(savedConfigs) : {};
-        } catch (error) {
-            console.error("Failed to parse alert configs from localStorage", error);
-            return {};
+            // 1. Fetch the configuration to know which coins to monitor
+            const configRes = await fetch(`${API_BASE_URL}/api/alert_configs`);
+            if (!configRes.ok) throw new Error('Failed to fetch configuration');
+            const config = await configRes.json();
+            const symbolsToMonitor = config.cryptos_to_monitor.map((c: any) => c.symbol);
+
+            // 2. Fetch data for those specific coins
+            if (symbolsToMonitor.length > 0) {
+                const query = new URLSearchParams();
+                symbolsToMonitor.forEach((s: string) => query.append('symbols', s));
+                const dataRes = await fetch(`${API_BASE_URL}/api/crypto_data?${query.toString()}`);
+                if (!dataRes.ok) throw new Error('Failed to fetch crypto data');
+                const data: CryptoData[] = await dataRes.json();
+                setCryptoData(data);
+            } else {
+                setCryptoData([]);
+            }
+             // Also fetch all coins for the settings modal
+            const allCoinsRes = await fetch(`${API_BASE_URL}/api/all_tradable_coins`);
+            if (!allCoinsRes.ok) throw new Error('Failed to fetch all tradable coins');
+            const allCoinsData: string[] = await allCoinsRes.json();
+            setAllCoins(allCoinsData.map(symbol => ({ symbol, name: symbol.replace('USDT', '') })));
+
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unknown error occurred');
+            console.error(err);
+        } finally {
+            setIsLoading(false);
         }
-    });
+    };
+
+    useEffect(() => {
+        fetchCryptoData();
+    }, []);
+
 
     const handleConfigChange = (symbol: string, alertType: string, newConfig: AlertConfig) => {
         setAlertConfigs(prev => {
@@ -415,7 +444,8 @@ const App = () => {
                     [alertType]: newConfig,
                 }
             };
-            localStorage.setItem('cryptoAlertConfigs', JSON.stringify(newConfigs));
+            // TODO: POST new configs to the backend API
+            console.log("Config changed, would post to backend:", newConfigs);
             return newConfigs;
         });
     };
@@ -428,21 +458,6 @@ const App = () => {
         });
         return sorted;
     }, [cryptoData, sortKey, sortOrder]);
-
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCryptoData(prevData =>
-                prevData.map(coin => {
-                    const priceChange = coin.price * (Math.random() - 0.5) * 0.01; // up to 0.5% change
-                    const newPrice = Math.max(0, coin.price + priceChange);
-                    return { ...coin, lastPrice: coin.price, price: newPrice };
-                })
-            );
-        }, 2000); // Update every 2 seconds
-
-        return () => clearInterval(interval);
-    }, []);
 
     const triggerAlert = useCallback((symbol: string, alertType: string, data: CryptoData) => {
         const now = Date.now();
@@ -478,6 +493,14 @@ const App = () => {
             if (data.macd_signal === 'Cruzamento de Baixa') triggerAlert(data.symbol, 'MACD_BAIXA', data);
         });
     }, [cryptoData, triggerAlert]);
+
+    if (isLoading) {
+        return <div className="loading-container">Carregando dados do mercado...</div>;
+    }
+
+    if (error) {
+        return <div className="error-container">Erro ao carregar dados: {error}</div>;
+    }
 
     return (
         <div className="app-container">
@@ -534,6 +557,7 @@ const App = () => {
                 onClose={() => setSettingsModalOpen(false)}
                 alertConfigs={alertConfigs}
                 onConfigChange={handleConfigChange}
+                allCoins={allCoins}
             />
             <AlertsPanel
                 isOpen={isAlertsPanelOpen}

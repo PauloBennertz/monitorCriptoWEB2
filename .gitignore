@@ -64,3 +64,9 @@ test_*.py
 
 # Arquivos de documentação temporários
 docs/temp/
+
+# Node / Frontend
+node_modules/
+dist/
+.env
+.env*.local

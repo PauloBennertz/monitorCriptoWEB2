@@ -4,13 +4,12 @@ import time
 import logging
 import copy
 from datetime import datetime, timedelta
-import robust_services
+from . import robust_services
 import os
-from indicators import calculate_rsi, calculate_bollinger_bands, calculate_macd, calculate_emas, calculate_hilo_signals
-from notification_service import send_telegram_alert
+from .indicators import calculate_rsi, calculate_bollinger_bands, calculate_macd, calculate_emas, calculate_hilo_signals
+from .notification_service import send_telegram_alert
 from pycoingecko import CoinGeckoAPI
-from app_state import load_coin_mapping_cache, save_coin_mapping_cache
-from core_components import ALERT_SUMMARIES
+from .app_state import load_coin_mapping_cache, save_coin_mapping_cache
 
 cg_client = CoinGeckoAPI()
 
@@ -169,42 +168,38 @@ def _get_sound_for_trigger(trigger_key, sound_config):
 
     return os.path.join('sons', sound_file)
 
-def _check_and_trigger_alerts(symbol, alert_config, analysis_data, data_queue, sound_config):
-    """Verifica e dispara alertas para um símbolo com base nas condições configuradas."""
+def _check_and_trigger_alerts(symbol, alert_config, analysis_data):
+    """
+    Verifica as condições de alerta para um símbolo e retorna uma lista de alertas disparados.
+    Refatorado para não ter dependências de GUI (data_queue, sound_config).
+    """
+    triggered_alerts = []
     conditions = alert_config.get('conditions', {})
-
     triggered_conditions = alert_config.get('triggered_conditions', {})
-    if isinstance(triggered_conditions, list):
+    if isinstance(triggered_conditions, list): # Legacy config compatibility
         triggered_conditions = {}
 
     alert_cooldown_minutes = alert_config.get('alert_cooldown_minutes', 60)
+    current_price = analysis_data.get('current_price', 0)
+    rsi = analysis_data.get('rsi_value', 50)
 
-    current_price = analysis_data['current_price']
-    rsi = analysis_data['rsi_value']
-    volume_24h = analysis_data['volume_24h']
-    price_change_24h = analysis_data['price_change_24h']
-    market_cap = analysis_data.get('market_cap')
-
-    # Dicionário para mapear condição a chave e mensagem
+    # Define as condições de alerta
     alert_definitions = {
         'preco_baixo': {'key': 'PRECO_ABAIXO', 'msg': f"Preço Abaixo de ${conditions.get('preco_baixo', {}).get('value', 0):.2f}"},
         'preco_alto': {'key': 'PRECO_ACIMA', 'msg': f"Preço Acima de ${conditions.get('preco_alto', {}).get('value', 0):.2f}"},
-        'rsi_sobrevendido': {'key': 'RSI_SOBREVENDA', 'msg': f"RSI Sobrevendido (<= {conditions.get('rsi_sobrevendido', {}).get('value', 30):.1f})"},
-        'rsi_sobrecomprado': {'key': 'RSI_SOBRECOMPRA', 'msg': f"RSI Sobrecomprado (>= {conditions.get('rsi_sobrecomprado', {}).get('value', 70):.1f})"},
-        'bollinger_abaixo': {'key': 'PRECO_ABAIXO_BANDA_INFERIOR', 'msg': "Preço Abaixo da Banda Inferior de Bollinger"},
-        'bollinger_acima': {'key': 'PRECO_ACIMA_BANDA_SUPERIOR', 'msg': "Preço Acima da Banda Superior de Bollinger"},
+        'rsi_sobrevendido': {'key': 'RSI_SOBREVENDA', 'msg': f"RSI em Sobrevenda (<= {conditions.get('rsi_sobrevendido', {}).get('value', 30):.1f})"},
+        'rsi_sobrecomprado': {'key': 'RSI_SOBRECOMPRA', 'msg': f"RSI em Sobrecompra (>= {conditions.get('rsi_sobrecomprado', {}).get('value', 70):.1f})"},
+        'bollinger_abaixo': {'key': 'PRECO_ABAIXO_BANDA_INFERIOR', 'msg': "Preço Abaixo da Banda de Bollinger"},
+        'bollinger_acima': {'key': 'PRECO_ACIMA_BANDA_SUPERIOR', 'msg': "Preço Acima da Banda de Bollinger"},
         'macd_cruz_baixa': {'key': 'CRUZAMENTO_MACD_BAIXA', 'msg': "MACD: Cruzamento de Baixa"},
         'macd_cruz_alta': {'key': 'CRUZAMENTO_MACD_ALTA', 'msg': "MACD: Cruzamento de Alta"},
         'mme_cruz_morte': {'key': 'CRUZ_DA_MORTE', 'msg': "MME: Cruz da Morte (50/200)"},
         'mme_cruz_dourada': {'key': 'CRUZ_DOURADA', 'msg': "MME: Cruz Dourada (50/200)"},
-        'fuga_capital': {'key': 'FUGA_CAPITAL', 'msg': "Detectada possível fuga de capital significativa"},
-        'entrada_capital': {'key': 'ENTRADA_CAPITAL', 'msg': "Detectada possível entrada de capital significativa"},
         'hilo_compra': {'key': 'HILO_COMPRA', 'msg': "HiLo: Sinal de Compra"},
         'hilo_venda': {'key': 'HILO_VENDA', 'msg': "HiLo: Sinal de Venda"},
     }
 
     active_triggers = []
-
     # Lógica de verificação de condições
     if conditions.get('preco_baixo', {}).get('enabled') and current_price <= conditions['preco_baixo']['value']: active_triggers.append(alert_definitions['preco_baixo'])
     if conditions.get('preco_alto', {}).get('enabled') and current_price >= conditions['preco_alto']['value']: active_triggers.append(alert_definitions['preco_alto'])
@@ -219,68 +214,33 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, data_queue, s
     if conditions.get('hilo_compra', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Buy": active_triggers.append(alert_definitions['hilo_compra'])
     if conditions.get('hilo_venda', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Sell": active_triggers.append(alert_definitions['hilo_venda'])
 
-    fuga_capital_config = conditions.get('fuga_capital_significativa', {})
-    if fuga_capital_config.get('enabled') and market_cap is not None and market_cap > 0:
-        try:
-            percent_mcap_str, percent_price_str = fuga_capital_config['value'].split(',')
-            if (volume_24h / market_cap * 100) > float(percent_mcap_str) and price_change_24h < float(percent_price_str):
-                active_triggers.append(alert_definitions['fuga_capital'])
-        except (ValueError, TypeError):
-            logging.warning(f"Configuração de alerta 'fuga de capital' inválida para {symbol}.")
-
-    entrada_capital_config = conditions.get('entrada_capital_significativa', {})
-    if entrada_capital_config.get('enabled') and market_cap is not None and market_cap > 0:
-        try:
-            percent_mcap_str, percent_price_str = entrada_capital_config['value'].split(',')
-            if (volume_24h / market_cap * 100) > float(percent_mcap_str) and price_change_24h > float(percent_price_str):
-                active_triggers.append(alert_definitions['entrada_capital'])
-        except (ValueError, TypeError):
-            logging.warning(f"Configuração de alerta 'entrada de capital' inválida para {symbol}.")
-
     now = datetime.now()
     for trigger in active_triggers:
         trigger_key = trigger['key']
-
         last_triggered_str = triggered_conditions.get(trigger_key)
         if last_triggered_str:
             try:
                 last_triggered_time = datetime.fromisoformat(last_triggered_str)
                 if now - last_triggered_time < timedelta(minutes=alert_cooldown_minutes):
-                    continue
+                    continue  # Pula o alerta se estiver em cooldown
             except ValueError:
-                logging.warning(f"Formato de data inválido para a última ativação do alerta '{trigger_key}' para {symbol}. Ignorando cooldown para este ciclo.")
+                logging.warning(f"Formato de data inválido para cooldown: {last_triggered_str}")
 
-        market_cap_str = f"${market_cap:,.0f}" if market_cap is not None else "N/A"
-        user_notes = alert_config.get('notes', '').strip()
-        summary = ALERT_SUMMARIES.get(trigger_key, "Consulte o guia para mais detalhes.")
-
-        observacoes = summary
-        if user_notes:
-            observacoes = f"{user_notes}\n\nAnálise: {summary}"
-
-        formatted_message = (
-            f"🚨 ALERTA: {symbol} 🚨\n\n"
-            f"Disparo: {trigger['msg']} (Atual: ${current_price:,.2f})\n"
-            f"Preço Atual: ${current_price:,.2f}\n"
-            f"Volume 24h: ${volume_24h:,.0f}\n"
-            f"Capitalização de Mercado: {market_cap_str}\n"
-            f"Variação 24h: {price_change_24h:.2f}%\n\n"
-            f"Observações: {observacoes}"
-        )
-
-        sound_path = _get_sound_for_trigger(trigger_key, sound_config)
-        alert_payload = {
+        # Se não estiver em cooldown, adiciona à lista de retorno
+        alert_info = {
+            'timestamp': now.isoformat(),
             'symbol': symbol,
-            'message': formatted_message,
-            'sound': sound_path,
-            'trigger': trigger_key,
-            'analysis_data': analysis_data
+            'trigger_key': trigger_key,
+            'message': trigger['msg'],
+            'analysis_snapshot': analysis_data
         }
-        data_queue.put({'type': 'alert', 'payload': alert_payload})
+        triggered_alerts.append(alert_info)
+
+        # Atualiza o timestamp do último disparo para o cooldown
         triggered_conditions[trigger_key] = now.isoformat()
 
-    active_trigger_keys = {t['key'] for t in active_triggers}
-    alert_config['triggered_conditions'] = {k: v for k, v in triggered_conditions.items() if k in active_trigger_keys}
+    # Retorna os alertas disparados e o estado atualizado dos cooldowns
+    return triggered_alerts, triggered_conditions
 
 def _analyze_symbol(symbol, ticker_data, market_cap=None):
     """Coleta e analisa todos os dados técnicos para um único símbolo."""
@@ -318,56 +278,76 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None):
 
     return analysis_result
 
-def run_monitoring_cycle(config, data_queue, stop_event, coingecko_mapping):
-    """Ciclo principal de monitoramento que roda em segundo plano para buscar e analisar dados."""
-    logging.info("Ciclo de monitoramento iniciado.")
+def run_monitoring_cycle(config, coingecko_mapping):
+    """
+    Executa um único ciclo de monitoramento para todas as moedas configuradas.
+    Retorna uma lista de dados analisados e uma lista de alertas disparados.
+    Refatorado para ser uma função one-shot para uso da API.
+    """
+    logging.info("Executando ciclo de monitoramento sob demanda.")
 
-    while not stop_event.is_set():
-        check_interval = config.get("check_interval_seconds", 300)
-        data_queue.put({'type': 'start_countdown', 'payload': {'seconds': check_interval}})
-        monitored_cryptos = copy.deepcopy(config.get("cryptos_to_monitor", []))
-        sound_config = config.get('sound_config', {})
-        if not monitored_cryptos:
-            time.sleep(5)
-            continue
+    all_analysis_data = []
+    all_triggered_alerts = []
 
-        ticker_data = get_ticker_data()
-        market_caps_data = get_market_caps_coingecko([c['symbol'] for c in monitored_cryptos], coingecko_mapping)
-
-        if not ticker_data:
-            logging.warning("Não foi possível obter os dados do ticker. Pulando este ciclo.")
-            time.sleep(config.get("check_interval_seconds", 300))
-            continue
-
-        for crypto_config in monitored_cryptos:
-            if stop_event.is_set(): break
-            symbol = crypto_config.get('symbol')
-            if not symbol or not robust_services.DataValidator.validate_symbol(symbol): continue
-
-            analysis_data = _analyze_symbol(symbol, ticker_data, market_caps_data.get(symbol))
-            data_queue.put({'type': 'data', 'payload': analysis_data})
-
-            if alert_config := crypto_config.get('alert_config'):
-                _check_and_trigger_alerts(symbol, alert_config, analysis_data, data_queue, sound_config)
-
-            time.sleep(0.2)
-
-        if not stop_event.is_set():
-            logging.info(f"Ciclo de monitoramento completo. Aguardando {config.get('check_interval_seconds', 300)}s.")
-            time.sleep(config.get("check_interval_seconds", 300))
-    logging.info("Ciclo de monitoramento terminado.")
-
-def run_single_symbol_update(symbol, config, data_queue, coingecko_mapping):
-    """Executa uma atualização de dados para uma única moeda, usado para refresh manual."""
-    logging.info(f"Iniciando atualização forçada para {symbol}...")
-    crypto_config = next((c for c in config.get("cryptos_to_monitor", []) if c['symbol'] == symbol), None)
-    if not crypto_config: return
+    monitored_cryptos = copy.deepcopy(config.get("cryptos_to_monitor", []))
+    if not monitored_cryptos:
+        return all_analysis_data, all_triggered_alerts
 
     ticker_data = get_ticker_data()
+    if not ticker_data:
+        logging.error("Não foi possível obter dados do ticker da Binance. Abortando ciclo.")
+        return [], []
+
+    symbols = [c['symbol'] for c in monitored_cryptos]
+    market_caps_data = get_market_caps_coingecko(symbols, coingecko_mapping)
+
+    for crypto_config in monitored_cryptos:
+        symbol = crypto_config.get('symbol')
+        if not symbol or not robust_services.DataValidator.validate_symbol(symbol):
+            continue
+
+        analysis_data = _analyze_symbol(symbol, ticker_data, market_caps_data.get(symbol))
+        all_analysis_data.append(analysis_data)
+
+        if alert_config := crypto_config.get('alert_config'):
+            triggered_alerts, updated_cooldowns = _check_and_trigger_alerts(symbol, alert_config, analysis_data)
+            if triggered_alerts:
+                all_triggered_alerts.extend(triggered_alerts)
+                # Atualiza o estado do cooldown na configuração principal
+                alert_config['triggered_conditions'] = updated_cooldowns
+
+        time.sleep(0.1) # Pequeno delay para não sobrecarregar a API
+
+    logging.info(f"Ciclo de monitoramento sob demanda completo. {len(all_analysis_data)} moedas analisadas, {len(all_triggered_alerts)} alertas gerados.")
+    return all_analysis_data, all_triggered_alerts
+
+def run_single_symbol_update(symbol, config, coingecko_mapping):
+    """
+    Executa uma atualização de dados para uma única moeda.
+    Retorna os dados de análise e quaisquer alertas disparados.
+    """
+    logging.info(f"Iniciando atualização sob demanda para {symbol}...")
+    crypto_config = next((c for c in config.get("cryptos_to_monitor", []) if c['symbol'] == symbol), None)
+    if not crypto_config:
+        logging.warning(f"Nenhuma configuração encontrada para {symbol}. Não é possível atualizar.")
+        return None, None
+
+    ticker_data = get_ticker_data()
+    if not ticker_data:
+        logging.error(f"Não foi possível obter dados do ticker para a atualização de {symbol}.")
+        return None, None
+
     market_caps_data = get_market_caps_coingecko([symbol], coingecko_mapping)
     analysis_data = _analyze_symbol(symbol, ticker_data, market_caps_data.get(symbol))
-    data_queue.put({'type': 'data', 'payload': analysis_data})
-    logging.info(f"Atualização para {symbol} enviada para a interface.")
+
+    triggered_alerts = []
+    if alert_config := crypto_config.get('alert_config'):
+        triggered_alerts, updated_cooldowns = _check_and_trigger_alerts(symbol, alert_config, analysis_data)
+        if triggered_alerts:
+             alert_config['triggered_conditions'] = updated_cooldowns
+
+    logging.info(f"Atualização para {symbol} completa. {len(triggered_alerts)} alertas gerados.")
+    return analysis_data, triggered_alerts
 
 def get_btc_dominance():
     """Busca a dominância de mercado do BTC a partir da CoinGecko."""

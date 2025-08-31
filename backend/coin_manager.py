@@ -4,7 +4,7 @@ import time
 import logging
 from datetime import datetime, timedelta
 from pycoingecko import CoinGeckoAPI
-from core_components import get_application_path
+from .app_state import get_application_path
 
 class CoinManager:
     def __init__(self, update_interval_hours=24):
