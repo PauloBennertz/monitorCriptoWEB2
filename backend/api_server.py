@@ -106,7 +106,7 @@ async def get_crypto_data(symbols: List[str] = Query(..., description="A list of
         for symbol in symbols:
             market_cap = market_caps.get(symbol)
             # The _analyze_symbol function contains the core logic we need.
-            analysis = _analyze_symbol(symbol, ticker_data, market_cap)
+            analysis = _analyze_symbol(symbol, ticker_data, market_cap, coingecko_mapping)
             results.append(analysis)
 
         return results
