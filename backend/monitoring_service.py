@@ -180,7 +180,7 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data):
         triggered_conditions = {}
 
     alert_cooldown_minutes = alert_config.get('alert_cooldown_minutes', 60)
-    current_price = analysis_data.get('current_price', 0)
+    current_price = analysis_data.get('price', 0)
     rsi = analysis_data.get('rsi_value', 50)
 
     # Define as condições de alerta
@@ -242,19 +242,34 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data):
     # Retorna os alertas disparados e o estado atualizado dos cooldowns
     return triggered_alerts, triggered_conditions
 
-def _analyze_symbol(symbol, ticker_data, market_cap=None):
+def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None):
     """Coleta e analisa todos os dados técnicos para um único símbolo."""
-    analysis_result = {'symbol': symbol, 'current_price': 0.0, 'price_change_24h': 0.0, 'volume_24h': 0.0,
-                       'rsi_value': 0.0, 'rsi_signal': "N/A", 'bollinger_signal': "Nenhum",
-                       'macd_signal': "Nenhum", 'mme_cross': "Nenhum", 'hilo_signal': "Nenhum", 'market_cap': market_cap}
+    base_asset = symbol.replace('USDT', '')
+    coin_name = coingecko_mapping.get(base_asset, base_asset) if coingecko_mapping else base_asset
+
+    analysis_result = {
+        'symbol': symbol,
+        'name': coin_name,
+        'price': 0.0,
+        'price_change_24h': 0.0,
+        'volume_24h': 0.0,
+        'market_cap': market_cap or 0,
+        'rsi_value': 0.0,
+        'rsi_signal': "N/A",
+        'bollinger_signal': "Nenhum",
+        'macd_signal': "Nenhum",
+        'mme_cross': "Nenhum",
+        'hilo_signal': "Nenhum"
+    }
 
     symbol_ticker = ticker_data.get(symbol, {})
-    analysis_result['current_price'] = robust_services.DataValidator.safe_price(symbol_ticker.get('lastPrice'))
+    analysis_result['price'] = robust_services.DataValidator.safe_price(symbol_ticker.get('lastPrice'))
     analysis_result['price_change_24h'] = robust_services.DataValidator.safe_float(symbol_ticker.get('priceChangePercent'))
     analysis_result['volume_24h'] = robust_services.DataValidator.safe_float(symbol_ticker.get('quoteVolume'))
 
     df = get_klines_data(symbol)
-    if df is None or df.empty: return analysis_result
+    if df is None or df.empty:
+        return analysis_result
 
     rsi_value, _, _ = calculate_rsi(df)
     upper_band, lower_band, _, _ = calculate_bollinger_bands(df)
@@ -266,15 +281,19 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None):
     analysis_result['rsi_value'] = rsi_value if rsi_value else 0.0
     analysis_result['rsi_signal'] = f"{rsi_value:.2f}" if rsi_value else "N/A"
 
-    if upper_band > 0 and analysis_result['current_price'] > 0:
-        if analysis_result['current_price'] > upper_band: analysis_result['bollinger_signal'] = "Acima da Banda"
-        elif analysis_result['current_price'] < lower_band: analysis_result['bollinger_signal'] = "Abaixo da Banda"
+    if upper_band > 0 and analysis_result['price'] > 0:
+        if analysis_result['price'] > upper_band:
+            analysis_result['bollinger_signal'] = "Acima da Banda"
+        elif analysis_result['price'] < lower_band:
+            analysis_result['bollinger_signal'] = "Abaixo da Banda"
 
     analysis_result['macd_signal'] = macd_cross
 
     if 50 in emas and 200 in emas and len(emas[50]) > 1 and len(emas[200]) > 1:
-        if emas[50].iloc[-2] < emas[200].iloc[-2] and emas[50].iloc[-1] > emas[200].iloc[-1]: analysis_result['mme_cross'] = "Cruz Dourada"
-        elif emas[50].iloc[-2] > emas[200].iloc[-2] and emas[50].iloc[-1] < emas[200].iloc[-1]: analysis_result['mme_cross'] = "Cruz da Morte"
+        if emas[50].iloc[-2] < emas[200].iloc[-2] and emas[50].iloc[-1] > emas[200].iloc[-1]:
+            analysis_result['mme_cross'] = "Cruz Dourada"
+        elif emas[50].iloc[-2] > emas[200].iloc[-2] and emas[50].iloc[-1] < emas[200].iloc[-1]:
+            analysis_result['mme_cross'] = "Cruz da Morte"
 
     return analysis_result
 
@@ -306,7 +325,7 @@ def run_monitoring_cycle(config, coingecko_mapping):
         if not symbol or not robust_services.DataValidator.validate_symbol(symbol):
             continue
 
-        analysis_data = _analyze_symbol(symbol, ticker_data, market_caps_data.get(symbol))
+        analysis_data = _analyze_symbol(symbol, ticker_data, market_caps_data.get(symbol), coingecko_mapping)
         all_analysis_data.append(analysis_data)
 
         if alert_config := crypto_config.get('alert_config'):
@@ -338,7 +357,7 @@ def run_single_symbol_update(symbol, config, coingecko_mapping):
         return None, None
 
     market_caps_data = get_market_caps_coingecko([symbol], coingecko_mapping)
-    analysis_data = _analyze_symbol(symbol, ticker_data, market_caps_data.get(symbol))
+    analysis_data = _analyze_symbol(symbol, ticker_data, market_caps_data.get(symbol), coingecko_mapping)
 
     triggered_alerts = []
     if alert_config := crypto_config.get('alert_config'):
