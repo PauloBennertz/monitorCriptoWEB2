@@ -394,6 +394,9 @@ const App = () => {
     const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
     const [isAlertsPanelOpen, setAlertsPanelOpen] = useState(false);
     const [alertConfigs, setAlertConfigs] = useState<AlertConfigs>({});
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+    const [secondsToNextUpdate, setSecondsToNextUpdate] = useState(180);
+    const REFRESH_INTERVAL_SECONDS = 180; // 3 minutes
 
     const fetchCryptoData = useCallback(async (isInitialLoad = false) => {
         if (isInitialLoad) {
@@ -413,13 +416,8 @@ const App = () => {
                         newAlertConfigs[symbol] = {};
                         const conditions = crypto.alert_config.conditions;
                         const alertKeyMapping: { [key: string]: string } = {
-                            'RSI_SOBREVENDA': 'rsi_sobrevendido',
-                            'RSI_SOBRECOMPRA': 'rsi_sobrecomprado',
-                            'HILO_COMPRA': 'hilo_compra',
-                            'CRUZ_DOURADA': 'mme_cruz_dourada',
-                            'CRUZ_DA_MORTE': 'mme_cruz_morte',
-                            'MACD_ALTA': 'macd_cruz_alta',
-                            'MACD_BAIXA': 'macd_cruz_baixa',
+                            'RSI_SOBREVENDA': 'rsi_sobrevendido', 'RSI_SOBRECOMPRA': 'rsi_sobrecomprado', 'HILO_COMPRA': 'hilo_compra',
+                            'CRUZ_DOURADA': 'mme_cruz_dourada', 'CRUZ_DA_MORTE': 'mme_cruz_morte', 'MACD_ALTA': 'macd_cruz_alta', 'MACD_BAIXA': 'macd_cruz_baixa',
                         };
                         Object.entries(alertKeyMapping).forEach(([feKey, beKey]) => {
                             if (conditions[beKey]) {
@@ -445,14 +443,17 @@ const App = () => {
 
                 setCryptoData(prevData => {
                     const prevDataMap = new Map(prevData.map(d => [d.symbol, d]));
-                    return newData.map(d => ({
-                        ...d,
-                        lastPrice: prevDataMap.get(d.symbol)?.price ?? d.price,
-                    }));
+                    return newData.map(d => ({ ...d, lastPrice: prevDataMap.get(d.symbol)?.price ?? d.price }));
                 });
+                localStorage.setItem('cryptoDataCache', JSON.stringify(newData));
             } else {
                 setCryptoData([]);
+                localStorage.removeItem('cryptoDataCache');
             }
+
+            const fetchTime = new Date();
+            setLastUpdated(fetchTime);
+            localStorage.setItem('lastFetchTimestamp', fetchTime.getTime().toString());
 
             if (isInitialLoad) {
                 const allCoinsRes = await fetch(`${API_BASE_URL}/api/all_tradable_coins`);
@@ -469,17 +470,60 @@ const App = () => {
                 setIsLoading(false);
             }
         }
-    }, []); // Empty dependency array, as setAlertConfigs functional update removes the need for alertConfigs dependency
+    }, []);
 
     useEffect(() => {
-        fetchCryptoData(true); // Initial fetch
+        let timeoutId: NodeJS.Timeout | undefined;
+        let intervalId: NodeJS.Timeout | undefined;
 
-        const intervalId = setInterval(() => {
-            fetchCryptoData(false); // Subsequent fetches
-        }, 30000); // Refresh every 30 seconds
+        const startFetchingLoop = (delay: number) => {
+            timeoutId = setTimeout(() => {
+                fetchCryptoData(false);
+                intervalId = setInterval(() => fetchCryptoData(false), REFRESH_INTERVAL_SECONDS * 1000);
+            }, delay);
+        };
 
-        return () => clearInterval(intervalId); // Cleanup on unmount
+        const cachedDataJSON = localStorage.getItem('cryptoDataCache');
+        const cachedTimestamp = localStorage.getItem('lastFetchTimestamp');
+
+        if (cachedDataJSON && cachedTimestamp) {
+            const lastFetchTime = parseInt(cachedTimestamp, 10);
+            const now = new Date().getTime();
+            const ageInSeconds = (now - lastFetchTime) / 1000;
+
+            if (ageInSeconds < REFRESH_INTERVAL_SECONDS) {
+                console.log("Loading data from fresh cache.");
+                setCryptoData(JSON.parse(cachedDataJSON));
+                setLastUpdated(new Date(lastFetchTime));
+                setIsLoading(false);
+                const timeToWait = (REFRESH_INTERVAL_SECONDS - ageInSeconds) * 1000;
+                startFetchingLoop(timeToWait);
+            } else {
+                fetchCryptoData(true); // Fetch immediately if cache is stale
+                startFetchingLoop(REFRESH_INTERVAL_SECONDS * 1000);
+            }
+        } else {
+            fetchCryptoData(true); // Fetch immediately if no cache
+            startFetchingLoop(REFRESH_INTERVAL_SECONDS * 1000);
+        }
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+            if (intervalId) clearInterval(intervalId);
+        };
     }, [fetchCryptoData]);
+
+    useEffect(() => {
+        const timerId = setInterval(() => {
+            if (lastUpdated) {
+                const now = new Date();
+                const secondsSinceUpdate = Math.floor((now.getTime() - lastUpdated.getTime()) / 1000);
+                const secondsRemaining = REFRESH_INTERVAL_SECONDS - secondsSinceUpdate;
+                setSecondsToNextUpdate(secondsRemaining > 0 ? secondsRemaining : 0);
+            }
+        }, 1000);
+        return () => clearInterval(timerId);
+    }, [lastUpdated]);
 
 
     const handleConfigChange = (symbol: string, alertType: string, newConfig: AlertConfig) => {
@@ -491,19 +535,17 @@ const App = () => {
                     [alertType]: newConfig,
                 }
             };
-            // TODO: POST new configs to the backend API
             console.log("Config changed, would post to backend:", newConfigs);
             return newConfigs;
         });
     };
 
     const sortedData = useMemo(() => {
-        const sorted = [...cryptoData].sort((a, b) => {
+        return [...cryptoData].sort((a, b) => {
             if (a[sortKey] < b[sortKey]) return sortOrder === 'asc' ? -1 : 1;
             if (a[sortKey] > b[sortKey]) return sortOrder === 'asc' ? 1 : -1;
             return 0;
         });
-        return sorted;
     }, [cryptoData, sortKey, sortOrder]);
 
     const triggerAlert = useCallback((symbol: string, alertType: string, data: CryptoData) => {
@@ -571,6 +613,8 @@ const App = () => {
                     <div className="status-item"><span className="label">Capitalização Total:</span><span className="value">{formatLargeNumber(cryptoData.reduce((acc, c) => acc + c.market_cap, 0))}</span></div>
                     <div className="status-item"><span className="label">Dominância BTC:</span><span className="value btc-dominance">45.8%</span></div>
                     <div className="status-item"><span className="label">Status API:</span><span className="api-ok">OK</span></div>
+                    <div className="status-item"><span className="label">Última Atualização:</span><span className="value">{lastUpdated ? lastUpdated.toLocaleTimeString('pt-BR') : 'Carregando...'}</span></div>
+                    <div className="status-item"><span className="label">Próxima em:</span><span className="value">{secondsToNextUpdate}s</span></div>
                 </div>
             </header>
             <main className="main-content">
