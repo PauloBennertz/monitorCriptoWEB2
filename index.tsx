@@ -395,26 +395,28 @@ const App = () => {
     const [isAlertsPanelOpen, setAlertsPanelOpen] = useState(false);
     const [alertConfigs, setAlertConfigs] = useState<AlertConfigs>({});
 
-    const fetchCryptoData = async () => {
-        setIsLoading(true);
-        setError(null);
+    const fetchCryptoData = useCallback(async (isInitialLoad = false) => {
+        if (isInitialLoad) {
+            setIsLoading(true);
+        }
+        // Don't reset error on background fetch
+        // setError(null);
         try {
             // 1. Fetch the configuration to know which coins to monitor
             const configRes = await fetch(`${API_BASE_URL}/api/alert_configs`);
             if (!configRes.ok) throw new Error('Failed to fetch configuration');
             const config = await configRes.json();
 
-            // Process the fetched config to populate alertConfigs state
+            // This part of the logic doesn't need to run on every data refresh,
+            // but we'll keep it for now for simplicity.
+            // A future optimization could be to fetch this less frequently.
             const newAlertConfigs: AlertConfigs = {};
-            if (config.cryptos_to_monitor) {
+             if (config.cryptos_to_monitor) {
                 config.cryptos_to_monitor.forEach((crypto: any) => {
                     if (!crypto.alert_config || !crypto.alert_config.conditions) return;
-
                     const symbol = crypto.symbol;
                     newAlertConfigs[symbol] = {};
                     const conditions = crypto.alert_config.conditions;
-
-                    // Mapping from frontend alert keys (used in triggerAlert) to backend config keys
                     const alertKeyMapping: { [key: string]: string } = {
                         'RSI_SOBREVENDA': 'rsi_sobrevendido',
                         'RSI_SOBRECOMPRA': 'rsi_sobrecomprado',
@@ -424,12 +426,10 @@ const App = () => {
                         'MACD_ALTA': 'macd_cruz_alta',
                         'MACD_BAIXA': 'macd_cruz_baixa',
                     };
-
                     Object.entries(alertKeyMapping).forEach(([feKey, beKey]) => {
                         if (conditions[beKey]) {
                             newAlertConfigs[symbol][feKey] = {
                                 enabled: conditions[beKey].enabled,
-                                // Cooldown is managed on the frontend, so we use a default or what's in state
                                 cooldown: alertConfigs[symbol]?.[feKey]?.cooldown ?? DEFAULT_ALERT_CONFIG.cooldown,
                             };
                         }
@@ -438,6 +438,7 @@ const App = () => {
             }
             setAlertConfigs(newAlertConfigs);
 
+
             const symbolsToMonitor = config.cryptos_to_monitor.map((c: any) => c.symbol);
 
             // 2. Fetch data for those specific coins
@@ -445,29 +446,49 @@ const App = () => {
                 const query = new URLSearchParams();
                 symbolsToMonitor.forEach((s: string) => query.append('symbols', s));
                 const dataRes = await fetch(`${API_BASE_URL}/api/crypto_data?${query.toString()}`);
-                if (!dataRes.ok) throw new Error('Failed to fetch crypto data');
-                const data: CryptoData[] = await dataRes.json();
-                setCryptoData(data);
+                if (!dataRes.ok) throw new Error(`Failed to fetch crypto data: ${dataRes.statusText}`);
+                const newData: CryptoData[] = await dataRes.json();
+
+                setCryptoData(prevData => {
+                    const prevDataMap = new Map(prevData.map(d => [d.symbol, d]));
+                    return newData.map(d => ({
+                        ...d,
+                        lastPrice: prevDataMap.get(d.symbol)?.price ?? d.price,
+                    }));
+                });
+
             } else {
                 setCryptoData([]);
             }
-             // Also fetch all coins for the settings modal
-            const allCoinsRes = await fetch(`${API_BASE_URL}/api/all_tradable_coins`);
-            if (!allCoinsRes.ok) throw new Error('Failed to fetch all tradable coins');
-            const allCoinsData: string[] = await allCoinsRes.json();
-            setAllCoins(allCoinsData.map(symbol => ({ symbol, name: symbol.replace('USDT', '') })));
+
+            // Fetch all tradable coins only on initial load to avoid unnecessary requests
+            if (isInitialLoad) {
+                const allCoinsRes = await fetch(`${API_BASE_URL}/api/all_tradable_coins`);
+                if (!allCoinsRes.ok) throw new Error('Failed to fetch all tradable coins');
+                const allCoinsData: string[] = await allCoinsRes.json();
+                setAllCoins(allCoinsData.map(symbol => ({ symbol, name: symbol.replace('USDT', '') })));
+            }
 
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'An unknown error occurred');
+            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+            setError(errorMessage);
             console.error(err);
         } finally {
-            setIsLoading(false);
+            if (isInitialLoad) {
+                setIsLoading(false);
+            }
         }
-    };
+    }, [alertConfigs]); // alertConfigs is a dependency now
 
     useEffect(() => {
-        fetchCryptoData();
-    }, []);
+        fetchCryptoData(true); // Initial fetch
+
+        const intervalId = setInterval(() => {
+            fetchCryptoData(false); // Subsequent fetches
+        }, 30000); // Refresh every 30 seconds
+
+        return () => clearInterval(intervalId); // Cleanup on unmount
+    }, [fetchCryptoData]);
 
 
     const handleConfigChange = (symbol: string, alertType: string, newConfig: AlertConfig) => {
