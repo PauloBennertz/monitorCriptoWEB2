@@ -403,6 +403,41 @@ const App = () => {
             const configRes = await fetch(`${API_BASE_URL}/api/alert_configs`);
             if (!configRes.ok) throw new Error('Failed to fetch configuration');
             const config = await configRes.json();
+
+            // Process the fetched config to populate alertConfigs state
+            const newAlertConfigs: AlertConfigs = {};
+            if (config.cryptos_to_monitor) {
+                config.cryptos_to_monitor.forEach((crypto: any) => {
+                    if (!crypto.alert_config || !crypto.alert_config.conditions) return;
+
+                    const symbol = crypto.symbol;
+                    newAlertConfigs[symbol] = {};
+                    const conditions = crypto.alert_config.conditions;
+
+                    // Mapping from frontend alert keys (used in triggerAlert) to backend config keys
+                    const alertKeyMapping: { [key: string]: string } = {
+                        'RSI_SOBREVENDA': 'rsi_sobrevendido',
+                        'RSI_SOBRECOMPRA': 'rsi_sobrecomprado',
+                        'HILO_COMPRA': 'hilo_compra',
+                        'CRUZ_DOURADA': 'mme_cruz_dourada',
+                        'CRUZ_DA_MORTE': 'mme_cruz_morte',
+                        'MACD_ALTA': 'macd_cruz_alta',
+                        'MACD_BAIXA': 'macd_cruz_baixa',
+                    };
+
+                    Object.entries(alertKeyMapping).forEach(([feKey, beKey]) => {
+                        if (conditions[beKey]) {
+                            newAlertConfigs[symbol][feKey] = {
+                                enabled: conditions[beKey].enabled,
+                                // Cooldown is managed on the frontend, so we use a default or what's in state
+                                cooldown: alertConfigs[symbol]?.[feKey]?.cooldown ?? DEFAULT_ALERT_CONFIG.cooldown,
+                            };
+                        }
+                    });
+                });
+            }
+            setAlertConfigs(newAlertConfigs);
+
             const symbolsToMonitor = config.cryptos_to_monitor.map((c: any) => c.symbol);
 
             // 2. Fetch data for those specific coins
