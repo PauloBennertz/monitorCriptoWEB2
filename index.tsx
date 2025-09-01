@@ -351,7 +351,7 @@ const SettingsModal = ({
                                         {monitoredSymbols.has(crypto.symbol) ? (
                                             <span className="add-status">Adicionado</span>
                                         ) : (
-                                            <button className="add-button" onClick={() => onUpdateCoin(crypto.symbol, 'add')}>Adicionar</button>
+                                            <button className="button button-add" onClick={() => onUpdateCoin(crypto.symbol, 'add')}>Adicionar</button>
                                         )}
                                     </div>
                                 ))
@@ -372,14 +372,14 @@ const SettingsModal = ({
                         <div key={crypto.symbol} className="crypto-selection-item managed-item">
                             <span>{crypto.name} <span className="crypto-symbol-light">({crypto.symbol.replace('USDT', '')})</span></span>
                             <div className="managed-item-buttons">
-                                <button className="configure-button" onClick={() => handleSelectCrypto(crypto.symbol)}>Configurar Alertas</button>
-                                <button className="remove-button" onClick={() => onUpdateCoin(crypto.symbol, 'remove')}>Remover</button>
+                                <button className="button manage-button" onClick={() => handleSelectCrypto(crypto.symbol)}>Configurar Alertas</button>
+                                <button className="button button-danger" onClick={() => onUpdateCoin(crypto.symbol, 'remove')}>Remover</button>
                             </div>
                         </div>
                     ))}
                 </div>
                 <div className="modal-footer">
-                    <button className="add-new-button" onClick={() => setView('add')}>
+                    <button className="button button-add" onClick={() => setView('add')}>
                         + Adicionar Nova Moeda
                     </button>
                 </div>
@@ -464,6 +464,21 @@ const App = () => {
         if (isInitialLoad) {
             setIsLoading(true);
         }
+
+        // Fetch all tradable coins for the search modal (independent)
+        if (isInitialLoad) {
+            try {
+                const allCoinsRes = await fetch(`${API_BASE_URL}/api/all_tradable_coins`);
+                if (!allCoinsRes.ok) throw new Error('Failed to fetch all tradable coins');
+                const allCoinsData: string[] = await allCoinsRes.json();
+                setAllCoins(allCoinsData.map(symbol => ({ symbol, name: symbol.replace('USDT', '') })));
+            } catch (err) {
+                console.error("Could not fetch all tradable coins list:", err);
+                // Non-fatal, the user just won't be able to add new coins.
+            }
+        }
+
+        // Fetch main monitored data
         try {
             const configRes = await fetch(`${API_BASE_URL}/api/alert_configs`);
             if (!configRes.ok) throw new Error('Failed to fetch configuration');
@@ -508,6 +523,7 @@ const App = () => {
                     return newData.map(d => ({ ...d, lastPrice: prevDataMap.get(d.symbol)?.price ?? d.price }));
                 });
                 localStorage.setItem('cryptoDataCache', JSON.stringify(newData));
+                setError(null); // Clear previous errors on success
             } else {
                 setCryptoData([]);
                 localStorage.removeItem('cryptoDataCache');
@@ -517,12 +533,6 @@ const App = () => {
             setLastUpdated(fetchTime);
             localStorage.setItem('lastFetchTimestamp', fetchTime.getTime().toString());
 
-            if (isInitialLoad) {
-                const allCoinsRes = await fetch(`${API_BASE_URL}/api/all_tradable_coins`);
-                if (!allCoinsRes.ok) throw new Error('Failed to fetch all tradable coins');
-                const allCoinsData: string[] = await allCoinsRes.json();
-                setAllCoins(allCoinsData.map(symbol => ({ symbol, name: symbol.replace('USDT', '') })));
-            }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
             const finalMessage = `Falha ao buscar dados do mercado. Pode ser um problema com a API externa ou sua conexão. Detalhes: ${errorMessage}`;
@@ -677,14 +687,6 @@ const App = () => {
         });
     }, [cryptoData, triggerAlert]);
 
-    if (isLoading) {
-        return <div className="loading-container">Carregando dados do mercado...</div>;
-    }
-
-    if (error) {
-        return <div className="error-container">Erro ao carregar dados: {error}</div>;
-    }
-
     return (
         <div className="app-container">
             <header className="app-header">
@@ -705,36 +707,44 @@ const App = () => {
                 <div className="header-status-bar">
                     <div className="status-item"><span className="label">Moedas:</span><span className="value">{cryptoData.length}</span></div>
                     <div className="status-item"><span className="label">Dominância BTC:</span><span className="value btc-dominance">45.8%</span></div>
-                    <div className="status-item"><span className="label">Status API:</span><span className="api-ok">OK</span></div>
+                    <div className="status-item"><span className="label">Status API:</span><span className={error ? 'api-error' : 'api-ok'}>{error ? 'ERRO' : 'OK'}</span></div>
                     <div className="status-item"><span className="label">Última Atualização:</span><span className="value">{lastUpdated ? lastUpdated.toLocaleTimeString('pt-BR') : 'Carregando...'}</span></div>
                     <div className="status-item"><span className="label">Próxima em:</span><span className="value">{formatTime(secondsToNextUpdate)}</span></div>
                 </div>
             </header>
             <main className="main-content">
-                <div className="content-header">
-                    <h2 className="content-title">Visão Geral do Mercado</h2>
-                    <div className="content-actions">
-                         <div className="sort-container">
-                            <label htmlFor="sort-select">Ordenar por:</label>
-                            <select
-                                id="sort-select"
-                                value={sortKey}
-                                onChange={(e) => setSortKey(e.target.value as keyof CryptoData | 'symbol')}
-                            >
-                                <option value="market_cap">Capitalização de Mercado</option>
-                                <option value="price">Preço</option>
-                                <option value="price_change_24h">Variação 24h</option>
-                                <option value="volume_24h">Volume 24h</option>
-                                <option value="symbol">Nome</option>
-                            </select>
+                {isLoading ? (
+                    <div className="loading-container">Carregando dados do mercado...</div>
+                ) : error ? (
+                    <div className="error-container">{error}</div>
+                ) : (
+                    <>
+                        <div className="content-header">
+                            <h2 className="content-title">Visão Geral do Mercado</h2>
+                            <div className="content-actions">
+                                 <div className="sort-container">
+                                    <label htmlFor="sort-select">Ordenar por:</label>
+                                    <select
+                                        id="sort-select"
+                                        value={sortKey}
+                                        onChange={(e) => setSortKey(e.target.value as keyof CryptoData | 'symbol')}
+                                    >
+                                        <option value="market_cap">Capitalização de Mercado</option>
+                                        <option value="price">Preço</option>
+                                        <option value="price_change_24h">Variação 24h</option>
+                                        <option value="volume_24h">Volume 24h</option>
+                                        <option value="symbol">Nome</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div className="crypto-grid">
-                    {sortedData.map(crypto => (
-                        <CryptoCard key={crypto.symbol} data={crypto} />
-                    ))}
-                </div>
+                        <div className="crypto-grid">
+                            {sortedData.map(crypto => (
+                                <CryptoCard key={crypto.symbol} data={crypto} />
+                            ))}
+                        </div>
+                    </>
+                )}
             </main>
             <SettingsModal
                 isOpen={isSettingsModalOpen}
