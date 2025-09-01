@@ -15,7 +15,8 @@ from .monitoring_service import (
     get_market_caps_coingecko,
     _analyze_symbol, # Renaming to 'analyze_symbol' for clarity
     fetch_all_binance_symbols_startup,
-    get_coingecko_global_mapping
+    get_coingecko_global_mapping,
+    get_btc_dominance
 )
 from . import app_state
 from . import coin_manager
@@ -57,26 +58,47 @@ async def read_root():
     """A simple root endpoint to confirm the API is running."""
     return {"message": "Welcome to the Crypto Monitor Pro API!"}
 
-@app.get("/api/all_tradable_coins", response_model=List[str])
+@app.get("/api/global_data")
+async def get_global_data():
+    """
+    Provides global market data, such as BTC dominance.
+    """
+    logging.info("Fetching global market data...")
+    try:
+        btc_dominance_value = get_btc_dominance()
+        return {"btc_dominance": btc_dominance_value}
+    except Exception as e:
+        logging.error(f"Error fetching global data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- Coin Manager Initialization ---
+# This manager handles fetching and caching the full list of coins from CoinGecko.
+coin_manager_instance = coin_manager.CoinManager()
+
+class Coin(BaseModel):
+    id: str
+    symbol: str
+    name: str
+
+@app.get("/api/all_tradable_coins", response_model=List[Coin])
 async def get_all_tradable_coins():
     """
-    Provides a list of all available USDT trading pairs from Binance.
-    The list is cached to improve performance.
+    Provides a list of all available coins from CoinGecko, including names and symbols.
+    The list is cached by the CoinManager to improve performance.
     """
-    if "all_coins" in api_cache:
-        return api_cache["all_coins"]
-
-    logging.info("Fetching all tradable coins from Binance...")
+    logging.info("Fetching all tradable coins from CoinManager...")
     try:
-        # We pass an empty dict for config as it's only used for fallback.
-        symbols = fetch_all_binance_symbols_startup({})
-        if not symbols:
-            raise HTTPException(status_code=500, detail="Failed to fetch symbols from Binance.")
+        # The CoinManager handles its own caching.
+        all_coins = coin_manager_instance.get_all_coins()
+        if not all_coins:
+            raise HTTPException(status_code=500, detail="Failed to fetch coin list from CoinManager.")
 
-        api_cache["all_coins"] = symbols
-        return symbols
+        # We need to filter this list to match Binance's USDT pairs if necessary,
+        # but for now, returning the full list is better for the UI.
+        # This returns a list of dicts like {'id': 'bitcoin', 'symbol': 'btc', 'name': 'Bitcoin'}
+        return all_coins
     except Exception as e:
-        logging.error(f"Error fetching all tradable coins: {e}")
+        logging.error(f"Error fetching all tradable coins from CoinManager: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/crypto_data", response_model=List[Dict[str, Any]])

@@ -24,12 +24,13 @@ const App = () => {
 
     const fetchGlobalData = useCallback(async () => {
         try {
-            const res = await fetch('https://api.coingecko.com/api/v3/global');
+            const res = await fetch(`${API_BASE_URL}/api/global_data`);
             if (!res.ok) throw new Error('Failed to fetch global market data');
             const data = await res.json();
-            setBtcDominance(data.data.market_cap_percentage.btc);
+            setBtcDominance(data.btc_dominance);
         } catch (err) {
             console.error("Failed to fetch BTC dominance:", err);
+            // Non-fatal, so we don't set the main error state
         }
     }, []);
 
@@ -44,8 +45,14 @@ const App = () => {
             try {
                 const allCoinsRes = await fetch(`${API_BASE_URL}/api/all_tradable_coins`);
                 if (!allCoinsRes.ok) throw new Error('Failed to fetch all tradable coins');
-                const allCoinsData: string[] = await allCoinsRes.json();
-                setAllCoins(allCoinsData.map(symbol => ({ symbol, name: symbol.replace('USDT', '') })));
+                const allCoinsData: BasicCoin[] = await allCoinsRes.json();
+                // A API agora retorna objetos completos, então podemos simplesmente usá-los.
+                // Apenas garantimos que o nome seja capitalizado para consistência.
+                const formattedCoins = allCoinsData.map(coin => ({
+                    ...coin,
+                    name: coin.name.charAt(0).toUpperCase() + coin.name.slice(1)
+                }));
+                setAllCoins(formattedCoins);
             } catch (err) {
                 console.error("Could not fetch all tradable coins list:", err);
                 // Non-fatal, the user just won't be able to add new coins.
