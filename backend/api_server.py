@@ -3,6 +3,7 @@ import os
 import json
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from typing import List, Dict, Any
 
 # --- Import core logic from the existing application ---
@@ -154,6 +155,84 @@ async def get_alerts():
     except Exception as e:
         logging.error(f"Error reading alert history file: {e}")
         raise HTTPException(status_code=500, detail="Error reading alert history file.")
+
+# --- Coin Management Endpoints ---
+
+class CoinSymbol(BaseModel):
+    symbol: str
+
+@app.post("/api/monitored_coins")
+async def add_monitored_coin(coin: CoinSymbol):
+    """Adds a new coin to the monitored list in config.json."""
+    try:
+        with open(CONFIG_FILE_PATH, 'r+', encoding='utf-8') as f:
+            config_data = json.load(f)
+
+            # Find the 'cryptos_to_monitor' list and add the new symbol if not present
+            if 'cryptos_to_monitor' not in config_data:
+                config_data['cryptos_to_monitor'] = []
+
+            # Assuming the structure is a list of objects with a 'symbol' key
+            if not any(c['symbol'] == coin.symbol for c in config_data['cryptos_to_monitor']):
+                # Add the new coin with a default alert configuration
+                config_data['cryptos_to_monitor'].append({
+                    "symbol": coin.symbol,
+                    "alert_config": {
+                        "conditions": {
+                            "rsi_sobrevendido": {"enabled": True},
+                            "rsi_sobrecomprado": {"enabled": True},
+                            "hilo_compra": {"enabled": True},
+                            "mme_cruz_dourada": {"enabled": False},
+                            "mme_cruz_morte": {"enabled": False},
+                            "macd_cruz_alta": {"enabled": True},
+                            "macd_cruz_baixa": {"enabled": True}
+                        }
+                    }
+                })
+
+                f.seek(0)
+                json.dump(config_data, f, indent=2)
+                f.truncate()
+                logging.info(f"Added new coin to monitor: {coin.symbol}")
+                return {"message": f"Coin {coin.symbol} added successfully."}
+            else:
+                logging.warning(f"Attempted to add existing coin: {coin.symbol}")
+                return {"message": f"Coin {coin.symbol} is already being monitored."}
+
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Config file not found.")
+    except Exception as e:
+        logging.error(f"Error adding monitored coin: {e}")
+        raise HTTPException(status_code=500, detail="Error adding monitored coin.")
+
+
+@app.delete("/api/monitored_coins/{symbol}")
+async def remove_monitored_coin(symbol: str):
+    """Removes a coin from the monitored list in config.json."""
+    try:
+        with open(CONFIG_FILE_PATH, 'r+', encoding='utf-8') as f:
+            config_data = json.load(f)
+
+            original_count = len(config_data.get('cryptos_to_monitor', []))
+            config_data['cryptos_to_monitor'] = [
+                c for c in config_data.get('cryptos_to_monitor', []) if c.get('symbol') != symbol
+            ]
+
+            if len(config_data['cryptos_to_monitor']) < original_count:
+                f.seek(0)
+                json.dump(config_data, f, indent=2)
+                f.truncate()
+                logging.info(f"Removed coin from monitoring: {symbol}")
+                return {"message": f"Coin {symbol} removed successfully."}
+            else:
+                raise HTTPException(status_code=404, detail=f"Coin {symbol} not found in monitored list.")
+
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Config file not found.")
+    except Exception as e:
+        logging.error(f"Error removing monitored coin: {e}")
+        raise HTTPException(status_code=500, detail="Error removing monitored coin.")
+
 
 # To run this server, use the following command in your terminal:
 # uvicorn backend.api_server:app --reload --port 8000
