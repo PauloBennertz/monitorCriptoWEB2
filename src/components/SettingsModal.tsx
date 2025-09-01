@@ -39,15 +39,17 @@ const SettingsModal = ({
         const lowercasedFilter = searchTerm.toLowerCase().trim();
         return allCoins.filter(
             crypto =>
-                crypto.name.toLowerCase().includes(lowercasedFilter) ||
-                crypto.symbol.toLowerCase().replace('usdt', '').includes(lowercasedFilter)
+                (crypto.name.toLowerCase().includes(lowercasedFilter) ||
+                crypto.symbol.toLowerCase().includes(lowercasedFilter)) &&
+                !monitoredSymbols.has(`${crypto.symbol.toUpperCase()}USDT`) // Exclude already monitored
         );
-    }, [searchTerm, allCoins]);
+    }, [searchTerm, allCoins, monitoredSymbols]);
 
     const selectedCrypto = useMemo(() => {
         if (!selectedCryptoSymbol) return null;
-        return allCoins.find(c => c.symbol === selectedCryptoSymbol);
-    }, [selectedCryptoSymbol, allCoins]);
+        // Find by the base symbol, ignoring 'USDT'
+        return monitoredCoins.find(c => c.symbol === selectedCryptoSymbol);
+    }, [selectedCryptoSymbol, monitoredCoins]);
 
     const handleSelectCrypto = (symbol: string) => {
         setSelectedCryptoSymbol(symbol);
@@ -123,13 +125,14 @@ const SettingsModal = ({
                         <div className="crypto-selection-list">
                             {filteredAllCoins.length > 0 ? (
                                 filteredAllCoins.map(crypto => (
-                                    <div key={crypto.symbol} className="crypto-selection-item add-item">
-                                        <span>{crypto.name} <span className="crypto-symbol-light">({crypto.symbol.replace('USDT', '')})</span></span>
-                                        {monitoredSymbols.has(crypto.symbol) ? (
-                                            <span className="add-status">Adicionado</span>
-                                        ) : (
-                                            <button className="button button-add" onClick={() => onUpdateCoin(crypto.symbol, 'add')}>Adicionar</button>
-                                        )}
+                                    <div key={crypto.id} className="crypto-selection-item add-item">
+                                        <span>{crypto.name} <span className="crypto-symbol-light">({crypto.symbol.toUpperCase()})</span></span>
+                                        <button
+                                            className="button button-add"
+                                            onClick={() => onUpdateCoin(`${crypto.symbol.toUpperCase()}USDT`, 'add')}
+                                        >
+                                            Adicionar
+                                        </button>
                                     </div>
                                 ))
                             ) : (
