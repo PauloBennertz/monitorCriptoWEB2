@@ -57,7 +57,7 @@ const CryptoCard = ({ data }: { data: CryptoData }) => {
                     <Tooltip text={rsiData.tooltip}>
                         <span className="metric-label">RSI</span>
                     </Tooltip>
-                    <span className={`metric-value rsi-value ${rsiData.className}`}>{rsiData.text} ({data.rsi_value})</span>
+                    <span className={`metric-value rsi-value ${rsiData.className}`}>{rsiData.text} ({data.rsi_value.toFixed(2)})</span>
                 </div>
                  <div className="metric-item">
                     <Tooltip text={INDICATOR_TOOLTIPS.bollinger_signal[data.bollinger_signal]}>
