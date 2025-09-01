@@ -1,123 +1,78 @@
-# 🚀 Monitor de Criptomoedas v3.1
+# 🚀 Crypto Monitor Pro
+
+Monitor de criptomoedas em tempo real com sistema de alertas configurável, construído com React e FastAPI.
 
 ## 📋 Descrição
-Monitor de criptomoedas em tempo real com sistema de alertas automáticos.
+Esta aplicação web fornece uma visão geral do mercado de criptomoedas, permitindo aos usuários monitorar métricas chave em tempo real e configurar alertas personalizados para várias condições de mercado.
 
 ## 🛠️ Tecnologias
-- **Python 3.8+**
-- **tkinter + ttkbootstrap** (Interface)
-- **CoinGecko API** (Dados de criptomoedas)
-- **Binance API** (Dados de mercado)
-- **PyInstaller** (Executável)
+- **Frontend**: React, TypeScript, Vite
+- **Backend**: Python, FastAPI
+- **APIs de Dados**: CoinGecko, Binance
+- **Gerenciamento de Pacotes**: npm (frontend), pip (backend)
 
-## 🚀 Instalação
+## 🚀 Instalação e Execução
 
-### Desenvolvimento
-```bash
-# Clone o repositório
-git clone https://github.com/PauloBennertz/MonitorCriptomoedas3.1.git
-cd MonitorCriptomoedas3.1
+### Pré-requisitos
+- Node.js e npm
+- Python 3.8+ e pip
 
-# Crie ambiente virtual
-python -m venv venv
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Linux/Mac
+### Passos
+1.  **Clone o repositório:**
+    ```bash
+    git clone https://github.com/PauloBennertz/MonitorCriptomoedas3.1.git
+    cd MonitorCriptomoedas3.1
+    ```
 
-# Instale dependências
-pip install -r requirements.txt
+2.  **Instale as dependências do Backend:**
+    Recomenda-se o uso de um ambiente virtual.
+    ```bash
+    pip install -r backend/requirements.txt
+    ```
+
+3.  **Instale as dependências do Frontend:**
+    ```bash
+    npm install
+    ```
+
+4.  **Execute o Servidor da API (Backend):**
+    A partir do diretório raiz do projeto, execute:
+    ```bash
+    uvicorn backend.api_server:app --reload --port 8000
+    ```
+    O servidor da API estará disponível em `http://localhost:8000`.
+
+5.  **Execute a Aplicação (Frontend):**
+    Em um novo terminal, a partir do diretório raiz do projeto, execute:
+    ```bash
+    npm run dev
+    ```
+    A aplicação web estará acessível em `http://localhost:5173`.
+
+## 📁 Estrutura do Projeto (Simplificada)
 ```
-
-### Executável
-1. Baixe o arquivo `MonitorCriptomoedas.exe` da seção Releases
-2. Execute o arquivo
-3. Configure os alertas no menu "Configurações"
-
-## 📁 Estrutura do Projeto
-
+/
+├── backend/                # Código da API em Python/FastAPI
+│   ├── api_server.py       # Ponto de entrada e rotas da API
+│   ├── monitoring_service.py # Lógica de busca e análise de dados
+│   └── ...
+├── src/                    # Código do frontend em React/TypeScript (a ser criado)
+│   ├── components/         # Componentes React reutilizáveis (a ser criado)
+│   ├── index.css           # Estilos globais
+│   └── index.tsx           # Ponto de entrada da aplicação React
+├── package.json            # Dependências e scripts do frontend
+└── README.md               # Este arquivo
 ```
-MonitorCriptomoedas3.1/
-├── main_app.py              # Aplicação principal
-├── monitoring_service.py     # Serviços de monitoramento
-├── notification_service.py   # Sistema de alertas
-├── core_components.py       # Componentes da interface
-├── api_config_window.py     # Configuração de APIs
-├── build_exe.py            # Script de build
-├── config.json             # Configurações
-├── icons/                  # Ícones da interface
-├── sons/                   # Arquivos de som
-└── requirements.txt        # Dependências
-```
-
-## ⚙️ Configuração
-
-### APIs Necessárias
-- **CoinGecko**: Gratuita (sem chave)
-- **Binance**: Gratuita (sem chave)
-
-### Alertas Configuráveis
-- ✅ Preço acima/abaixo de valor
-- ✅ Variação percentual
-- ✅ Volume de negociação
-- ✅ Sons personalizados por tipo
-- ✅ Notificações automáticas
 
 ## 🎯 Funcionalidades
-
-### Monitoramento
-- 📊 Preços em tempo real
-- 📈 Gráficos de variação
-- 💰 Dominância do Bitcoin
-- 🔄 Atualização automática
-
-### Alertas
--  Sons automáticos
-- 📱 Notificações Windows
--  Alertas Telegram (opcional)
-- ⚡ Consolidação de múltiplos alertas
-
-### Interface
--  Design moderno com ttkbootstrap
-- 📱 Responsiva
-- ⚙️ Menu de configurações
--  Histórico de alertas
-
-## 🔧 Desenvolvimento
-
-### Build do Executável
-```bash
-python build_exe.py
-```
-
-### Testes
-```bash
-python main_app.py
-```
-
-##  Changelog
-
-### v3.1
-- ✅ Sistema de sons automáticos
-- ✅ Menu de configurações avançado
-- ✅ Consolidação de alertas
-- ✅ Interface moderna com ttkbootstrap
-- ✅ Build otimizado para PyInstaller
+- **Monitoramento em Tempo Real**: Veja preços, capitalização de mercado, volume e indicadores técnicos atualizados automaticamente.
+- **Alertas Configuráveis**: Configure alertas para condições como RSI, cruzamentos de médias móveis, sinais de MACD e mais.
+- **Interface Intuitiva**: Um painel de controle claro e fácil de usar para visualizar os dados.
+- **Adicionar/Remover Moedas**: Personalize sua lista de moedas monitoradas.
 
 ## 🤝 Contribuição
-1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## 📄 Licença
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
-## 🆘 Suporte
-Se encontrar problemas:
-1. Verifique a conexão com internet
-2. Execute como administrador
-3. Verifique o antivírus
-4. Abra uma issue no GitHub
-
----
-**Desenvolvido com ❤️ para a comunidade crypto**
+1.  Fork o projeto
+2.  Crie uma branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit suas mudanças (`git commit -m 'Add AmazingFeature'`)
+4.  Push para a branch (`git push origin feature/AmazingFeature`)
+5.  Abra um Pull Request
