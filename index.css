@@ -93,13 +93,20 @@ body {
   color: #f7931a;
 }
 
-.status-item .api-ok {
-  background-color: var(--accent-color-green);
+.status-item .api-ok, .status-item .api-error {
   color: white;
   padding: 0.1rem 0.5rem;
   border-radius: 4px;
   font-size: 0.8rem;
   font-weight: 700;
+}
+
+.status-item .api-ok {
+  background-color: var(--accent-color-green);
+}
+
+.status-item .api-error {
+    background-color: var(--accent-color-red);
 }
 
 .header-actions {
@@ -196,6 +203,37 @@ body {
 .manage-button:hover {
     background-color: var(--accent-color-blue);
     color: var(--background-color);
+}
+
+/* General purpose button styles */
+.button {
+    background-color: transparent;
+    border: 1px solid var(--text-color-secondary);
+    color: var(--text-color-primary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.button-add {
+    border-color: var(--accent-color-green);
+    color: var(--accent-color-green);
+}
+.button-add:hover {
+    background-color: var(--accent-color-green);
+    color: white;
+}
+
+.button-danger {
+    border-color: var(--accent-color-red);
+    color: var(--accent-color-red);
+}
+.button-danger:hover {
+    background-color: var(--accent-color-red);
+    color: white;
 }
 
 .crypto-grid {
@@ -501,6 +539,14 @@ body {
     text-align: center;
     color: var(--text-color-secondary);
     padding: 2rem 0;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
 }
 .settings-group-title {
     color: var(--text-color-secondary);
