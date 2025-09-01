@@ -37,7 +37,6 @@ const App = () => {
     const fetchCryptoData = useCallback(async (isInitialLoad = false) => {
         if (isInitialLoad) {
             setIsLoading(true);
-            fetchGlobalData(); // Fetch dominance on initial load
         }
 
         // Fetch all tradable coins for the search modal (independent)
@@ -127,6 +126,11 @@ const App = () => {
     }, []);
 
     useEffect(() => {
+        // Fetch global data once on initial load, independently of the main data fetch cycle.
+        fetchGlobalData();
+    }, [fetchGlobalData]);
+
+    useEffect(() => {
         let timeoutId: NodeJS.Timeout | undefined;
         let intervalId: NodeJS.Timeout | undefined;
 
@@ -149,7 +153,7 @@ const App = () => {
                 console.log("Loading data from fresh cache.");
                 setCryptoData(JSON.parse(cachedDataJSON));
                 setLastUpdated(new Date(lastFetchTime));
-                setIsLoading(false);
+                setIsLoading(false); // We can still show cached data while fetching new
                 const timeToWait = (REFRESH_INTERVAL_SECONDS - ageInSeconds) * 1000;
                 startFetchingLoop(timeToWait);
             } else {
