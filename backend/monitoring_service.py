@@ -60,23 +60,29 @@ def get_ticker_data():
 
 def get_market_caps_coingecko(symbols_to_monitor, coingecko_mapping):
     """Busca o valor de mercado (market cap) para uma lista de moedas via CoinGecko."""
+    logging.info(f"Buscando market caps para os seguintes símbolos: {symbols_to_monitor}")
     market_caps = {}
     coin_ids_to_fetch = []
     symbol_to_coin_id = {}
 
-    all_coins = cg_client.get_coins_list()
+    try:
+        all_coins = cg_client.get_coins_list()
+    except Exception as e:
+        logging.error(f"Falha ao buscar a lista de moedas da CoinGecko: {e}")
+        return {}
 
     for binance_symbol in symbols_to_monitor:
-        base_asset = binance_symbol.replace('USDT', '').upper()
-        # Modificação para busca robusta pelo 'symbol' em vez de 'name'
-        coin_info = next((item for item in all_coins if item['symbol'].upper() == base_asset), None)
+        base_asset = binance_symbol.replace('USDT', '').lower()
+
+        # Busca case-insensitive pelo símbolo
+        coin_info = next((item for item in all_coins if item['symbol'].lower() == base_asset), None)
 
         if coin_info:
             coin_id = coin_info['id']
             coin_ids_to_fetch.append(coin_id)
             symbol_to_coin_id[coin_id] = binance_symbol
         else:
-            logging.warning(f"Não foi possível encontrar o ID da CoinGecko para o símbolo: {base_asset}")
+            logging.warning(f"Não foi possível encontrar o ID da CoinGecko para o símbolo: {base_asset.upper()}")
 
     if not coin_ids_to_fetch: return {}
 
