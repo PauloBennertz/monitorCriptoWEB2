@@ -38,7 +38,13 @@ class CoinManager:
         return self._fetch_coins_from_api()
 
     def get_all_coins(self):
-        """Returns the list of all coins."""
+        """
+        Returns the list of all coins.
+        If the list is not available, it attempts to load or fetch it again.
+        """
+        if not self.all_coins:
+            logging.warning("Coin list is not loaded. Attempting to reload...")
+            self.all_coins = self._load_or_fetch_coins()
         return self.all_coins
 
     def get_coin_display_list(self):
