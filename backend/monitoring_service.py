@@ -68,12 +68,15 @@ def get_market_caps_coingecko(symbols_to_monitor, coingecko_mapping):
 
     for binance_symbol in symbols_to_monitor:
         base_asset = binance_symbol.replace('USDT', '').upper()
-        coingecko_name = coingecko_mapping.get(base_asset)
-        if coingecko_name:
-            coin_id = next((item['id'] for item in all_coins if item['name'].lower() == coingecko_name.lower()), None)
-            if coin_id:
-                coin_ids_to_fetch.append(coin_id)
-                symbol_to_coin_id[coin_id] = binance_symbol
+        # Modificação para busca robusta pelo 'symbol' em vez de 'name'
+        coin_info = next((item for item in all_coins if item['symbol'].upper() == base_asset), None)
+
+        if coin_info:
+            coin_id = coin_info['id']
+            coin_ids_to_fetch.append(coin_id)
+            symbol_to_coin_id[coin_id] = binance_symbol
+        else:
+            logging.warning(f"Não foi possível encontrar o ID da CoinGecko para o símbolo: {base_asset}")
 
     if not coin_ids_to_fetch: return {}
 
