@@ -304,10 +304,6 @@ const App = () => {
         const config = alertConfigs[symbol]?.[alertType] ?? DEFAULT_ALERT_CONFIG;
         if (!config.enabled) return;
 
-        if (config.blinking) {
-            setBlinkingCards(prev => ({ ...prev, [symbol]: now }));
-        }
-
         const newAlert: Alert = {
             id: `${symbol}-${alertType}-${now}`,
             symbol,
@@ -335,13 +331,23 @@ const App = () => {
 
     useEffect(() => {
         cryptoData.forEach(data => {
-            if (data.rsi_value < 30) triggerAlert(data.symbol, 'RSI_SOBREVENDA', data);
-            if (data.rsi_value > 70) triggerAlert(data.symbol, 'RSI_SOBRECOMPRA', data);
-            if (data.hilo_signal === 'HiLo Buy') triggerAlert(data.symbol, 'HILO_COMPRA', data);
-            if (data.mme_cross === 'Cruz Dourada') triggerAlert(data.symbol, 'CRUZ_DOURADA', data);
-            if (data.mme_cross === 'Cruz da Morte') triggerAlert(data.symbol, 'CRUZ_DA_MORTE', data);
-            if (data.macd_signal === 'Cruzamento de Alta') triggerAlert(data.symbol, 'MACD_ALTA', data);
-            if (data.macd_signal === 'Cruzamento de Baixa') triggerAlert(data.symbol, 'MACD_BAIXA', data);
+            const activeAlerts: { type: string, data: CryptoData }[] = [];
+
+            if (data.rsi_value < 30) activeAlerts.push({ type: 'RSI_SOBREVENDA', data });
+            if (data.rsi_value > 70) activeAlerts.push({ type: 'RSI_SOBRECOMPRA', data });
+            if (data.hilo_signal === 'HiLo Buy') activeAlerts.push({ type: 'HILO_COMPRA', data });
+            if (data.mme_cross === 'Cruz Dourada') activeAlerts.push({ type: 'CRUZ_DOURADA', data });
+            if (data.mme_cross === 'Cruz da Morte') activeAlerts.push({ type: 'CRUZ_DA_MORTE', data });
+            if (data.macd_signal === 'Cruzamento de Alta') activeAlerts.push({ type: 'MACD_ALTA', data });
+            if (data.macd_signal === 'Cruzamento de Baixa') activeAlerts.push({ type: 'MACD_BAIXA', data });
+
+            activeAlerts.forEach(alert => {
+                triggerAlert(data.symbol, alert.type, alert.data);
+            });
+
+            if (activeAlerts.length > 1) {
+                setBlinkingCards(prev => ({ ...prev, [data.symbol]: Date.now() }));
+            }
         });
     }, [cryptoData, triggerAlert]);
 
