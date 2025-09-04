@@ -35,14 +35,18 @@ const SettingsModal = ({
     const monitoredSymbols = useMemo(() => new Set(monitoredCoins.map(c => c.symbol)), [monitoredCoins]);
 
     const filteredAllCoins = useMemo(() => {
-        if (!searchTerm.trim()) return [];
         const lowercasedFilter = searchTerm.toLowerCase().trim();
-        return allCoins.filter(
-            crypto =>
-                (crypto.name.toLowerCase().includes(lowercasedFilter) ||
-                crypto.symbol.toLowerCase().includes(lowercasedFilter)) &&
-                !monitoredSymbols.has(`${crypto.symbol.toUpperCase()}USDT`) // Exclude already monitored
-        );
+        // Se não houver termo de busca, retorna todas as moedas não monitoradas.
+        // Se houver, filtra com base nele.
+        return allCoins.filter(crypto => {
+            const isMonitored = monitoredSymbols.has(`${crypto.symbol.toUpperCase()}USDT`);
+            if (isMonitored) return false;
+
+            if (!lowercasedFilter) return true; // Mostra tudo se o campo de busca estiver vazio
+
+            return crypto.name.toLowerCase().includes(lowercasedFilter) ||
+                   crypto.symbol.toLowerCase().includes(lowercasedFilter);
+        });
     }, [searchTerm, allCoins, monitoredSymbols]);
 
     const selectedCrypto = useMemo(() => {
