@@ -25,6 +25,7 @@ export interface Alert {
 export interface AlertConfig {
     enabled: boolean;
     cooldown: number; // in seconds
+    blinking: boolean;
 }
 
 export interface AlertConfigs {
@@ -62,6 +63,7 @@ export const COOLDOWN_OPTIONS = [
 export const DEFAULT_ALERT_CONFIG: AlertConfig = {
     enabled: true,
     cooldown: 900, // 15 minutes
+    blinking: true,
 };
 
 export const INDICATOR_TOOLTIPS: Record<string, Record<string, string>> = {

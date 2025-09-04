@@ -15,6 +15,7 @@ const App = () => {
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [mutedAlerts, setMutedAlerts] = useState<MutedAlert[]>([]);
+    const [blinkingCards, setBlinkingCards] = useState<Record<string, number>>({});
     const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
     const [isAlertsPanelOpen, setAlertsPanelOpen] = useState(false);
     const [isHistoryPanelOpen, setHistoryPanelOpen] = useState(false);
@@ -292,6 +293,10 @@ const App = () => {
         const config = alertConfigs[symbol]?.[alertType] ?? DEFAULT_ALERT_CONFIG;
         if (!config.enabled) return;
 
+        if (config.blinking) {
+            setBlinkingCards(prev => ({ ...prev, [symbol]: now }));
+        }
+
         const newAlert: Alert = {
             id: `${symbol}-${alertType}-${now}`,
             symbol,
@@ -328,6 +333,22 @@ const App = () => {
             if (data.macd_signal === 'Cruzamento de Baixa') triggerAlert(data.symbol, 'MACD_BAIXA', data);
         });
     }, [cryptoData, triggerAlert]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = Date.now();
+            setBlinkingCards(prev => {
+                const newBlinkingCards: Record<string, number> = {};
+                for (const symbol in prev) {
+                    if (now - prev[symbol] < 10000) { // 10 seconds
+                        newBlinkingCards[symbol] = prev[symbol];
+                    }
+                }
+                return newBlinkingCards;
+            });
+        }, 1000); // Check every second
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <div className="app-container">
@@ -385,7 +406,11 @@ const App = () => {
                         </div>
                         <div className="crypto-grid">
                             {sortedData.map(crypto => (
-                                <CryptoCard key={crypto.symbol} data={crypto} />
+                                <CryptoCard
+                                    key={crypto.symbol}
+                                    data={crypto}
+                                    isBlinking={!!blinkingCards[crypto.symbol]}
+                                />
                             ))}
                         </div>
                     </>

@@ -3,7 +3,7 @@ import Tooltip from './Tooltip';
 import { CryptoData, INDICATOR_TOOLTIPS } from '../types'; // Assuming types and constants are moved to a types file
 import { formatCurrency, formatLargeNumber } from '../utils'; // Assuming helpers are moved to a utils file
 
-const CryptoCard = ({ data }: { data: CryptoData }) => {
+const CryptoCard = ({ data, isBlinking }: { data: CryptoData, isBlinking: boolean }) => {
     const [flashClass, setFlashClass] = useState('');
 
     useEffect(() => {
@@ -29,7 +29,7 @@ const CryptoCard = ({ data }: { data: CryptoData }) => {
     const rsiData = getRsiData();
 
     return (
-        <div className="crypto-card">
+        <div className={`crypto-card ${isBlinking ? 'blinking-effect' : ''}`}>
             <div className="card-header">
                 <span className="card-symbol">{data.symbol.replace('USDT', '')}</span>
                 <span className="card-name">{data.name}</span>

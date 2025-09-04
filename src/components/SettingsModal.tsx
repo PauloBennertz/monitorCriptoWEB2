@@ -91,22 +91,38 @@ const SettingsModal = ({
                                         <small>{alertDef.description}</small>
                                     </div>
                                     <div className="alert-setting-controls">
-                                        <label className="switch">
-                                            <input
-                                                type="checkbox"
-                                                checked={config.enabled}
-                                                onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, enabled: e.target.checked })}
-                                            />
-                                            <span className="slider round"></span>
-                                        </label>
-                                        <select
-                                            value={config.cooldown}
-                                            onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, cooldown: Number(e.target.value) })}
-                                            disabled={!config.enabled}
-                                            aria-label={`Cooldown para ${alertDef.name}`}
-                                        >
-                                            {COOLDOWN_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                                        </select>
+                                        <div className="control-item">
+                                            <label className="switch">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={config.enabled}
+                                                    onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, enabled: e.target.checked })}
+                                                />
+                                                <span className="slider round"></span>
+                                            </label>
+                                        </div>
+                                        <div className="control-item">
+                                            <label className="checkbox-label">
+                                                <input
+                                                    type="checkbox"
+                                                    className="blinking-checkbox"
+                                                    checked={config.blinking ?? true}
+                                                    disabled={!config.enabled}
+                                                    onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, blinking: e.target.checked })}
+                                                />
+                                                Piscar
+                                            </label>
+                                        </div>
+                                        <div className="control-item">
+                                            <select
+                                                value={config.cooldown}
+                                                onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, cooldown: Number(e.target.value) })}
+                                                disabled={!config.enabled}
+                                                aria-label={`Cooldown para ${alertDef.name}`}
+                                            >
+                                                {COOLDOWN_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                             );
