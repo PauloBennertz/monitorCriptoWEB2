@@ -272,13 +272,13 @@ async def add_monitored_coin(coin: CoinSymbol):
                     "symbol": coin.symbol,
                     "alert_config": {
                         "conditions": {
-                            "rsi_sobrevendido": {"enabled": True},
-                            "rsi_sobrecomprado": {"enabled": True},
-                            "hilo_compra": {"enabled": True},
-                            "mme_cruz_dourada": {"enabled": False},
-                            "mme_cruz_morte": {"enabled": False},
-                            "macd_cruz_alta": {"enabled": True},
-                            "macd_cruz_baixa": {"enabled": True}
+                            "rsi_sobrevendido": {"enabled": True, "blinking": True},
+                            "rsi_sobrecomprado": {"enabled": True, "blinking": True},
+                            "hilo_compra": {"enabled": True, "blinking": True},
+                            "mme_cruz_dourada": {"enabled": False, "blinking": True},
+                            "mme_cruz_morte": {"enabled": False, "blinking": True},
+                            "macd_cruz_alta": {"enabled": True, "blinking": True},
+                            "macd_cruz_baixa": {"enabled": True, "blinking": True}
                         }
                     }
                 })

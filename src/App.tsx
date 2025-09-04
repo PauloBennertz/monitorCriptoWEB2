@@ -84,6 +84,7 @@ const App = () => {
                                 newAlertConfigs[symbol][feKey] = {
                                     enabled: conditions[beKey].enabled,
                                     cooldown: prevAlertConfigs[symbol]?.[feKey]?.cooldown ?? DEFAULT_ALERT_CONFIG.cooldown,
+                                    blinking: conditions[beKey].blinking ?? DEFAULT_ALERT_CONFIG.blinking,
                                 };
                             }
                         });
@@ -215,12 +216,16 @@ const App = () => {
                 throw new Error(`Invalid alert type: ${alertType}`);
             }
 
-            // 4. Update the 'enabled' status for the specific condition
+            // 4. Update the 'enabled' and 'blinking' status for the specific condition
             if (coinToUpdate.alert_config.conditions[backendKey]) {
                 coinToUpdate.alert_config.conditions[backendKey].enabled = newConfig.enabled;
+                coinToUpdate.alert_config.conditions[backendKey].blinking = newConfig.blinking;
             } else {
                 // If the condition doesn't exist for some reason, create it
-                coinToUpdate.alert_config.conditions[backendKey] = { enabled: newConfig.enabled };
+                coinToUpdate.alert_config.conditions[backendKey] = {
+                    enabled: newConfig.enabled,
+                    blinking: newConfig.blinking
+                };
             }
 
             // 5. POST the entire modified configuration back to the backend
