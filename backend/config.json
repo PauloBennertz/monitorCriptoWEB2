@@ -16,19 +16,19 @@
         "conditions": {
           "preco_baixo": {
             "enabled": false,
-            "value": 11400.0
+            "value": 11400
           },
           "preco_alto": {
             "enabled": false,
-            "value": 11900.0
+            "value": 11900
           },
           "rsi_sobrevendido": {
-            "enabled": false,
-            "value": 30.0
+            "enabled": true,
+            "value": 30
           },
           "rsi_sobrecomprado": {
             "enabled": true,
-            "value": 70.0
+            "value": 70
           },
           "bollinger_abaixo": {
             "enabled": true
@@ -55,6 +55,9 @@
           "entrada_capital_significativa": {
             "enabled": false,
             "value": "0.3, 1.0"
+          },
+          "hilo_compra": {
+            "enabled": true
           }
         },
         "triggered_conditions": []
@@ -68,19 +71,20 @@
         "conditions": {
           "preco_baixo": {
             "enabled": true,
-            "value": 2800.0
+            "value": 2800
           },
           "preco_alto": {
             "enabled": true,
-            "value": 3500.0
+            "value": 3500
           },
           "rsi_sobrevendido": {
-            "enabled": false,
-            "value": 30.0
+            "enabled": true,
+            "value": 30,
+            "blinking": true
           },
           "rsi_sobrecomprado": {
             "enabled": true,
-            "value": 70.0
+            "value": 70
           },
           "bollinger_abaixo": {
             "enabled": false
@@ -89,16 +93,16 @@
             "enabled": false
           },
           "macd_cruz_baixa": {
-            "enabled": false
+            "enabled": true
           },
           "macd_cruz_alta": {
-            "enabled": false
+            "enabled": true
           },
           "mme_cruz_morte": {
-            "enabled": false
+            "enabled": true
           },
           "mme_cruz_dourada": {
-            "enabled": false
+            "enabled": true
           }
         },
         "triggered_conditions": [
@@ -114,19 +118,19 @@
         "conditions": {
           "preco_baixo": {
             "enabled": false,
-            "value": 0.0
+            "value": 0
           },
           "preco_alto": {
             "enabled": false,
-            "value": 0.0
+            "value": 0
           },
           "rsi_sobrevendido": {
-            "enabled": false,
-            "value": 30.0
+            "enabled": true,
+            "value": 30
           },
           "rsi_sobrecomprado": {
-            "enabled": false,
-            "value": 70.0
+            "enabled": true,
+            "value": 70
           },
           "bollinger_abaixo": {
             "enabled": false
@@ -135,7 +139,7 @@
             "enabled": false
           },
           "macd_cruz_baixa": {
-            "enabled": false
+            "enabled": true
           },
           "macd_cruz_alta": {
             "enabled": true
@@ -144,7 +148,7 @@
             "enabled": true
           },
           "mme_cruz_dourada": {
-            "enabled": false
+            "enabled": true
           },
           "fuga_capital_significativa": {
             "enabled": false,
@@ -156,6 +160,34 @@
           }
         },
         "triggered_conditions": []
+      }
+    },
+    {
+      "symbol": "XRPUSDT",
+      "alert_config": {
+        "conditions": {
+          "rsi_sobrevendido": {
+            "enabled": true
+          },
+          "rsi_sobrecomprado": {
+            "enabled": true
+          },
+          "hilo_compra": {
+            "enabled": true
+          },
+          "mme_cruz_dourada": {
+            "enabled": false
+          },
+          "mme_cruz_morte": {
+            "enabled": false
+          },
+          "macd_cruz_alta": {
+            "enabled": true
+          },
+          "macd_cruz_baixa": {
+            "enabled": true
+          }
+        }
       }
     }
   ],
