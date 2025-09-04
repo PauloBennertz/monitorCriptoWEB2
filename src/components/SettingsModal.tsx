@@ -36,17 +36,22 @@ const SettingsModal = ({
 
     const filteredAllCoins = useMemo(() => {
         const lowercasedFilter = searchTerm.toLowerCase().trim();
-        // Se não houver termo de busca, retorna todas as moedas não monitoradas.
-        // Se houver, filtra com base nele.
-        return allCoins.filter(crypto => {
+
+        // Se o campo de busca estiver vazio, não retorna nada para evitar sobrecarga.
+        if (lowercasedFilter.length < 1) {
+            return [];
+        }
+
+        const results = allCoins.filter(crypto => {
             const isMonitored = monitoredSymbols.has(`${crypto.symbol.toUpperCase()}USDT`);
             if (isMonitored) return false;
-
-            if (!lowercasedFilter) return true; // Mostra tudo se o campo de busca estiver vazio
 
             return crypto.name.toLowerCase().includes(lowercasedFilter) ||
                    crypto.symbol.toLowerCase().includes(lowercasedFilter);
         });
+
+        // Limita o número de resultados para 50 para manter a UI responsiva.
+        return results.slice(0, 50);
     }, [searchTerm, allCoins, monitoredSymbols]);
 
     const selectedCrypto = useMemo(() => {
@@ -140,7 +145,9 @@ const SettingsModal = ({
                                     </div>
                                 ))
                             ) : (
-                                searchTerm && <p className="no-results-message">Nenhuma criptomoeda encontrada para "{searchTerm}".</p>
+                                searchTerm.trim().length > 0
+                                    ? <p className="no-results-message">Nenhuma criptomoeda encontrada para "{searchTerm}".</p>
+                                    : <p className="no-results-message">Digite para buscar uma moeda.</p>
                             )}
                         </div>
                     </div>
