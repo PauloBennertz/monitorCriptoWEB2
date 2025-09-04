@@ -272,6 +272,12 @@ const App = () => {
                 throw new Error(errorData.detail || 'Failed to update monitored coin');
             }
 
+            // Clear any active alerts for the removed coin
+            if (action === 'remove') {
+                setAlerts(prevAlerts => prevAlerts.filter(alert => alert.symbol !== symbol));
+            }
+
+
             // Refresh all data to reflect the change
             await fetchCryptoData(true);
 
