@@ -194,10 +194,17 @@ async def add_monitored_coin(coin: CoinSymbol):
             if 'cryptos_to_monitor' not in config_data:
                 config_data['cryptos_to_monitor'] = []
 
-            # Assuming the structure is a list of objects with a 'symbol' key
-            if not any(c['symbol'] == coin.symbol for c in config_data['cryptos_to_monitor']):
+            # Robust check for existing coin, handling both dict and string formats
+            monitored_list = config_data.get('cryptos_to_monitor', [])
+            is_present = any(
+                (isinstance(c, dict) and c.get('symbol') == coin.symbol) or
+                (isinstance(c, str) and c == coin.symbol)
+                for c in monitored_list
+            )
+
+            if not is_present:
                 # Add the new coin with a default alert configuration
-                config_data['cryptos_to_monitor'].append({
+                monitored_list.append({
                     "symbol": coin.symbol,
                     "alert_config": {
                         "conditions": {
