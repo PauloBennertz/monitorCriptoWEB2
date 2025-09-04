@@ -297,7 +297,7 @@ const App = () => {
             symbol,
             condition: ALERT_DEFINITIONS[alertType].name,
             description: ALERT_DEFINITIONS[alertType].description,
-            timestamp: new Date().toLocaleTimeString('pt-BR'),
+        timestamp: new Date().toISOString(),
             snapshot: data,
         };
 
