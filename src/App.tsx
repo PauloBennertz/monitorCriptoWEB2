@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import CryptoCard from './components/CryptoCard';
 import SettingsModal from './components/SettingsModal';
 import AlertsPanel from './components/AlertsPanel';
+import AlertHistoryPanel from './components/AlertHistoryPanel';
 import { CryptoData, Alert, MutedAlert, AlertConfigs, AlertConfig, BasicCoin, API_BASE_URL, ALERT_DEFINITIONS, DEFAULT_ALERT_CONFIG } from './types';
 import { formatTime } from './utils';
 
@@ -16,6 +17,7 @@ const App = () => {
     const [mutedAlerts, setMutedAlerts] = useState<MutedAlert[]>([]);
     const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
     const [isAlertsPanelOpen, setAlertsPanelOpen] = useState(false);
+    const [isHistoryPanelOpen, setHistoryPanelOpen] = useState(false);
     const [alertConfigs, setAlertConfigs] = useState<AlertConfigs>({});
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [secondsToNextUpdate, setSecondsToNextUpdate] = useState(180);
@@ -299,6 +301,16 @@ const App = () => {
             snapshot: data,
         };
 
+    // Save to persistent history on the backend (fire and forget)
+    fetch(`${API_BASE_URL}/api/alerts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAlert),
+    }).catch(err => {
+        // Non-critical, so we just log the error to the console.
+        console.error("Failed to save alert to history:", err);
+    });
+
         setAlerts(prev => [newAlert, ...prev]);
         setMutedAlerts(prev => [...prev.filter(m => m.muteUntil > now), { symbol, alertType, muteUntil: now + config.cooldown * 1000 }]);
 
@@ -323,6 +335,9 @@ const App = () => {
                 <div className="header-top">
                     <h1 className="header-title">Crypto Monitor Pro</h1>
                      <div className="header-actions">
+                        <button className="manage-button" onClick={() => setHistoryPanelOpen(true)}>
+                            Histórico
+                        </button>
                         <div className="alerts-button-container">
                              <button className="manage-button" onClick={() => setAlertsPanelOpen(true)}>
                                 Notificações
@@ -390,6 +405,10 @@ const App = () => {
                 onClose={() => setAlertsPanelOpen(false)}
                 alerts={alerts}
                 onClearAlerts={() => setAlerts([])}
+            />
+            <AlertHistoryPanel
+                isOpen={isHistoryPanelOpen}
+                onClose={() => setHistoryPanelOpen(false)}
             />
         </div>
     );
