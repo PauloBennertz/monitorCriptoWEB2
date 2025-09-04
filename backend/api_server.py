@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+from threading import Lock
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -142,6 +143,69 @@ async def get_crypto_data(symbols: List[str] = Query(..., description="A list of
 
 CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), "config.json")
 ALERT_HISTORY_FILE_PATH = os.path.join(os.path.dirname(__file__), "alert_history.json")
+HISTORY_LOCK = Lock()
+
+class Alert(BaseModel):
+    id: str
+    symbol: str
+    condition: str
+    description: str
+    timestamp: str
+    snapshot: Dict[str, Any]
+
+@app.get("/api/alerts", response_model=List[Alert])
+async def get_alert_history():
+    """Reads and returns the persistent alert history."""
+    try:
+        with HISTORY_LOCK:
+            if not os.path.exists(ALERT_HISTORY_FILE_PATH):
+                return []
+            with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+                try:
+                    content = f.read()
+                    if not content:
+                        return []
+                    history = json.loads(content)
+                    if not isinstance(history, list):
+                        return []
+                    return history
+                except json.JSONDecodeError:
+                    return [] # Return empty list if file is corrupted
+    except Exception as e:
+        logging.error(f"Error reading alert history file: {e}")
+        raise HTTPException(status_code=500, detail="Error reading alert history file.")
+
+@app.post("/api/alerts")
+async def save_alert_to_history(alert: Alert):
+    """Saves a triggered alert to the persistent history file."""
+    try:
+        with HISTORY_LOCK:
+            history = []
+            if os.path.exists(ALERT_HISTORY_FILE_PATH):
+                with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+                    try:
+                        content = f.read()
+                        if content:
+                            history = json.loads(content)
+                        if not isinstance(history, list):
+                            history = []
+                    except json.JSONDecodeError:
+                        history = []
+
+            history.insert(0, alert.dict())
+
+            MAX_HISTORY_SIZE = 500
+            if len(history) > MAX_HISTORY_SIZE:
+                history = history[:MAX_HISTORY_SIZE]
+
+            with open(ALERT_HISTORY_FILE_PATH, 'w', encoding='utf-8') as f:
+                json.dump(history, f, indent=2)
+
+        logging.info(f"Saved alert for {alert.symbol} to history.")
+        return {"message": "Alert saved to history."}
+    except Exception as e:
+        logging.error(f"Error saving alert to history: {e}")
+        raise HTTPException(status_code=500, detail="Could not save alert to history.")
 
 @app.get("/api/alert_configs", response_model=Dict[str, Any])
 async def get_alert_configs():

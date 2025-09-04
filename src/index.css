@@ -730,3 +730,57 @@ input:checked + .slider:before {
     background-color: #555;
     cursor: not-allowed;
 }
+
+/* Alert History Panel */
+.alert-history-panel .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.alert-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.25rem; /* Add some padding for scrollbar */
+}
+
+.alert-history-item {
+    background-color: #2c2c2e;
+    border-radius: 8px;
+    padding: 1rem;
+    border-left: 4px solid #f0b90b; /* Binance yellow */
+    transition: background-color 0.2s ease;
+}
+
+.alert-history-item:hover {
+    background-color: #3a3a3c;
+}
+
+.alert-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.alert-history-symbol {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #f0b90b;
+}
+
+.alert-history-timestamp {
+    font-size: 0.8rem;
+    color: #a0a0a0;
+}
+
+.alert-history-body {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+
+.alert-history-details {
+    font-size: 0.9rem;
+    color: #b0b0b0;
+}
