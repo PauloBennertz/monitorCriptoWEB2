@@ -41,6 +41,28 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
         return null;
     }
 
+    const handleClearHistory = async () => {
+        if (!window.confirm('Tem certeza de que deseja apagar todo o histórico de alertas? Esta ação não pode ser desfeita.')) {
+            return;
+        }
+
+        setIsLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/alerts/history`, {
+                method: 'DELETE',
+            });
+            if (!res.ok) {
+                throw new Error('Falha ao limpar o histórico.');
+            }
+            setHistory([]); // Clear history on the frontend
+        } catch (err) {
+            setError(err.message || 'Um erro desconhecido ocorreu ao tentar limpar o histórico.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const renderContent = () => {
         if (isLoading) {
             return <div className="loading-container">Carregando histórico...</div>;
@@ -82,6 +104,15 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
                 </div>
                 <div className="modal-body">
                     {renderContent()}
+                </div>
+                <div className="modal-footer">
+                    <button
+                        onClick={handleClearHistory}
+                        className="button button-danger"
+                        disabled={isLoading || history.length === 0}
+                    >
+                        Limpar Histórico
+                    </button>
                 </div>
             </div>
         </div>

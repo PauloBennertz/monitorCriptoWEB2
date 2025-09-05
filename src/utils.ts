@@ -2,8 +2,20 @@ export const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD' }).format(value);
 };
 
+import { CryptoData } from './types';
+
 export const formatLargeNumber = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 2 }).format(value);
+};
+
+export const countActiveIndicators = (data: CryptoData): number => {
+    const indicators = [
+        data.bollinger_signal,
+        data.macd_signal,
+        data.mme_cross,
+        data.hilo_signal,
+    ];
+    return indicators.filter(signal => signal !== 'Nenhum').length;
 };
 
 export const formatTime = (seconds: number) => {
