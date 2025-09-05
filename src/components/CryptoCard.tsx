@@ -3,15 +3,7 @@ import Tooltip from './Tooltip';
 import { CryptoData, INDICATOR_TOOLTIPS } from '../types'; // Assuming types and constants are moved to a types file
 import { formatCurrency, formatLargeNumber } from '../utils'; // Assuming helpers are moved to a utils file
 
-/**
- * A card that displays data for a single cryptocurrency.
- *
- * @param {object} props - The component props.
- * @param {CryptoData} props.data - The data for the cryptocurrency.
- * @param {boolean} props.isBlinking - Whether the card should be blinking.
- * @returns {JSX.Element} The rendered component.
- */
-const CryptoCard = ({ data, isBlinking }: { data: CryptoData, isBlinking: boolean }) => {
+
     const [flashClass, setFlashClass] = useState('');
 
     useEffect(() => {
@@ -27,6 +19,22 @@ const CryptoCard = ({ data, isBlinking }: { data: CryptoData, isBlinking: boolea
         return () => clearTimeout(timer);
     }, [data.price, data.lastPrice]);
 
+    const getBlinkingClass = () => {
+        const indicators = [
+            data.bollinger_signal,
+            data.macd_signal,
+            data.mme_cross,
+            data.hilo_signal,
+        ];
+        const activeIndicators = indicators.filter(signal => signal !== 'Nenhum').length;
+
+        if (activeIndicators === 1) {
+            return 'blinking-blue';
+        } else if (activeIndicators > 1) {
+            return 'blinking-red';
+        }
+        return '';
+    };
 
     const getRsiData = () => {
         if (data.rsi_value < 30) return { className: 'rsi-oversold', text: 'Sobrevenda', tooltip: INDICATOR_TOOLTIPS.rsi_value.oversold };
@@ -35,9 +43,10 @@ const CryptoCard = ({ data, isBlinking }: { data: CryptoData, isBlinking: boolea
     };
 
     const rsiData = getRsiData();
+    const blinkingClass = getBlinkingClass();
 
     return (
-        <div className={`crypto-card ${isBlinking ? 'blinking-effect' : ''}`}>
+        <div className={`crypto-card ${blinkingClass}`}>
             <div className="card-header">
                 <span className="card-symbol">{data.symbol.replace('USDT', '')}</span>
                 <span className="card-name">{data.name}</span>
