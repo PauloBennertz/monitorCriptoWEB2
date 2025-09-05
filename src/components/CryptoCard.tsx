@@ -1,24 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Tooltip from './Tooltip';
 import { CryptoData, INDICATOR_TOOLTIPS } from '../types'; // Assuming types and constants are moved to a types file
-import { formatCurrency, formatLargeNumber } from '../utils'; // Assuming helpers are moved to a utils file
-
-const getBlinkingClass = (data: CryptoData) => {
-    const indicators = [
-        data.bollinger_signal,
-        data.macd_signal,
-        data.mme_cross,
-        data.hilo_signal,
-    ];
-    const activeIndicators = indicators.filter(signal => signal !== 'Nenhum').length;
-
-    if (activeIndicators === 1) {
-        return 'blinking-blue';
-    } else if (activeIndicators > 1) {
-        return 'blinking-red';
-    }
-    return '';
-};
+import { formatCurrency, formatLargeNumber, countActiveIndicators } from '../utils'; // Assuming helpers are moved to a utils file
 
 const getRsiData = (data: CryptoData) => {
     if (data.rsi_value < 30) return { className: 'rsi-oversold', text: 'Sobrevenda', tooltip: INDICATOR_TOOLTIPS.rsi_value.oversold };
@@ -43,7 +26,8 @@ const CryptoCard = ({ data }: { data: CryptoData }) => {
     }, [data.price, data.lastPrice]);
 
     const rsiData = getRsiData(data);
-    const blinkingClass = getBlinkingClass(data);
+    const activeIndicatorsCount = countActiveIndicators(data);
+    const blinkingClass = activeIndicatorsCount === 1 ? 'blinking-blue' : activeIndicatorsCount > 1 ? 'blinking-red' : '';
 
     return (
         <div className={`crypto-card ${blinkingClass}`}>

@@ -207,6 +207,20 @@ async def save_alert_to_history(alert: Alert):
         logging.error(f"Error saving alert to history: {e}")
         raise HTTPException(status_code=500, detail="Could not save alert to history.")
 
+@app.delete("/api/alerts/history")
+async def clear_alert_history():
+    """Clears all alerts from the persistent history file."""
+    try:
+        with HISTORY_LOCK:
+            # Overwrite the file with an empty JSON array
+            with open(ALERT_HISTORY_FILE_PATH, 'w', encoding='utf-8') as f:
+                json.dump([], f)
+        logging.info("Alert history has been cleared.")
+        return {"message": "Alert history cleared successfully."}
+    except Exception as e:
+        logging.error(f"Error clearing alert history: {e}")
+        raise HTTPException(status_code=500, detail="Could not clear alert history.")
+
 @app.get("/api/alert_configs", response_model=Dict[str, Any])
 async def get_alert_configs():
     """Reads and returns the entire application configuration from config.json."""
@@ -229,18 +243,6 @@ async def set_alert_configs(new_config: Dict[str, Any]):
     except Exception as e:
         logging.error(f"Error writing to config file: {e}")
         raise HTTPException(status_code=500, detail="Error saving configuration file.")
-
-@app.get("/api/alerts", response_model=List[Dict[str, Any]])
-async def get_alerts():
-    """Reads and returns the alert history from alert_history.json."""
-    try:
-        if not os.path.exists(ALERT_HISTORY_FILE_PATH):
-            return []
-        with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        logging.error(f"Error reading alert history file: {e}")
-        raise HTTPException(status_code=500, detail="Error reading alert history file.")
 
 # --- Coin Management Endpoints ---
 

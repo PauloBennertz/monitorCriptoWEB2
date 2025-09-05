@@ -4,14 +4,14 @@ import SettingsModal from './components/SettingsModal';
 import AlertsPanel from './components/AlertsPanel';
 import AlertHistoryPanel from './components/AlertHistoryPanel';
 import { CryptoData, Alert, MutedAlert, AlertConfigs, AlertConfig, BasicCoin, API_BASE_URL, ALERT_DEFINITIONS, DEFAULT_ALERT_CONFIG } from './types';
-import { formatTime } from './utils';
+import { formatTime, countActiveIndicators } from './utils';
 
 const App = () => {
     const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
     const [allCoins, setAllCoins] = useState<BasicCoin[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [sortKey, setSortKey] = useState<keyof CryptoData | 'symbol'>('market_cap');
+    const [sortKey, setSortKey] = useState<keyof CryptoData | 'symbol' | 'active_alerts'>('market_cap');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [mutedAlerts, setMutedAlerts] = useState<MutedAlert[]>([]);
@@ -289,6 +289,14 @@ const App = () => {
 
     const sortedData = useMemo(() => {
         return [...cryptoData].sort((a, b) => {
+            if (sortKey === 'active_alerts') {
+                const aAlerts = countActiveIndicators(a);
+                const bAlerts = countActiveIndicators(b);
+                if (aAlerts > bAlerts) return -1;
+                if (aAlerts < bAlerts) return 1;
+                // As a secondary sort, use market cap
+                return b.market_cap - a.market_cap;
+            }
             if (a[sortKey] < b[sortKey]) return sortOrder === 'asc' ? -1 : 1;
             if (a[sortKey] > b[sortKey]) return sortOrder === 'asc' ? 1 : -1;
             return 0;
@@ -396,6 +404,7 @@ const App = () => {
                                         <option value="price_change_24h">Variação 24h</option>
                                         <option value="volume_24h">Volume 24h</option>
                                         <option value="symbol">Nome</option>
+                                        <option value="active_alerts">Alertas Ativos</option>
                                     </select>
                                 </div>
                             </div>
