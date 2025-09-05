@@ -3,7 +3,7 @@ import shutil
 import sys
 
 def prepare_dist():
-    """Prepara a pasta dist com todos os arquivos necessários"""
+    """Prepares the dist folder with all the necessary files."""
 
     print("Preparando pasta de distribuicao...")
 
