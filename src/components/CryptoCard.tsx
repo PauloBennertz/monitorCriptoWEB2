@@ -9,7 +9,7 @@ const getRsiData = (data: CryptoData) => {
     return { className: 'rsi-neutral', text: 'Neutro', tooltip: INDICATOR_TOOLTIPS.rsi_value.neutral };
 };
 
-const CryptoCard = ({ data }: { data: CryptoData }) => {
+const CryptoCard = ({ data, isBlinkVisible }: { data: CryptoData, isBlinkVisible: boolean }) => {
     const [flashClass, setFlashClass] = useState('');
 
     useEffect(() => {
@@ -27,7 +27,15 @@ const CryptoCard = ({ data }: { data: CryptoData }) => {
 
     const rsiData = getRsiData(data);
     const activeIndicatorsCount = countActiveIndicators(data);
-    const blinkingClass = activeIndicatorsCount === 1 ? 'blinking-blue' : activeIndicatorsCount > 1 ? 'blinking-red' : '';
+
+    let blinkingClass = '';
+    if (isBlinkVisible) {
+        if (activeIndicatorsCount === 1) {
+            blinkingClass = 'blink-on-blue';
+        } else if (activeIndicatorsCount > 1) {
+            blinkingClass = 'blink-on-red';
+        }
+    }
 
     return (
         <div className={`crypto-card ${blinkingClass}`}>

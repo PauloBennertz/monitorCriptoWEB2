@@ -253,26 +253,14 @@ body {
   transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-@keyframes blink-blue {
-    50% {
-        box-shadow: 0 0 10px 3px rgba(0, 184, 212, 0.7);
-        border-color: var(--accent-color-blue);
-    }
+.blink-on-blue {
+    box-shadow: 0 0 10px 3px rgba(0, 184, 212, 0.7);
+    border-color: var(--accent-color-blue);
 }
 
-.blinking-blue {
-    animation: blink-blue 1.5s infinite;
-}
-
-@keyframes blink-red {
-    50% {
-        box-shadow: 0 0 10px 3px rgba(220, 53, 69, 0.7);
-        border-color: var(--accent-color-red);
-    }
-}
-
-.blinking-red {
-    animation: blink-red 1.5s infinite;
+.blink-on-red {
+    box-shadow: 0 0 10px 3px rgba(220, 53, 69, 0.7);
+    border-color: var(--accent-color-red);
 }
 
 .card-header {
