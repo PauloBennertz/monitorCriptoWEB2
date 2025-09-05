@@ -22,7 +22,15 @@ const App = () => {
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [secondsToNextUpdate, setSecondsToNextUpdate] = useState(180);
     const [btcDominance, setBtcDominance] = useState<number | null>(null);
+    const [isBlinkVisible, setIsBlinkVisible] = useState(true);
     const REFRESH_INTERVAL_SECONDS = 180; // 3 minutes
+
+    useEffect(() => {
+        const blinkInterval = setInterval(() => {
+            setIsBlinkVisible(prev => !prev);
+        }, 1500); // Sync with CSS animation time
+        return () => clearInterval(blinkInterval);
+    }, []);
 
     const fetchGlobalData = useCallback(async () => {
         try {
@@ -414,6 +422,7 @@ const App = () => {
                                 <CryptoCard
                                     key={crypto.symbol}
                                     data={crypto}
+                                    isBlinkVisible={isBlinkVisible}
                                 />
                             ))}
                         </div>
