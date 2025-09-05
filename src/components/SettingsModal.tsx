@@ -37,15 +37,18 @@ const SettingsModal = ({
     const filteredAllCoins = useMemo(() => {
         const lowercasedFilter = searchTerm.toLowerCase().trim();
 
-        // Se o campo de busca estiver vazio, não retorna nada para evitar sobrecarga.
+        // Filtra a lista completa de moedas para remover as que já estão sendo monitoradas.
+        const availableCoins = allCoins.filter(crypto =>
+            !monitoredSymbols.has(`${crypto.symbol.toUpperCase()}USDT`)
+        );
+
+        // Se o campo de busca estiver vazio, mostra as primeiras 50 moedas da lista disponível.
         if (lowercasedFilter.length < 1) {
-            return [];
+            return availableCoins.slice(0, 50);
         }
 
-        const results = allCoins.filter(crypto => {
-            const isMonitored = monitoredSymbols.has(`${crypto.symbol.toUpperCase()}USDT`);
-            if (isMonitored) return false;
-
+        // Se houver um termo de busca, filtra os resultados com base nesse termo.
+        const results = availableCoins.filter(crypto => {
             return crypto.name.toLowerCase().includes(lowercasedFilter) ||
                    crypto.symbol.toLowerCase().includes(lowercasedFilter);
         });
