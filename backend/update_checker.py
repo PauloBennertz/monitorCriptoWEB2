@@ -21,17 +21,9 @@ DOWNLOADED_FILE_NAME = "update.exe"
 
 # --- UI Classes ---
 class UpdateNotificationWindow(tk.Toplevel):
-    """A window that notifies the user about a new update."""
-
+    # ... (código existente, sem alterações) ...
+    """ Janela que notifica o usuário sobre uma nova atualização. """
     def __init__(self, parent, version, notes, assets):
-        """Initializes the UpdateNotificationWindow.
-
-        Args:
-            parent (tk.Widget): The parent widget.
-            version (str): The new version number.
-            notes (str): The release notes.
-            assets (list): The assets for the new release.
-        """
         super().__init__(parent)
         self.parent = parent
         self.version = version
@@ -47,7 +39,6 @@ class UpdateNotificationWindow(tk.Toplevel):
         self.center_on_parent()
 
     def create_widgets(self):
-        """Creates the widgets for the window."""
         main_frame = ttkb.Frame(self, padding=20)
         main_frame.pack(fill="both", expand=True)
         ttkb.Label(main_frame, text=f"🎉 Atualização para a v{self.version}", font=("Segoe UI", 16, "bold"), bootstyle="info").pack(anchor="w")
@@ -66,23 +57,11 @@ class UpdateNotificationWindow(tk.Toplevel):
         ttkb.Button(button_frame, text="🔄 Atualizar ao Reiniciar", command=self._update_on_startup, bootstyle="primary-outline", width=22).pack(side="right", padx=(10, 0))
         ttkb.Button(button_frame, text="Lembrar Depois", command=self._on_closing, bootstyle="secondary", width=18).pack(side="left")
 
-    def _update_now(self):
-        """Sets the result to 'now' and closes the window."""
-        self.result = "now"
-        self.destroy()
-
-    def _update_on_startup(self):
-        """Sets the result to 'startup' and closes the window."""
-        self.result = "startup"
-        self.destroy()
-
-    def _on_closing(self):
-        """Sets the result to 'later' and closes the window."""
-        self.result = "later"
-        self.destroy()
+    def _update_now(self): self.result = "now"; self.destroy()
+    def _update_on_startup(self): self.result = "startup"; self.destroy()
+    def _on_closing(self): self.result = "later"; self.destroy()
 
     def center_on_parent(self):
-        """Centers the window on the parent widget."""
         self.update_idletasks()
         x = self.parent.winfo_x() + (self.parent.winfo_width() - self.winfo_width()) // 2
         y = self.parent.winfo_y() + (self.parent.winfo_height() - self.winfo_height()) // 2
@@ -90,14 +69,8 @@ class UpdateNotificationWindow(tk.Toplevel):
 
 
 class DownloadProgressWindow(tk.Toplevel):
-    """A window to show the download progress."""
-
+    """ Janela para mostrar o progresso do download. """
     def __init__(self, parent):
-        """Initializes the DownloadProgressWindow.
-
-        Args:
-            parent (tk.Widget): The parent widget.
-        """
         super().__init__(parent)
         self.title("Baixando Atualização...")
         self.geometry("500x200")
@@ -120,19 +93,12 @@ class DownloadProgressWindow(tk.Toplevel):
         self.center_on_parent()
 
     def update_progress(self, value, total):
-        """Updates the progress bar and labels.
-
-        Args:
-            value (int): The current value.
-            total (int): The total value.
-        """
         percent = int((value / total) * 100)
         self.progress['value'] = percent
         self.percent_label.config(text=f"{percent}%")
         self.status_label.config(text=f"Baixando... ({value/1024/1024:.2f} MB / {total/1024/1024:.2f} MB)")
 
     def center_on_parent(self):
-        """Centers the window on the parent widget."""
         self.update_idletasks()
         x = self.master.winfo_x() + (self.master.winfo_width() - self.winfo_width()) // 2
         y = self.master.winfo_y() + (self.master.winfo_height() - self.winfo_height()) // 2
@@ -141,16 +107,7 @@ class DownloadProgressWindow(tk.Toplevel):
 # --- Lógica de Atualização ---
 
 def check_for_updates(root, current_version, on_startup=False):
-    """Checks for updates.
-
-    If on_startup is True, forces the update if the flag is active.
-
-    Args:
-        root (tk.Tk): The root window.
-        current_version (str): The current version of the application.
-        on_startup (bool, optional): Whether the check is being
-            performed on startup. Defaults to False.
-    """
+    """ Verifica atualizações. Se on_startup for True, força a atualização se a flag estiver ativa. """
     config_path = _get_config_path()
     # Checa a flag de atualização ao iniciar
     if on_startup and os.path.exists(config_path):
@@ -171,14 +128,7 @@ def check_for_updates(root, current_version, on_startup=False):
     threading.Thread(target=_perform_check, args=(root, current_version, False), daemon=True).start()
 
 def _perform_check(root, current_version, force_update=False):
-    """Performs the API call and compares the versions.
-
-    Args:
-        root (tk.Tk): The root window.
-        current_version (str): The current version of the application.
-        force_update (bool, optional): Whether to force the update.
-            Defaults to False.
-    """
+    """ Realiza a chamada à API e compara as versões. """
     try:
         response = requests.get(GITHUB_API_URL, timeout=15)
         response.raise_for_status()
@@ -199,14 +149,7 @@ def _perform_check(root, current_version, force_update=False):
         print(f"Erro ao verificar atualizações: {e}")
 
 def show_update_notification(root, version, notes, assets):
-    """Shows the update notification window and processes the user's choice.
-
-    Args:
-        root (tk.Tk): The root window.
-        version (str): The new version number.
-        notes (str): The release notes.
-        assets (list): The assets for the new release.
-    """
+    """ Mostra a janela de notificação e processa a escolha do usuário. """
     alert_consolidator = getattr(getattr(root, 'app', None), 'alert_consolidator', None)
 
     if alert_consolidator:
@@ -224,19 +167,10 @@ def show_update_notification(root, version, notes, assets):
         _set_update_on_startup_flag(True)
 
 def _get_config_path():
-    """Gets the path to the configuration file.
-
-    Returns:
-        str: The path to the configuration file.
-    """
     return os.path.join(get_application_path(), CONFIG_FILE_NAME)
 
 def _set_update_on_startup_flag(status: bool):
-    """Sets the update_on_startup flag in config.json.
-
-    Args:
-        status (bool): The status of the flag.
-    """
+    """ Define a flag no config.json. """
     config_path = _get_config_path()
     try:
         config = {}
@@ -250,12 +184,7 @@ def _set_update_on_startup_flag(status: bool):
 # --- Lógica de Download e Instalação ---
 
 def download_and_install(root, assets):
-    """Finds the .exe asset, downloads it, verifies the checksum, and starts the update process.
-
-    Args:
-        root (tk.Tk): The root window.
-        assets (list): The assets for the new release.
-    """
+    """ Encontra o asset .exe, baixa, verifica o checksum e inicia o processo de atualização. """
     exe_asset = None
     checksum_asset = None
     for asset in assets:
@@ -325,11 +254,7 @@ def download_and_install(root, assets):
     threading.Thread(target=download_thread, daemon=True).start()
 
 def create_updater_script():
-    """Creates the .bat script that will replace the executable more robustly.
-
-    Returns:
-        str: The path to the updater script, or None if it fails.
-    """
+    """ Cria o script .bat que substituirá o executável de forma mais robusta. """
     app_path = get_application_path()
     current_exe_path = sys.executable
     current_exe_name = os.path.basename(current_exe_path)
@@ -438,11 +363,7 @@ endlocal
         return None
 
 def launch_updater_and_exit(root):
-    """Creates and executes the update script, then closes the application.
-
-    Args:
-        root (tk.Tk): The root window.
-    """
+    """ Cria e executa o script de atualização, depois fecha a aplicação. """
 
     messagebox.showinfo("Atualização Concluída", "Download concluido, o programa sera reiniciado.")
 

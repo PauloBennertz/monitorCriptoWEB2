@@ -1,101 +1,78 @@
 # 🚀 Crypto Monitor Pro
 
-A real-time cryptocurrency monitoring application with a configurable alert system, built with React and FastAPI.
+Monitor de criptomoedas em tempo real com sistema de alertas configurável, construído com React e FastAPI.
 
-## 📋 Description
-This web application provides a comprehensive overview of the cryptocurrency market, allowing users to monitor key metrics in real time and set up custom alerts for various market conditions.
+## 📋 Descrição
+Esta aplicação web fornece uma visão geral do mercado de criptomoedas, permitindo aos usuários monitorar métricas chave em tempo real e configurar alertas personalizados para várias condições de mercado.
 
-## 🛠️ Technologies
+## 🛠️ Tecnologias
 - **Frontend**: React, TypeScript, Vite
 - **Backend**: Python, FastAPI
-- **Data APIs**: CoinGecko, Binance
-- **Package Management**: npm (frontend), pip (backend)
+- **APIs de Dados**: CoinGecko, Binance
+- **Gerenciamento de Pacotes**: npm (frontend), pip (backend)
 
-## 🚀 Installation and Execution
+## 🚀 Instalação e Execução
 
-### Prerequisites
-- Node.js and npm
-- Python 3.8+ and pip
+### Pré-requisitos
+- Node.js e npm
+- Python 3.8+ e pip
 
-### Steps
-1.  **Clone the repository:**
+### Passos
+1.  **Clone o repositório:**
     ```bash
     git clone https://github.com/PauloBennertz/MonitorCriptomoedas3.1.git
     cd MonitorCriptomoedas3.1
     ```
 
-2.  **Install Backend dependencies:**
-    It is recommended to use a virtual environment.
+2.  **Instale as dependências do Backend:**
+    Recomenda-se o uso de um ambiente virtual.
     ```bash
     pip install -r backend/requirements.txt
     ```
 
-3.  **Install Frontend dependencies:**
+3.  **Instale as dependências do Frontend:**
     ```bash
     npm install
     ```
 
-4.  **Run the API Server (Backend):**
-    From the project root directory, run:
+4.  **Execute o Servidor da API (Backend):**
+    A partir do diretório raiz do projeto, execute:
     ```bash
     uvicorn backend.api_server:app --reload --port 8000
     ```
-    The API server will be available at `http://localhost:8000`.
+    O servidor da API estará disponível em `http://localhost:8000`.
 
-5.  **Run the Application (Frontend):**
-    In a new terminal, from the project root directory, run:
+5.  **Execute a Aplicação (Frontend):**
+    Em um novo terminal, a partir do diretório raiz do projeto, execute:
     ```bash
     npm run dev
     ```
-    The web application will be accessible at `http://localhost:5173`.
+    A aplicação web estará acessível em `http://localhost:5173`.
 
-## 🧪 Testing
-This project does not yet have a dedicated test suite. However, you can test the backend API manually using the `teste_conexao.py` script:
-```bash
-python backend/teste_conexao.py
-```
-
-## 📁 Project Structure
+## 📁 Estrutura do Projeto (Simplificada)
 ```
 /
-├── backend/                # Python/FastAPI API code
-│   ├── api_server.py       # API entry point and routes
-│   ├── app_state.py        # Manages application state
-│   ├── capital_flow.py     # Analyzes capital flow by category
-│   ├── coin_manager.py     # Manages the list of all coins
-│   ├── indicators.py       # Calculates technical indicators
-│   ├── monitoring_service.py # Logic for fetching and analyzing data
-│   ├── notification_service.py # Sends Telegram notifications
-│   ├── prepare_dist.py     # Prepares the distribution folder
-│   ├── robust_services.py  # Provides robust services like rate limiting and caching
-│   ├── teste_conexao.py    # Tests the connection to the CoinGecko API
-│   ├── token_movers.py     # Analyzes top gainers and losers
-│   └── update_checker.py   # Checks for application updates
-├── src/                    # React/TypeScript frontend code
-│   ├── components/         # Reusable React components
-│   │   ├── AlertHistoryPanel.tsx # A panel that displays the history of triggered alerts
-│   │   ├── AlertsPanel.tsx     # A panel that displays recent alerts
-│   │   ├── CryptoCard.tsx      # A card that displays data for a single cryptocurrency
-│   │   ├── SettingsModal.tsx   # A modal for managing and configuring alerts
-│   │   └── Tooltip.tsx         # A tooltip component
-│   ├── App.tsx             # The main application component
-│   ├── index.css           # Global styles
-│   ├── index.tsx           # The React application entry point
-│   ├── types.ts            # TypeScript type definitions
-│   └── utils.ts            # Utility functions
-├── package.json            # Frontend dependencies and scripts
-└── README.md               # This file
+├── backend/                # Código da API em Python/FastAPI
+│   ├── api_server.py       # Ponto de entrada e rotas da API
+│   ├── monitoring_service.py # Lógica de busca e análise de dados
+│   └── ...
+├── src/                    # Código do frontend em React/TypeScript (a ser criado)
+│   ├── components/         # Componentes React reutilizáveis (a ser criado)
+│   ├── index.css           # Estilos globais
+│   └── index.tsx           # Ponto de entrada da aplicação React
+├── package.json            # Dependências e scripts do frontend
+└── README.md               # Este arquivo
 ```
 
-## 🎯 Features
-- **Real-time Monitoring**: Automatically updated prices, market capitalization, volume, and technical indicators.
-- **Configurable Alerts**: Set up alerts for conditions like RSI, moving average crosses, MACD signals, and more.
-- **Intuitive Interface**: A clear and easy-to-use dashboard for visualizing data.
-- **Add/Remove Coins**: Customize your list of monitored coins.
+## 🎯 Funcionalidades
+- **Monitoramento em Tempo Real**: Veja preços, capitalização de mercado, volume e indicadores técnicos atualizados automaticamente.
+- **Alertas Configuráveis**: Configure alertas para condições como RSI, cruzamentos de médias móveis, sinais de MACD e mais.
+- **Interface Intuitiva**: Um painel de controle claro e fácil de usar para visualizar os dados.
+- **Adicionar/Remover Moedas**: Personalize sua lista de moedas monitoradas.
 
-## 🤝 Contribution
-1.  Fork the project
-2.  Create a branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your changes (`git commit -m 'Add AmazingFeature'`)
-4.  Push to the branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+## 🤝 Contribuição
+1.  Fork o projeto
+2.  Crie uma branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit suas mudanças (`git commit -m 'Add AmazingFeature'`)
+4.  Push para a branch (`git push origin feature/AmazingFeature`)
+5.  Abra um Pull Request

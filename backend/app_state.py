@@ -5,11 +5,7 @@ import time
 import logging
 
 def get_application_path():
-    """Gets the application path, compatible with PyInstaller.
-
-    Returns:
-        str: The path to the application directory.
-    """
+    """Retorna o caminho do diretório da aplicação, compatível com PyInstaller."""
     if getattr(sys, 'frozen', False):
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.abspath(__file__))
@@ -17,11 +13,7 @@ def get_application_path():
 STATE_FILE_PATH = os.path.join(get_application_path(), "app_state.json")
 
 def load_app_state():
-    """Loads the application state from app_state.json.
-
-    Returns:
-        dict: The application state.
-    """
+    """Carrega o estado da aplicação a partir de app_state.json."""
     if not os.path.exists(STATE_FILE_PATH):
         return {'last_api_fetch_timestamp': 0}
     try:
@@ -31,11 +23,7 @@ def load_app_state():
         return {'last_api_fetch_timestamp': 0}
 
 def save_app_state(state):
-    """Saves the application state to app_state.json.
-
-    Args:
-        state (dict): The application state to save.
-    """
+    """Salva o estado da aplicação em app_state.json."""
     try:
         with open(STATE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(state, f, indent=4)
@@ -44,16 +32,12 @@ def save_app_state(state):
         logging.error(f"Erro ao salvar o estado da aplicação: {e}")
 
 def get_last_fetch_timestamp():
-    """Gets the timestamp of the last API fetch.
-
-    Returns:
-        int: The timestamp of the last API fetch.
-    """
+    """Retorna o timestamp da última busca de API."""
     state = load_app_state()
     return state.get('last_api_fetch_timestamp', 0)
 
 def update_last_fetch_timestamp():
-    """Updates the timestamp of the last API fetch to the current time."""
+    """Atualiza o timestamp da última busca de API para o tempo atual."""
     state = load_app_state()
     state['last_api_fetch_timestamp'] = time.time()
     save_app_state(state)
@@ -61,10 +45,9 @@ def update_last_fetch_timestamp():
 MAPPING_CACHE_FILE = os.path.join(get_application_path(), "coin_mapping.json")
 
 def load_coin_mapping_cache():
-    """Loads the coin mapping from the cache if it is less than 24 hours old.
-
-    Returns:
-        dict: The coin mapping, or None if the cache is old or does not exist.
+    """
+    Carrega o mapeamento de nomes de moedas do cache se não tiver mais de 24 horas.
+    Retorna o mapeamento ou None se o cache estiver velho ou não existir.
     """
     if not os.path.exists(MAPPING_CACHE_FILE):
         return None
@@ -84,10 +67,8 @@ def load_coin_mapping_cache():
         return None
 
 def save_coin_mapping_cache(mapping):
-    """Saves the coin mapping to the cache with the current timestamp.
-
-    Args:
-        mapping (dict): The coin mapping to save.
+    """
+    Salva o mapeamento de nomes de moedas no cache com o timestamp atual.
     """
     cache_data = {
         "timestamp": time.time(),

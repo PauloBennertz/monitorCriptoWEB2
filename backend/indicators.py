@@ -2,39 +2,15 @@ import pandas as pd
 import numpy as np
 
 def calculate_sma(series, period):
-    """Calculates the Simple Moving Average (SMA) for a data series.
-
-    Args:
-        series (pd.Series): The data series.
-        period (int): The period for the SMA.
-
-    Returns:
-        pd.Series: The SMA series.
-    """
+    """Calcula a Média Móvel Simples (SMA) para uma série de dados."""
     return series.rolling(window=period).mean()
 
 def calculate_ema(series, period):
-    """Calculates the Exponential Moving Average (EMA) for a data series.
-
-    Args:
-        series (pd.Series): The data series.
-        period (int): The period for the EMA.
-
-    Returns:
-        pd.Series: The EMA series.
-    """
+    """Calcula a Média Móvel Exponencial (EMA) para uma série de dados."""
     return series.ewm(span=period, adjust=False).mean()
 
 def calculate_rsi(df, period=14):
-    """Calculates the Relative Strength Index (RSI) for a DataFrame.
-
-    Args:
-        df (pd.DataFrame): The DataFrame with the price data.
-        period (int, optional): The period for the RSI. Defaults to 14.
-
-    Returns:
-        tuple: A tuple containing the RSI, average gain, and average loss.
-    """
+    """Calcula o Índice de Força Relativa (RSI) para um DataFrame."""
     if df is None or df.empty or len(df) < period + 1: return 0, 0, 0
     delta = df['close'].diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
@@ -46,19 +22,7 @@ def calculate_rsi(df, period=14):
     return 100 - (100 / (1 + rs)), avg_gain, avg_loss
 
 def calculate_bollinger_bands(df, period=20, std_dev=2):
-    """Calculates the Bollinger Bands for a DataFrame.
-
-    Args:
-        df (pd.DataFrame): The DataFrame with the price data.
-        period (int, optional): The period for the Bollinger Bands.
-            Defaults to 20.
-        std_dev (int, optional): The number of standard deviations.
-            Defaults to 2.
-
-    Returns:
-        tuple: A tuple containing the upper band, lower band, SMA, and
-            standard deviation.
-    """
+    """Calcula as Bandas de Bollinger para um DataFrame."""
     if df is None or df.empty or len(df) < period: return 0, 0, 0, 0
     sma = df['close'].rolling(window=period).mean().iloc[-1]
     std = df['close'].rolling(window=period).std().iloc[-1]
@@ -66,18 +30,7 @@ def calculate_bollinger_bands(df, period=20, std_dev=2):
     return sma + (std * std_dev), sma - (std * std_dev), sma, std
 
 def calculate_macd(df, fast=12, slow=26, signal=9):
-    """Calculates the MACD (Moving Average Convergence Divergence) crossover signal.
-
-    Args:
-        df (pd.DataFrame): The DataFrame with the price data.
-        fast (int, optional): The fast period for the MACD. Defaults to 12.
-        slow (int, optional): The slow period for the MACD. Defaults to 26.
-        signal (int, optional): The signal period for the MACD. Defaults to 9.
-
-    Returns:
-        str: The MACD crossover signal ("Cruzamento de Alta",
-            "Cruzamento de Baixa", "Nenhum", or "N/A").
-    """
+    """Calcula o sinal de cruzamento do MACD (Convergência/Divergência de Médias Móveis)."""
     if df is None or len(df) < slow + signal: return "N/A"
     exp1 = df['close'].ewm(span=fast, adjust=False).mean()
     exp2 = df['close'].ewm(span=slow, adjust=False).mean()
@@ -89,16 +42,7 @@ def calculate_macd(df, fast=12, slow=26, signal=9):
     return "Nenhum"
 
 def calculate_emas(df, periods=[50, 200]):
-    """Calculates the Exponential Moving Averages (EMAs) for a list of periods.
-
-    Args:
-        df (pd.DataFrame): The DataFrame with the price data.
-        periods (list, optional): A list of periods for the EMAs.
-            Defaults to [50, 200].
-
-    Returns:
-        dict: A dictionary of EMAs for each period.
-    """
+    """Calcula as Médias Móveis Exponenciais (EMAs) para uma lista de períodos."""
     emas = {}
     if df is None or df.empty: return emas
     for period in periods:
@@ -106,22 +50,9 @@ def calculate_emas(df, periods=[50, 200]):
     return emas
 
 def calculate_hilo_signals(df, length=34, ma_type="EMA", offset=0, simple_hilo=True):
-    """Calculates the HiLo indicator signals translated from Pine Script.
-
-    Args:
-        df (pd.DataFrame): The DataFrame with the price data.
-        length (int, optional): The period for the HiLo indicator.
-            Defaults to 34.
-        ma_type (str, optional): The type of moving average to use ("EMA"
-            or "SMA"). Defaults to "EMA".
-        offset (int, optional): The offset for the moving averages.
-            Defaults to 0.
-        simple_hilo (bool, optional): Whether to use the simple HiLo
-            logic. Defaults to True.
-
-    Returns:
-        A tuple (buy_signal, sell_signal, signal_text) where the signal
-            is True or False.
+    """
+    Calcula os sinais do indicador HiLo traduzido do Pine Script.
+    Retorna uma tupla (sinal_compra, sinal_venda) onde o sinal é True ou False.
     """
     if df is None or df.empty or len(df) < length + offset + 1:
         return False, False, None

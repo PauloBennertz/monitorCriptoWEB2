@@ -6,15 +6,8 @@ from pycoingecko import CoinGeckoAPI
 import time
 
 def get_categories_data(cg_client, data_cache, rate_limiter):
-    """Gets a list of all categories from CoinGecko with detailed data.
-
-    Args:
-        cg_client (CoinGeckoAPI): The CoinGecko API client.
-        data_cache (DataCache): The data cache.
-        rate_limiter (BinanceRateLimiter): The rate limiter.
-
-    Returns:
-        list: A list of categories with detailed data.
+    """
+    Busca a lista de todas as categorias da CoinGecko com dados detalhados.
     """
     cache_key = {'method': 'get_coins_categories'}
     categories_data = data_cache.get(cache_key, ttl=3600) # Cache de 1 hora
@@ -33,14 +26,8 @@ def get_categories_data(cg_client, data_cache, rate_limiter):
         return None
 
 def analyze_capital_flow(categories_df, config):
-    """Analyzes and aggregates the capital flow by category.
-
-    Args:
-        categories_df (pd.DataFrame): The DataFrame with the categories data.
-        config (dict): The configuration for the analysis.
-
-    Returns:
-        pd.DataFrame: The DataFrame with the analysis results.
+    """
+    Analisa e agrega o fluxo de capital por categoria.
     """
     print("\nAnalisando fluxo de capital por categoria...")
     analysis_config = config.get('market_analysis_config', {})
@@ -71,10 +58,8 @@ def analyze_capital_flow(categories_df, config):
     return top_categories
 
 def print_results(results_df):
-    """Prints the analysis results in a formatted way.
-
-    Args:
-        results_df (pd.DataFrame): The DataFrame with the analysis results.
+    """
+    Imprime os resultados da análise de forma formatada.
     """
     if results_df.empty:
         print("\nNenhuma categoria atendeu aos critérios para exibição.")
@@ -104,13 +89,8 @@ def print_results(results_df):
     print("\nAnálise concluída.")
 
 def run_full_analysis(config, cg_client: CoinGeckoAPI, data_cache_instance: DataCache, rate_limiter_instance: BinanceRateLimiter):
-    """Runs the full capital flow analysis process.
-
-    Args:
-        config (dict): The configuration for the analysis.
-        cg_client (CoinGeckoAPI): The CoinGecko API client.
-        data_cache_instance (DataCache): The data cache.
-        rate_limiter_instance (BinanceRateLimiter): The rate limiter.
+    """
+    Função principal que orquestra todo o processo de análise de fluxo de capital.
     """
     start_time = time.time()
 
