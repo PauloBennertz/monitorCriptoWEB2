@@ -1,5 +1,11 @@
 export const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD' }).format(value);
+    const options = {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 4,
+    };
+    return new Intl.NumberFormat('pt-BR', options).format(value);
 };
 
 import { CryptoData } from './types';
