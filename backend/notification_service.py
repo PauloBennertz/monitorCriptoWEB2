@@ -2,14 +2,9 @@ import requests
 import logging
 
 def send_telegram_alert(bot_token, chat_id, message):
-    """Sends an alert message to a Telegram chat.
-
-    This function is self-contained and does not depend on a GUI.
-
-    Args:
-        bot_token (str): The Telegram bot token.
-        chat_id (str): The Telegram chat ID.
-        message (str): The message to send.
+    """
+    Envia uma mensagem de alerta para um chat do Telegram.
+    Esta função é auto-contida e não depende de GUI.
     """
     if not bot_token or "AQUI" in str(bot_token) or not chat_id or "AQUI" in str(chat_id):
         logging.warning("Token ou Chat ID do Telegram não configurado. Pulando notificação.")
