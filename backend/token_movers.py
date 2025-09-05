@@ -6,9 +6,20 @@ from robust_services import DataCache, BinanceRateLimiter
 import logging # Importar logging para mensagens internas
 
 def run_token_analysis(config, cg_client: CoinGeckoAPI, data_cache_instance: DataCache, rate_limiter_instance: BinanceRateLimiter):
-    """
-    Executa a análise de maiores ganhadores e perdedores e RETORNA os resultados,
-    utilizando as instâncias de API, cache e rate limiter injetadas.
+    """Runs the analysis of top gainers and losers and returns the results.
+
+    This uses the injected API, cache, and rate limiter instances.
+
+    Args:
+        config (dict): The configuration for the analysis.
+        cg_client (CoinGeckoAPI): The CoinGecko API client.
+        data_cache_instance (DataCache): The data cache instance.
+        rate_limiter_instance (BinanceRateLimiter): The rate limiter
+            instance.
+
+    Returns:
+        tuple: A tuple containing the top gainers, top losers, and a
+            status message.
     """
     token_config = config.get('token_analysis_config', {})
     top_n = token_config.get('top_n', 20)

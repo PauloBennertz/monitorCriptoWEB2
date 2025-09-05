@@ -1,6 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { CryptoData, AlertConfigs, AlertConfig, BasicCoin, ALERT_DEFINITIONS, COOLDOWN_OPTIONS, DEFAULT_ALERT_CONFIG } from '../types';
 
+/**
+ * A modal for managing and configuring alerts for cryptocurrencies.
+ *
+ * @param {object} props - The component props.
+ * @param {boolean} props.isOpen - Whether the modal is open.
+ * @param {Function} props.onClose - The function to call when the modal is closed.
+ * @param {AlertConfigs} props.alertConfigs - The current alert configurations.
+ * @param {Function} props.onConfigChange - The function to call when an alert configuration is changed.
+ * @param {BasicCoin[]} props.allCoins - The list of all available coins.
+ * @param {CryptoData[]} props.monitoredCoins - The list of currently monitored coins.
+ * @param {Function} props.onUpdateCoin - The function to call when a coin is added or removed from the monitored list.
+ * @returns {JSX.Element | null} The rendered component, or null if it is not open.
+ */
 const SettingsModal = ({
     isOpen,
     onClose,

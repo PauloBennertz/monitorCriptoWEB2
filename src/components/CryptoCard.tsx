@@ -3,7 +3,7 @@ import Tooltip from './Tooltip';
 import { CryptoData, INDICATOR_TOOLTIPS } from '../types'; // Assuming types and constants are moved to a types file
 import { formatCurrency, formatLargeNumber } from '../utils'; // Assuming helpers are moved to a utils file
 
-const CryptoCard = ({ data }: { data: CryptoData }) => {
+
     const [flashClass, setFlashClass] = useState('');
 
     useEffect(() => {
