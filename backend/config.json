@@ -126,7 +126,8 @@
           },
           "rsi_sobrevendido": {
             "enabled": true,
-            "value": 30
+            "value": 30,
+            "blinking": true
           },
           "rsi_sobrecomprado": {
             "enabled": true,
@@ -186,6 +187,111 @@
           },
           "macd_cruz_baixa": {
             "enabled": true
+          }
+        }
+      }
+    },
+    {
+      "symbol": "AAVEUSDT",
+      "alert_config": {
+        "conditions": {
+          "rsi_sobrevendido": {
+            "enabled": true,
+            "blinking": true
+          },
+          "rsi_sobrecomprado": {
+            "enabled": true,
+            "blinking": true
+          },
+          "hilo_compra": {
+            "enabled": true,
+            "blinking": true
+          },
+          "mme_cruz_dourada": {
+            "enabled": true,
+            "blinking": true
+          },
+          "mme_cruz_morte": {
+            "enabled": true,
+            "blinking": true
+          },
+          "macd_cruz_alta": {
+            "enabled": true,
+            "blinking": true
+          },
+          "macd_cruz_baixa": {
+            "enabled": true,
+            "blinking": true
+          }
+        }
+      }
+    },
+    {
+      "symbol": "SUIUSDT",
+      "alert_config": {
+        "conditions": {
+          "rsi_sobrevendido": {
+            "enabled": true,
+            "blinking": true
+          },
+          "rsi_sobrecomprado": {
+            "enabled": true,
+            "blinking": true
+          },
+          "hilo_compra": {
+            "enabled": true,
+            "blinking": true
+          },
+          "mme_cruz_dourada": {
+            "enabled": true,
+            "blinking": true
+          },
+          "mme_cruz_morte": {
+            "enabled": true,
+            "blinking": true
+          },
+          "macd_cruz_alta": {
+            "enabled": true,
+            "blinking": true
+          },
+          "macd_cruz_baixa": {
+            "enabled": true,
+            "blinking": true
+          }
+        }
+      }
+    },
+    {
+      "symbol": "ADAUSDT",
+      "alert_config": {
+        "conditions": {
+          "rsi_sobrevendido": {
+            "enabled": true,
+            "blinking": true
+          },
+          "rsi_sobrecomprado": {
+            "enabled": true,
+            "blinking": true
+          },
+          "hilo_compra": {
+            "enabled": true,
+            "blinking": true
+          },
+          "mme_cruz_dourada": {
+            "enabled": true,
+            "blinking": true
+          },
+          "mme_cruz_morte": {
+            "enabled": true,
+            "blinking": true
+          },
+          "macd_cruz_alta": {
+            "enabled": true,
+            "blinking": true
+          },
+          "macd_cruz_baixa": {
+            "enabled": true,
+            "blinking": true
           }
         }
       }
