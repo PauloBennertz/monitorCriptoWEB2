@@ -56,13 +56,22 @@ api_cache = {}
 
 @app.get("/")
 async def read_root():
-    """A simple root endpoint to confirm the API is running."""
+    """A simple root endpoint to confirm the API is running.
+
+    Returns:
+        dict: A message indicating the API is running.
+    """
     return {"message": "Welcome to the Crypto Monitor Pro API!"}
 
 @app.get("/api/global_data")
 async def get_global_data():
-    """
-    Provides global market data, such as BTC dominance.
+    """Provides global market data, such as BTC dominance.
+
+    Raises:
+        HTTPException: If there is an error fetching the global data.
+
+    Returns:
+        dict: A dictionary containing the BTC dominance value.
     """
     logging.info("Fetching global market data...")
     try:
@@ -83,9 +92,16 @@ class Coin(BaseModel):
 
 @app.get("/api/all_tradable_coins", response_model=List[Coin])
 async def get_all_tradable_coins():
-    """
-    Provides a list of all available coins from CoinGecko, including names and symbols.
-    The list is cached by the CoinManager to improve performance.
+    """Provides a list of all available coins from CoinGecko.
+
+    This list includes names and symbols and is cached by the CoinManager to
+    improve performance.
+
+    Raises:
+        HTTPException: If the coin list cannot be fetched.
+
+    Returns:
+        List[Coin]: A list of all tradable coins.
     """
     logging.info("Fetching all tradable coins from CoinManager...")
     try:
@@ -104,8 +120,18 @@ async def get_all_tradable_coins():
 
 @app.get("/api/crypto_data", response_model=List[Dict[str, Any]])
 async def get_crypto_data(symbols: List[str] = Query(..., description="A list of crypto symbols to fetch data for (e.g., ['BTCUSDT', 'ETHUSDT'])")):
-    """
-    The main endpoint to get analyzed data for a list of cryptocurrencies.
+    """Gets analyzed data for a list of cryptocurrencies.
+
+    Args:
+        symbols (List[str]): A list of crypto symbols to fetch data for
+            (e.g., ['BTCUSDT', 'ETHUSDT']).
+
+    Raises:
+        HTTPException: If there is an error fetching the crypto data.
+
+    Returns:
+        List[Dict[str, Any]]: A list of dictionaries containing the
+            analyzed data for each symbol.
     """
     logging.info(f"Received request for crypto data for symbols: {symbols}")
 
@@ -155,7 +181,14 @@ class Alert(BaseModel):
 
 @app.get("/api/alerts", response_model=List[Alert])
 async def get_alert_history():
-    """Reads and returns the persistent alert history."""
+    """Reads and returns the persistent alert history.
+
+    Raises:
+        HTTPException: If there is an error reading the alert history file.
+
+    Returns:
+        List[Alert]: A list of alerts from the history.
+    """
     try:
         with HISTORY_LOCK:
             if not os.path.exists(ALERT_HISTORY_FILE_PATH):
@@ -177,7 +210,17 @@ async def get_alert_history():
 
 @app.post("/api/alerts")
 async def save_alert_to_history(alert: Alert):
-    """Saves a triggered alert to the persistent history file."""
+    """Saves a triggered alert to the persistent history file.
+
+    Args:
+        alert (Alert): The alert to save to the history.
+
+    Raises:
+        HTTPException: If there is an error saving the alert.
+
+    Returns:
+        dict: A message indicating the alert was saved.
+    """
     try:
         with HISTORY_LOCK:
             history = []
@@ -209,7 +252,15 @@ async def save_alert_to_history(alert: Alert):
 
 @app.get("/api/alert_configs", response_model=Dict[str, Any])
 async def get_alert_configs():
-    """Reads and returns the entire application configuration from config.json."""
+    """Reads and returns the application configuration from config.json.
+
+    Raises:
+        HTTPException: If the config file is not found or there is an
+            error reading it.
+
+    Returns:
+        Dict[str, Any]: The application configuration.
+    """
     try:
         with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -221,7 +272,17 @@ async def get_alert_configs():
 
 @app.post("/api/alert_configs")
 async def set_alert_configs(new_config: Dict[str, Any]):
-    """Receives a new configuration and overwrites config.json."""
+    """Receives and saves a new configuration to config.json.
+
+    Args:
+        new_config (Dict[str, Any]): The new configuration to save.
+
+    Raises:
+        HTTPException: If there is an error saving the configuration.
+
+    Returns:
+        dict: A message indicating the configuration was saved.
+    """
     try:
         with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(new_config, f, indent=2)
@@ -232,7 +293,14 @@ async def set_alert_configs(new_config: Dict[str, Any]):
 
 @app.get("/api/alerts", response_model=List[Dict[str, Any]])
 async def get_alerts():
-    """Reads and returns the alert history from alert_history.json."""
+    """Reads and returns the alert history from alert_history.json.
+
+    Raises:
+        HTTPException: If there is an error reading the alert history file.
+
+    Returns:
+        List[Dict[str, Any]]: A list of alerts from the history.
+    """
     try:
         if not os.path.exists(ALERT_HISTORY_FILE_PATH):
             return []
@@ -249,7 +317,18 @@ class CoinSymbol(BaseModel):
 
 @app.post("/api/monitored_coins")
 async def add_monitored_coin(coin: CoinSymbol):
-    """Adds a new coin to the monitored list in config.json."""
+    """Adds a new coin to the monitored list in config.json.
+
+    Args:
+        coin (CoinSymbol): The coin to add to the monitored list.
+
+    Raises:
+        HTTPException: If the config file is not found or there is an
+            error adding the coin.
+
+    Returns:
+        dict: A message indicating the coin was added.
+    """
     try:
         with open(CONFIG_FILE_PATH, 'r+', encoding='utf-8') as f:
             config_data = json.load(f)
@@ -301,7 +380,18 @@ async def add_monitored_coin(coin: CoinSymbol):
 
 @app.delete("/api/monitored_coins/{symbol}")
 async def remove_monitored_coin(symbol: str):
-    """Removes a coin from the monitored list in config.json."""
+    """Removes a coin from the monitored list in config.json.
+
+    Args:
+        symbol (str): The symbol of the coin to remove.
+
+    Raises:
+        HTTPException: If the config file is not found or there is an
+            error removing the coin.
+
+    Returns:
+        dict: A message indicating the coin was removed.
+    """
     try:
         with open(CONFIG_FILE_PATH, 'r+', encoding='utf-8') as f:
             config_data = json.load(f)

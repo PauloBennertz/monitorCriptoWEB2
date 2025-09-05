@@ -1,6 +1,16 @@
 import React from 'react';
 import { Alert } from '../types';
 
+/**
+ * A panel that displays recent alerts.
+ *
+ * @param {object} props - The component props.
+ * @param {boolean} props.isOpen - Whether the panel is open.
+ * @param {Function} props.onClose - The function to call when the panel is closed.
+ * @param {Alert[]} props.alerts - The list of alerts to display.
+ * @param {Function} props.onClearAlerts - The function to call when the "Clear All" button is clicked.
+ * @returns {JSX.Element | null} The rendered component, or null if it is not open.
+ */
 const AlertsPanel = ({ isOpen, onClose, alerts, onClearAlerts }: {
     isOpen: boolean;
     onClose: () => void;

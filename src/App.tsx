@@ -6,6 +6,11 @@ import AlertHistoryPanel from './components/AlertHistoryPanel';
 import { CryptoData, Alert, MutedAlert, AlertConfigs, AlertConfig, BasicCoin, API_BASE_URL, ALERT_DEFINITIONS, DEFAULT_ALERT_CONFIG } from './types';
 import { formatTime } from './utils';
 
+/**
+ * The main application component.
+ *
+ * @returns {JSX.Element} The rendered application.
+ */
 const App = () => {
     const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
     const [allCoins, setAllCoins] = useState<BasicCoin[]>([]);
