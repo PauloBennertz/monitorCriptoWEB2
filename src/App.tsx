@@ -15,7 +15,6 @@ const App = () => {
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [mutedAlerts, setMutedAlerts] = useState<MutedAlert[]>([]);
-    const [blinkingCards, setBlinkingCards] = useState<Record<string, number>>({});
     const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
     const [isAlertsPanelOpen, setAlertsPanelOpen] = useState(false);
     const [isHistoryPanelOpen, setHistoryPanelOpen] = useState(false);
@@ -344,28 +343,8 @@ const App = () => {
             activeAlerts.forEach(alert => {
                 triggerAlert(data.symbol, alert.type, alert.data);
             });
-
-            if (activeAlerts.length > 1) {
-                setBlinkingCards(prev => ({ ...prev, [data.symbol]: Date.now() }));
-            }
         });
     }, [cryptoData, triggerAlert]);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const now = Date.now();
-            setBlinkingCards(prev => {
-                const newBlinkingCards: Record<string, number> = {};
-                for (const symbol in prev) {
-                    if (now - prev[symbol] < 10000) { // 10 seconds
-                        newBlinkingCards[symbol] = prev[symbol];
-                    }
-                }
-                return newBlinkingCards;
-            });
-        }, 1000); // Check every second
-        return () => clearInterval(interval);
-    }, []);
 
     return (
         <div className="app-container">
@@ -426,7 +405,6 @@ const App = () => {
                                 <CryptoCard
                                     key={crypto.symbol}
                                     data={crypto}
-                                    isBlinking={!!blinkingCards[crypto.symbol]}
                                 />
                             ))}
                         </div>
