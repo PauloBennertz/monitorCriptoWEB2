@@ -21,15 +21,30 @@ const AlertsPanel = ({ isOpen, onClose, alerts, onClearAlerts }: {
                     {alerts.length === 0 ? (
                         <p className="no-alerts">Nenhum alerta recente.</p>
                     ) : (
-                        alerts.map(alert => (
-                            <div key={alert.id} className="alert-item">
-                                <div className="alert-header">
-                                    <strong>{alert.symbol.replace('USDT','')} - {alert.condition}</strong>
-                                    <span>{alert.timestamp}</span>
+                        alerts.map(alert => {
+                            const getAlertItemClass = (alert: Alert) => {
+                                let baseClass = 'alert-item';
+                                // The alert ID is structured as 'SYMBOL-TRIGGER_KEY-TIMESTAMP'
+                                // This is a reliable way to check for the trigger type without changing the Alert interface.
+                                if (alert.id.includes('CRUZ_DOURADA')) {
+                                    return `${baseClass} alert-golden-cross`;
+                                }
+                                if (alert.id.includes('CRUZ_DA_MORTE')) {
+                                    return `${baseClass} alert-death-cross`;
+                                }
+                                return baseClass;
+                            };
+
+                            return (
+                                <div key={alert.id} className={getAlertItemClass(alert)}>
+                                    <div className="alert-header">
+                                        <strong>{alert.symbol.replace('USDT', '')} - {alert.condition}</strong>
+                                        <span>{new Date(alert.timestamp).toLocaleTimeString('pt-BR')}</span>
+                                    </div>
+                                    <p>{alert.description}</p>
                                 </div>
-                                <p>{alert.description}</p>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
                 <div className="panel-footer">
