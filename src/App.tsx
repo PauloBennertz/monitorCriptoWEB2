@@ -311,6 +311,38 @@ const App = () => {
         });
     }, [cryptoData, sortKey, sortOrder]);
 
+    // --- Sound Synthesis Function ---
+    const playSound = (type: 'golden' | 'death' | 'default') => {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (!audioContext) return;
+
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05); // Fade in
+
+        if (type === 'golden') {
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.8);
+        } else if (type === 'death') {
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(329.63, audioContext.currentTime); // E4
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.8);
+        } else { // default
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(440.00, audioContext.currentTime); // A4
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.5);
+        }
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 1);
+    };
+
     const triggerAlert = useCallback((symbol: string, alertType: string, data: CryptoData) => {
         const now = Date.now();
         const isMuted = mutedAlerts.some(m => m.symbol === symbol && m.alertType === alertType && m.muteUntil > now);
@@ -319,24 +351,33 @@ const App = () => {
         const config = alertConfigs[symbol]?.[alertType] ?? DEFAULT_ALERT_CONFIG;
         if (!config.enabled) return;
 
+        // Play sound based on alert type
+        if (alertType === 'CRUZ_DOURADA') {
+            playSound('golden');
+        } else if (alertType === 'CRUZ_DA_MORTE') {
+            playSound('death');
+        } else {
+            // Uncomment the line below to enable a default sound for all other alerts
+            // playSound('default');
+        }
+
         const newAlert: Alert = {
             id: `${symbol}-${alertType}-${now}`,
             symbol,
             condition: ALERT_DEFINITIONS[alertType].name,
             description: ALERT_DEFINITIONS[alertType].description,
-        timestamp: new Date().toISOString(),
+            timestamp: new Date().toISOString(),
             snapshot: data,
         };
 
-    // Save to persistent history on the backend (fire and forget)
-    fetch(`${API_BASE_URL}/api/alerts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newAlert),
-    }).catch(err => {
-        // Non-critical, so we just log the error to the console.
-        console.error("Failed to save alert to history:", err);
-    });
+        // Save to persistent history on the backend (fire and forget)
+        fetch(`${API_BASE_URL}/api/alerts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newAlert),
+        }).catch(err => {
+            console.error("Failed to save alert to history:", err);
+        });
 
         setAlerts(prev => [newAlert, ...prev]);
         setMutedAlerts(prev => [...prev.filter(m => m.muteUntil > now), { symbol, alertType, muteUntil: now + config.cooldown * 1000 }]);
@@ -361,6 +402,7 @@ const App = () => {
             });
         });
     }, [cryptoData, triggerAlert]);
+
 
     return (
         <div className="app-container">

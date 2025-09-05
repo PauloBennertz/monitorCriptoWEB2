@@ -729,6 +729,27 @@ input:checked + .slider:before {
     padding: 1rem;
     margin-bottom: 1rem;
     border-left: 4px solid var(--accent-color-blue);
+    transition: all 0.3s ease;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.alert-item.alert-golden-cross {
+    background: linear-gradient(145deg, #4d3800, #3c2c00);
+    border-left: 6px solid #ffc107;
+    animation: pulse 2s infinite ease-in-out;
+    box-shadow: 0 0 15px rgba(255, 193, 7, 0.3);
+}
+
+.alert-item.alert-death-cross {
+    background: linear-gradient(145deg, #5d1a1a, #4a1414);
+    border-left: 6px solid #dc3545;
+    animation: pulse 2s infinite ease-in-out;
+    box-shadow: 0 0 15px rgba(220, 53, 69, 0.3);
 }
 .alert-header {
     display: flex;
