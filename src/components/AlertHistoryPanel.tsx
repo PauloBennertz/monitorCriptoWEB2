@@ -9,6 +9,14 @@ interface AlertHistoryPanelProps {
     onClose: () => void;
 }
 
+/**
+ * A panel that displays the history of triggered alerts.
+ *
+ * @param {object} props - The component props.
+ * @param {boolean} props.isOpen - Whether the panel is open.
+ * @param {Function} props.onClose - The function to call when the panel is closed.
+ * @returns {JSX.Element | null} The rendered component, or null if it is not open.
+ */
 const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }) => {
     const [history, setHistory] = useState<Alert[]>([]);
     const [isLoading, setIsLoading] = useState(false);

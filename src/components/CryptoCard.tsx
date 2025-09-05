@@ -3,6 +3,14 @@ import Tooltip from './Tooltip';
 import { CryptoData, INDICATOR_TOOLTIPS } from '../types'; // Assuming types and constants are moved to a types file
 import { formatCurrency, formatLargeNumber } from '../utils'; // Assuming helpers are moved to a utils file
 
+/**
+ * A card that displays data for a single cryptocurrency.
+ *
+ * @param {object} props - The component props.
+ * @param {CryptoData} props.data - The data for the cryptocurrency.
+ * @param {boolean} props.isBlinking - Whether the card should be blinking.
+ * @returns {JSX.Element} The rendered component.
+ */
 const CryptoCard = ({ data, isBlinking }: { data: CryptoData, isBlinking: boolean }) => {
     const [flashClass, setFlashClass] = useState('');
 

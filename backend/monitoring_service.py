@@ -14,7 +14,19 @@ from .app_state import load_coin_mapping_cache, save_coin_mapping_cache
 cg_client = CoinGeckoAPI()
 
 def get_klines_data(symbol, interval='1h', limit=300):
-    """Busca dados de k-lines da Binance com cache, rate limiting e validação."""
+    """Gets k-line data from Binance with caching, rate limiting, and validation.
+
+    Args:
+        symbol (str): The symbol to get the k-line data for.
+        interval (str, optional): The interval for the k-lines.
+            Defaults to '1h'.
+        limit (int, optional): The number of k-lines to get.
+            Defaults to 300.
+
+    Returns:
+        pd.DataFrame: The DataFrame with the k-line data, or None if
+            the request fails.
+    """
     if not robust_services.DataValidator.validate_symbol(symbol):
         logging.warning(f"Tentativa de busca por símbolo inválido: {symbol}")
         return None
@@ -42,7 +54,11 @@ def get_klines_data(symbol, interval='1h', limit=300):
         return None
 
 def get_ticker_data():
-    """Busca os dados de ticker de 24h para todas as moedas, com cache."""
+    """Gets the 24h ticker data for all coins, with caching.
+
+    Returns:
+        dict: A dictionary of ticker data for all coins.
+    """
     cache_args = {'func': 'get_ticker_data'}
     cached_data = robust_services.data_cache.get(cache_args, ttl=60)
     if cached_data is not None: return cached_data
@@ -59,7 +75,15 @@ def get_ticker_data():
         return {}
 
 def get_market_caps_coingecko(symbols_to_monitor, coingecko_mapping):
-    """Busca o valor de mercado (market cap) para uma lista de moedas via CoinGecko."""
+    """Gets the market cap for a list of coins via CoinGecko.
+
+    Args:
+        symbols_to_monitor (list): A list of symbols to monitor.
+        coingecko_mapping (dict): A mapping of symbols to CoinGecko IDs.
+
+    Returns:
+        dict: A dictionary of market caps for the given symbols.
+    """
     logging.info(f"Buscando market caps para os seguintes símbolos: {symbols_to_monitor}")
     market_caps = {}
     coin_ids_to_fetch = []
@@ -104,9 +128,12 @@ def get_market_caps_coingecko(symbols_to_monitor, coingecko_mapping):
         return {}
 
 def get_coingecko_global_mapping():
-    """
-    Busca a lista de moedas da CoinGecko para mapear Símbolo -> Nome.
-    Utiliza um cache local que é atualizado a cada 24 horas.
+    """Gets the CoinGecko coin list to map Symbol -> Name.
+
+    This uses a local cache that is updated every 24 hours.
+
+    Returns:
+        dict: A mapping of symbols to names.
     """
     cached_mapping = load_coin_mapping_cache()
     if cached_mapping is not None:
@@ -127,7 +154,14 @@ def get_coingecko_global_mapping():
         return {}
 
 def fetch_all_binance_symbols_startup(existing_config):
-    """Busca todos os símbolos USDT da Binance na inicialização."""
+    """Fetches all USDT symbols from Binance at startup.
+
+    Args:
+        existing_config (dict): The existing configuration.
+
+    Returns:
+        list: A list of all USDT symbols from Binance.
+    """
     logging.info("Buscando lista de moedas da Binance...")
     robust_services.rate_limiter.wait_if_needed()
     try:
@@ -142,7 +176,17 @@ def fetch_all_binance_symbols_startup(existing_config):
         return [c['symbol'] for c in existing_config.get('cryptos_to_monitor', [])]
 
 def _get_sound_for_trigger(trigger_key, sound_config):
-    """Determina o som apropriado para um gatilho de alerta com base na sua chave programática."""
+    """Determines the appropriate sound for an alert trigger.
+
+    This is based on its programmatic key.
+
+    Args:
+        trigger_key (str): The key of the trigger.
+        sound_config (dict): The sound configuration.
+
+    Returns:
+        str: The path to the sound file.
+    """
     if not sound_config:
         return os.path.join('sons', 'Alerta.mp3')
 
@@ -178,9 +222,18 @@ def _get_sound_for_trigger(trigger_key, sound_config):
     return os.path.join('sons', sound_file)
 
 def _check_and_trigger_alerts(symbol, alert_config, analysis_data):
-    """
-    Verifica as condições de alerta para um símbolo e retorna uma lista de alertas disparados.
-    Refatorado para não ter dependências de GUI (data_queue, sound_config).
+    """Checks the alert conditions for a symbol and returns a list of triggered alerts.
+
+    This is refactored to have no GUI dependencies (data_queue, sound_config).
+
+    Args:
+        symbol (str): The symbol to check for alerts.
+        alert_config (dict): The alert configuration for the symbol.
+        analysis_data (dict): The analysis data for the symbol.
+
+    Returns:
+        tuple: A tuple containing a list of triggered alerts and the
+            updated triggered conditions.
     """
     triggered_alerts = []
     conditions = alert_config.get('conditions', {})
@@ -252,7 +305,19 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data):
     return triggered_alerts, triggered_conditions
 
 def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None):
-    """Coleta e analisa todos os dados técnicos para um único símbolo."""
+    """Collects and analyzes all technical data for a single symbol.
+
+    Args:
+        symbol (str): The symbol to analyze.
+        ticker_data (dict): The ticker data for all symbols.
+        market_cap (float, optional): The market cap of the symbol.
+            Defaults to None.
+        coingecko_mapping (dict, optional): A mapping of symbols to
+            CoinGecko names. Defaults to None.
+
+    Returns:
+        dict: A dictionary containing the analysis results.
+    """
     base_asset = symbol.replace('USDT', '')
     coin_name = coingecko_mapping.get(base_asset, base_asset) if coingecko_mapping else base_asset
 
@@ -307,10 +372,18 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
     return analysis_result
 
 def run_monitoring_cycle(config, coingecko_mapping):
-    """
-    Executa um único ciclo de monitoramento para todas as moedas configuradas.
-    Retorna uma lista de dados analisados e uma lista de alertas disparados.
-    Refatorado para ser uma função one-shot para uso da API.
+    """Executes a single monitoring cycle for all configured coins.
+
+    This returns a list of analyzed data and a list of triggered alerts,
+    and is refactored to be a one-shot function for API use.
+
+    Args:
+        config (dict): The application configuration.
+        coingecko_mapping (dict): A mapping of symbols to CoinGecko IDs.
+
+    Returns:
+        tuple: A tuple containing a list of analysis data and a list of
+            triggered alerts.
     """
     logging.info("Executando ciclo de monitoramento sob demanda.")
 
@@ -350,9 +423,18 @@ def run_monitoring_cycle(config, coingecko_mapping):
     return all_analysis_data, all_triggered_alerts
 
 def run_single_symbol_update(symbol, config, coingecko_mapping):
-    """
-    Executa uma atualização de dados para uma única moeda.
-    Retorna os dados de análise e quaisquer alertas disparados.
+    """Executes a data update for a single coin.
+
+    This returns the analysis data and any triggered alerts.
+
+    Args:
+        symbol (str): The symbol to update.
+        config (dict): The application configuration.
+        coingecko_mapping (dict): A mapping of symbols to CoinGecko IDs.
+
+    Returns:
+        tuple: A tuple containing the analysis data and a list of
+            triggered alerts.
     """
     logging.info(f"Iniciando atualização sob demanda para {symbol}...")
     crypto_config = next((c for c in config.get("cryptos_to_monitor", []) if c['symbol'] == symbol), None)
@@ -378,7 +460,12 @@ def run_single_symbol_update(symbol, config, coingecko_mapping):
     return analysis_data, triggered_alerts
 
 def get_btc_dominance():
-    """Busca a dominância de mercado do BTC a partir da CoinGecko."""
+    """Gets the BTC market dominance from CoinGecko.
+
+    Returns:
+        float: The BTC dominance, or "N/A" if not found, or "Erro" if
+            there is an error.
+    """
     try:
         cache_key = {'func': 'get_btc_dominance'}
         if cached_data := robust_services.data_cache.get(cache_key, ttl=300):
@@ -403,7 +490,11 @@ def get_btc_dominance():
         return "Erro"
 
 def get_top_100_coins():
-    """Busca as 100 principais criptomoedas por capitalização de mercado da CoinGecko."""
+    """Gets the top 100 cryptocurrencies by market cap from CoinGecko.
+
+    Returns:
+        list: A list of the top 100 cryptocurrencies.
+    """
     try:
         robust_services.rate_limiter.wait_if_needed()
         coins = cg_client.get_coins_markets(vs_currency='usd', order='market_cap_desc', per_page=100, page=1)
