@@ -29,3 +29,26 @@ export const formatTime = (seconds: number) => {
     const remainingSeconds = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
+
+export const formatTimeAgo = (isoTimestamp: string): string => {
+    const now = new Date();
+    const alertTime = new Date(isoTimestamp);
+    const seconds = Math.floor((now.getTime() - alertTime.getTime()) / 1000);
+
+    if (seconds < 60) {
+        return `Agora mesmo`;
+    }
+
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) {
+        return `Há ${minutes} min`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+        return `Há ${hours}h`;
+    }
+
+    const days = Math.floor(hours / 24);
+    return `Há ${days}d`;
+};

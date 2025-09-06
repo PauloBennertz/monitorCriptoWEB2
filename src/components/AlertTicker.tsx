@@ -1,5 +1,6 @@
 import React from 'react';
 import { Alert } from '../types';
+import { formatTimeAgo } from '../utils';
 import './AlertTicker.css';
 
 interface AlertTickerProps {
@@ -7,17 +8,19 @@ interface AlertTickerProps {
 }
 
 const AlertTicker: React.FC<AlertTickerProps> = ({ alerts }) => {
-    const tickerContent = alerts.length > 0
-        ? alerts.map(alert => {
-            const time = new Date(alert.timestamp).toLocaleTimeString('pt-BR');
-            return `[${time}] ${alert.symbol}: ${alert.condition}`;
-        }).join(' --- ')
-        : 'Nenhum alerta recente.';
-
     return (
         <div className="alert-ticker-container">
             <div className="alert-ticker-content">
-                {tickerContent}
+                {alerts.length > 0 ? (
+                    alerts.map((alert, index) => (
+                        <span key={alert.id} className="alert-item">
+                            {formatTimeAgo(alert.timestamp)} - <span className="alert-symbol">{alert.symbol}</span> - {alert.condition}
+                            {index < alerts.length - 1 && <span className="separator">|</span>}
+                        </span>
+                    ))
+                ) : (
+                    <span className="alert-item">Nenhum alerta recente.</span>
+                )}
             </div>
         </div>
     );
