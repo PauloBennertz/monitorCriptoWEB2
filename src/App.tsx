@@ -3,6 +3,8 @@ import CryptoCard from './components/CryptoCard';
 import SettingsModal from './components/SettingsModal';
 import AlertsPanel from './components/AlertsPanel';
 import AlertHistoryPanel from './components/AlertHistoryPanel';
+import AlertTicker from './components/AlertTicker'; // Import the new component
+import './components/AlertTicker.css'; // Import the new stylesheet
 import { CryptoData, Alert, MutedAlert, AlertConfigs, AlertConfig, BasicCoin, API_BASE_URL, ALERT_DEFINITIONS, DEFAULT_ALERT_CONFIG } from './types';
 import { formatTime, countActiveIndicators } from './utils';
 
@@ -406,6 +408,7 @@ const App = () => {
 
     return (
         <div className="app-container">
+            <AlertTicker alerts={alerts} />
             <header className="app-header">
                 <div className="header-top">
                     <h1 className="header-title">Crypto Monitor Pro</h1>
