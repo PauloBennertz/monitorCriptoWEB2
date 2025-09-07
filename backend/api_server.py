@@ -5,7 +5,8 @@ from threading import Lock
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+from datetime import datetime
 
 # --- Import core logic from the existing application ---
 # These imports will be used to power the API endpoints.
@@ -154,8 +155,14 @@ class Alert(BaseModel):
     snapshot: Dict[str, Any]
 
 @app.get("/api/alerts", response_model=List[Alert])
-async def get_alert_history():
-    """Reads and returns the persistent alert history."""
+async def get_alert_history(
+    start_date: Optional[str] = Query(None, description="Start date for filtering (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="End date for filtering (YYYY-MM-DD)")
+):
+    """
+    Reads and returns the persistent alert history.
+    Can be filtered by a date range.
+    """
     try:
         with HISTORY_LOCK:
             if not os.path.exists(ALERT_HISTORY_FILE_PATH):
@@ -167,13 +174,34 @@ async def get_alert_history():
                         return []
                     history = json.loads(content)
                     if not isinstance(history, list):
-                        return []
-                    return history
+                        history = []
                 except json.JSONDecodeError:
-                    return [] # Return empty list if file is corrupted
+                    history = []
+
+            if not history:
+                return []
+
+            # Filter by date range if parameters are provided
+            if start_date and end_date:
+                try:
+                    # Add time to end_date to include the whole day
+                    start_dt = datetime.fromisoformat(start_date + "T00:00:00")
+                    end_dt = datetime.fromisoformat(end_date + "T23:59:59")
+
+                    filtered_history = [
+                        alert for alert in history
+                        if start_dt <= datetime.fromisoformat(alert['timestamp']) <= end_dt
+                    ]
+                    return filtered_history
+                except (ValueError, TypeError) as e:
+                    logging.error(f"Invalid date format provided: {e}")
+                    raise HTTPException(status_code=400, detail="Invalid date format. Please use YYYY-MM-DD.")
+
+            return history
+
     except Exception as e:
-        logging.error(f"Error reading alert history file: {e}")
-        raise HTTPException(status_code=500, detail="Error reading alert history file.")
+        logging.error(f"Error reading or filtering alert history file: {e}")
+        raise HTTPException(status_code=500, detail="Error reading or filtering alert history file.")
 
 @app.post("/api/alerts")
 async def save_alert_to_history(alert: Alert):
