@@ -49,18 +49,9 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
 
     useEffect(() => {
         if (isOpen) {
-            // Define o período padrão como os últimos 7 dias
-            const defaultEndDate = new Date();
-            const defaultStartDate = new Date();
-            defaultStartDate.setDate(defaultEndDate.getDate() - 7);
-
-            const formattedStartDate = defaultStartDate.toISOString().slice(0, 10);
-            const formattedEndDate = defaultEndDate.toISOString().slice(0, 10);
-
-            setStartDate(formattedStartDate);
-            setEndDate(formattedEndDate);
-
-            fetchHistory(formattedStartDate, formattedEndDate);
+            // Temporarily fetching all history for debugging purposes.
+            // The date range logic seems to cause a crash in the user's environment.
+            fetchHistory();
         }
     }, [isOpen]);
 
