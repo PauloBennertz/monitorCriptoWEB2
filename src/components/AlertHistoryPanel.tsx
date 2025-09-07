@@ -1,7 +1,7 @@
 // src/components/AlertHistoryPanel.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { Alert, API_BASE_URL } from '../types';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface AlertHistoryPanelProps {
@@ -54,8 +54,8 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
             const defaultStartDate = new Date();
             defaultStartDate.setDate(defaultEndDate.getDate() - 7);
 
-            const formattedStartDate = format(defaultStartDate, 'yyyy-MM-dd');
-            const formattedEndDate = format(defaultEndDate, 'yyyy-MM-dd');
+            const formattedStartDate = defaultStartDate.toISOString().slice(0, 10);
+            const formattedEndDate = defaultEndDate.toISOString().slice(0, 10);
 
             setStartDate(formattedStartDate);
             setEndDate(formattedEndDate);
