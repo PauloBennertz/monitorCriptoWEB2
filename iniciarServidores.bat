@@ -18,7 +18,7 @@ REM Inicia o servidor Uvicorn em uma nova janela de terminal
 start "Uvicorn Server" cmd /k "uvicorn backend.api_server:app --reload --port 8000"
 
 REM Inicia o servidor Vite em uma nova janela de terminal
-start "Vite Server" cmd /k "npm run dev --host"
+start "Vite Server" cmd /k "npm run dev -- --host"
 
 REM Aguarda alguns segundos para os servidores iniciarem
 timeout /t 5 /nobreak >nul
