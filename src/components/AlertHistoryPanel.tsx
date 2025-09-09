@@ -10,7 +10,6 @@ interface AlertHistoryPanelProps {
 }
 
 const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }) => {
-    console.log('[AlertHistoryPanel] Rendering component...', { isOpen });
     const [history, setHistory] = useState<Alert[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -18,7 +17,6 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
     const [endDate, setEndDate] = useState('');
 
     const fetchHistory = (start?: string, end?: string) => {
-        console.log('[AlertHistoryPanel] fetchHistory called with:', { start, end });
         setIsLoading(true);
         setError(null);
 
@@ -35,38 +33,40 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
             url += `?${queryString}`;
         }
 
-        console.log(`[AlertHistoryPanel] Fetching from URL: ${url}`);
         fetch(url)
             .then(res => {
-                console.log('[AlertHistoryPanel] Fetch responded:', res);
                 if (!res.ok) {
                     throw new Error('Falha ao buscar o histórico de alertas.');
                 }
                 return res.json();
             })
             .then((data: Alert[]) => {
-                console.log('[AlertHistoryPanel] Successfully fetched data:', data);
                 setHistory(data);
             })
             .catch(err => {
-                console.error('[AlertHistoryPanel] Fetch error:', err);
                 setError(err.message || 'Um erro desconhecido ocorreu.');
             })
             .finally(() => {
-                console.log('[AlertHistoryPanel] Fetch finished.');
                 setIsLoading(false);
             });
     };
 
     useEffect(() => {
-        console.log('[AlertHistoryPanel] useEffect triggered.', { isOpen });
         if (isOpen) {
-            // Temporarily fetching all history for debugging purposes.
-            // The date range logic seems to cause a crash in the user's environment.
             fetchHistory();
         }
     }, [isOpen]);
 
+    const groupedHistory = useMemo(() => {
+        return history.reduce((acc, alert) => {
+            const key = alert.symbol;
+            if (!acc[key]) {
+                acc[key] = [];
+            }
+            acc[key].push(alert);
+            return acc;
+        }, {} as Record<string, Alert[]>);
+    }, [history]);
 
     if (!isOpen) {
         return null;
@@ -108,17 +108,6 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
         // Fetches the full, unfiltered history
         fetchHistory();
     };
-
-    const groupedHistory = useMemo(() => {
-        return history.reduce((acc, alert) => {
-            const key = alert.symbol;
-            if (!acc[key]) {
-                acc[key] = [];
-            }
-            acc[key].push(alert);
-            return acc;
-        }, {} as Record<string, Alert[]>);
-    }, [history]);
 
     const renderContent = () => {
         if (isLoading) {
