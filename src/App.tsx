@@ -5,7 +5,7 @@ import AlertsPanel from './components/AlertsPanel';
 import AlertHistoryPanel from './components/AlertHistoryPanel';
 import AlertTicker from './components/AlertTicker'; // Import the new component
 import './components/AlertTicker.css'; // Import the new stylesheet
-import { CryptoData, Alert, MutedAlert, AlertConfigs, AlertConfig, BasicCoin, API_BASE_URL, ALERT_DEFINITIONS, DEFAULT_ALERT_CONFIG } from './types';
+import { CryptoData, Alert, MutedAlert, AlertConfigs, AlertConfig, BasicCoin, API_BASE_URL, ALERT_DEFINITIONS, DEFAULT_ALERT_CONFIG, MarketAnalysisConfig } from './types';
 import { formatTime, countActiveIndicators } from './utils';
 
 const App = () => {
@@ -21,6 +21,7 @@ const App = () => {
     const [isAlertsPanelOpen, setAlertsPanelOpen] = useState(false);
     const [isHistoryPanelOpen, setHistoryPanelOpen] = useState(false);
     const [alertConfigs, setAlertConfigs] = useState<AlertConfigs>({});
+    const [displayLimit, setDisplayLimit] = useState(20);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [secondsToNextUpdate, setSecondsToNextUpdate] = useState(180);
     const [btcDominance, setBtcDominance] = useState<number | null>(null);
@@ -76,6 +77,10 @@ const App = () => {
             if (!configRes.ok) throw new Error('Failed to fetch configuration');
             const config = await configRes.json();
 
+            // Set display limit from fetched config, with a fallback
+            const currentDisplayLimit = config.market_analysis_config?.display_limit ?? 20;
+            setDisplayLimit(currentDisplayLimit);
+
             setAlertConfigs(prevAlertConfigs => {
                 const newAlertConfigs: AlertConfigs = {};
                 if (config.cryptos_to_monitor) {
@@ -102,7 +107,10 @@ const App = () => {
                 return newAlertConfigs;
             });
 
-            const symbolsToMonitor = config.cryptos_to_monitor.map((c: any) => c.symbol);
+            const symbolsToMonitorRaw = config.cryptos_to_monitor.map((c: any) => c.symbol);
+            // Slice the symbols to monitor based on the display limit
+            const symbolsToMonitor = currentDisplayLimit > 0 ? symbolsToMonitorRaw.slice(0, currentDisplayLimit) : symbolsToMonitorRaw;
+
 
             if (symbolsToMonitor.length > 0) {
                 const query = new URLSearchParams();
@@ -297,6 +305,45 @@ const App = () => {
         }
     }, [fetchCryptoData]);
 
+    const handleDisplayLimitChange = useCallback(async (newLimit: number) => {
+        // Optimistic UI Update
+        setDisplayLimit(newLimit);
+
+        try {
+            const configRes = await fetch(`${API_BASE_URL}/api/alert_configs`);
+            if (!configRes.ok) throw new Error('Failed to fetch current configuration for update');
+            const fullConfig = await configRes.json();
+
+            // Ensure market_analysis_config exists
+            if (!fullConfig.market_analysis_config) {
+                fullConfig.market_analysis_config = {};
+            }
+            fullConfig.market_analysis_config.display_limit = newLimit;
+
+            const saveRes = await fetch(`${API_BASE_URL}/api/alert_configs`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(fullConfig),
+            });
+
+            if (!saveRes.ok) {
+                const errorData = await saveRes.json();
+                throw new Error(errorData.detail || 'Failed to save display limit setting');
+            }
+
+            console.log(`Display limit successfully saved: ${newLimit}`);
+            // Trigger a data refresh to apply the new limit immediately
+            await fetchCryptoData(false);
+
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+            setError(`Failed to save settings: ${errorMessage}`);
+            console.error("Error saving display limit:", err);
+            // Re-fetch to sync with the actual server state in case of error
+            await fetchCryptoData(true);
+        }
+    }, [fetchCryptoData]);
+
     const sortedData = useMemo(() => {
         return [...cryptoData].sort((a, b) => {
             if (sortKey === 'active_alerts') {
@@ -482,6 +529,8 @@ const App = () => {
                 allCoins={allCoins}
                 monitoredCoins={cryptoData}
                 onUpdateCoin={handleUpdateMonitoredCoin}
+                displayLimit={displayLimit}
+                onDisplayLimitChange={handleDisplayLimitChange}
             />
             <AlertsPanel
                 isOpen={isAlertsPanelOpen}

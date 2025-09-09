@@ -9,6 +9,8 @@ const SettingsModal = ({
     allCoins,
     monitoredCoins,
     onUpdateCoin,
+    displayLimit,
+    onDisplayLimitChange,
 }: {
     isOpen: boolean;
     onClose: () => void;
@@ -17,6 +19,8 @@ const SettingsModal = ({
     allCoins: BasicCoin[];
     monitoredCoins: CryptoData[];
     onUpdateCoin: (symbol: string, action: 'add' | 'remove') => void;
+    displayLimit: number;
+    onDisplayLimitChange: (newLimit: number) => void;
 }) => {
     const [view, setView] = useState<'list' | 'add' | 'config'>('list');
     const [searchTerm, setSearchTerm] = useState('');
@@ -177,6 +181,33 @@ const SettingsModal = ({
         // Default view: 'list'
         return (
             <div className="modal-body">
+                <div className="settings-group">
+                    <h4 className="settings-group-title">Configurações Gerais</h4>
+                    <div className="alert-setting-item">
+                        <div className="alert-setting-label">
+                            <span>Moedas na Tela Principal</span>
+                            <small>Limite o número de moedas exibidas para melhorar a performance.</small>
+                        </div>
+                        <div className="alert-setting-controls">
+                            <select
+                                className="control-item"
+                                value={displayLimit}
+                                onChange={(e) => onDisplayLimitChange(Number(e.target.value))}
+                                aria-label="Número de moedas a exibir"
+                            >
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                                <option value={0}>Todas</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <hr style={{ borderColor: '#333', margin: '20px 0' }} />
+
+                <h4 className="settings-group-title" style={{ marginBottom: '15px' }}>Moedas Monitoradas</h4>
                 <div className="crypto-selection-list">
                     {monitoredCoins.map(crypto => (
                         <div key={crypto.symbol} className="crypto-selection-item managed-item">
