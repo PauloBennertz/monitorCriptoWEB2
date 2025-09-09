@@ -40,6 +40,12 @@ export interface MutedAlert {
     muteUntil: number; // timestamp
 }
 
+export interface MarketAnalysisConfig {
+    top_n: number;
+    min_market_cap: number;
+    display_limit: number;
+}
+
 export type BasicCoin = Pick<CryptoData, 'symbol' | 'name'>;
 
 export const ALERT_DEFINITIONS: Record<string, { name: string; description: string; backendKey: string }> = {

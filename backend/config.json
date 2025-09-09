@@ -5,7 +5,8 @@
   "bitquery_api_key": "",
   "market_analysis_config": {
     "top_n": 60,
-    "min_market_cap": 5000000
+    "min_market_cap": 5000000,
+    "display_limit": 20
   },
   "cryptos_to_monitor": [
     {
