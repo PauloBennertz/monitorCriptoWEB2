@@ -44,6 +44,7 @@ export interface MarketAnalysisConfig {
     top_n: number;
     min_market_cap: number;
     display_limit: number;
+    grid_layout_columns: number;
 }
 
 export type BasicCoin = Pick<CryptoData, 'symbol' | 'name'>;

@@ -11,6 +11,8 @@ const SettingsModal = ({
     onUpdateCoin,
     displayLimit,
     onDisplayLimitChange,
+    gridLayoutColumns,
+    onGridLayoutChange,
 }: {
     isOpen: boolean;
     onClose: () => void;
@@ -21,6 +23,8 @@ const SettingsModal = ({
     onUpdateCoin: (symbol: string, action: 'add' | 'remove') => void;
     displayLimit: number;
     onDisplayLimitChange: (newLimit: number) => void;
+    gridLayoutColumns: number;
+    onGridLayoutChange: (newCols: number) => void;
 }) => {
     const [view, setView] = useState<'list' | 'add' | 'config'>('list');
     const [searchTerm, setSearchTerm] = useState('');
@@ -200,6 +204,27 @@ const SettingsModal = ({
                                 <option value={50}>50</option>
                                 <option value={100}>100</option>
                                 <option value={0}>Todas</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="alert-setting-item">
+                        <div className="alert-setting-label">
+                            <span>Layout da Grade (Colunas)</span>
+                            <small>Ajuste o número de colunas na grade principal.</small>
+                        </div>
+                        <div className="alert-setting-controls">
+                            <select
+                                className="control-item"
+                                value={gridLayoutColumns}
+                                onChange={(e) => onGridLayoutChange(Number(e.target.value))}
+                                aria-label="Número de colunas na grade"
+                            >
+                                <option value={3}>3</option>
+                                <option value={4}>4</option>
+                                <option value={5}>5</option>
+                                <option value={6}>6</option>
+                                <option value={7}>7</option>
+                                <option value={8}>8</option>
                             </select>
                         </div>
                     </div>

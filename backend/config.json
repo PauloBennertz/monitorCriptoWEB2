@@ -6,7 +6,8 @@
   "market_analysis_config": {
     "top_n": 60,
     "min_market_cap": 5000000,
-    "display_limit": 20
+    "display_limit": 20,
+    "grid_layout_columns": 5
   },
   "cryptos_to_monitor": [
     {
