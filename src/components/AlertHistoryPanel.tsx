@@ -15,6 +15,7 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
     const [error, setError] = useState<string | null>(null);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [selectedCoin, setSelectedCoin] = useState<string>('');
 
     const fetchHistory = (start?: string, end?: string) => {
         setIsLoading(true);
@@ -58,7 +59,12 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
     }, [isOpen]);
 
     const groupedHistory = useMemo(() => {
-        return history.reduce((acc, alert) => {
+        const filteredHistory = history.filter(alert => {
+            if (!selectedCoin) return true; // If no coin is selected, show all alerts
+            return alert.symbol === selectedCoin;
+        });
+
+        return filteredHistory.reduce((acc, alert) => {
             const key = alert.symbol;
             if (!acc[key]) {
                 acc[key] = [];
@@ -66,6 +72,11 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
             acc[key].push(alert);
             return acc;
         }, {} as Record<string, Alert[]>);
+    }, [history, selectedCoin]);
+
+    const uniqueCoins = useMemo(() => {
+        const coins = new Set(history.map(alert => alert.symbol));
+        return Array.from(coins);
     }, [history]);
 
     if (!isOpen) {
@@ -123,23 +134,21 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
             <div className="alert-history-list">
                 {Object.entries(groupedHistory).map(([symbol, alerts]) => (
                     <div key={symbol} className="currency-group">
-                        <h3 className="currency-group-title">
-                            {symbol.replace('USDT', '')}
-                            {startDate && endDate && (
-                                <span style={{ fontSize: '0.9rem', fontWeight: 'normal', marginLeft: '10px' }}>
-                                    (de {new Date(startDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })} até {new Date(endDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })})
-                                </span>
-                            )}
-                        </h3>
+                        <h3 className="currency-group-title">{symbol.replace('USDT', '')}</h3>
                         {alerts.map(alert => (
                             <div key={alert.id} className="alert-history-item">
-                                <p style={{ margin: 0 }}>
-                                    <span style={{ fontWeight: 'bold' }}>{new Date(alert.timestamp).toLocaleString('pt-BR')}:</span>
-                                    {' '}
-                                    {alert.description}
-                                    {' '}
-                                    <span style={{ color: '#555', fontSize: '0.9em' }}>(Preço: $ {alert.snapshot.price.toFixed(2)})</span>
-                                </p>
+                                <div className="alert-history-header">
+                                    <span className="alert-history-symbol">{alert.snapshot.name}</span>
+                                    <span className="alert-history-timestamp" title={new Date(alert.timestamp).toLocaleString('pt-BR')}>
+                                        {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true, locale: ptBR })}
+                                    </span>
+                                </div>
+                                <div className="alert-history-body">
+                                    {alert.condition}
+                                </div>
+                                <div className="alert-history-details">
+                                    Preço no momento do alerta: $ {alert.snapshot.price.toFixed(2)}
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -180,6 +189,22 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
                     <button onClick={handleClearFilter} className="button button-secondary" disabled={isLoading}>
                         Limpar
                     </button>
+                    <div className="filter-item">
+                        <label htmlFor="coin-filter">Moeda:</label>
+                        <select
+                            id="coin-filter"
+                            value={selectedCoin}
+                            onChange={e => setSelectedCoin(e.target.value)}
+                            disabled={isLoading || history.length === 0}
+                        >
+                            <option value="">Todas</option>
+                            {uniqueCoins.map(coin => (
+                                <option key={coin} value={coin}>
+                                    {coin.replace('USDT', '')}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
                 <div className="modal-body">
                     {renderContent()}
