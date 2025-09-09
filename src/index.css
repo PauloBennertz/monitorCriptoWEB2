@@ -238,7 +238,8 @@ body {
 
 .crypto-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  /* The number of columns is controlled by the --grid-columns CSS variable from App.tsx */
+  grid-template-columns: repeat(var(--grid-columns, 5), 1fr);
   gap: 1.5rem;
 }
 

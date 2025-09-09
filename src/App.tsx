@@ -22,6 +22,7 @@ const App = () => {
     const [isHistoryPanelOpen, setHistoryPanelOpen] = useState(false);
     const [alertConfigs, setAlertConfigs] = useState<AlertConfigs>({});
     const [displayLimit, setDisplayLimit] = useState(20);
+    const [gridLayoutColumns, setGridLayoutColumns] = useState(5);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [secondsToNextUpdate, setSecondsToNextUpdate] = useState(180);
     const [btcDominance, setBtcDominance] = useState<number | null>(null);
@@ -80,6 +81,10 @@ const App = () => {
             // Set display limit from fetched config, with a fallback
             const currentDisplayLimit = config.market_analysis_config?.display_limit ?? 20;
             setDisplayLimit(currentDisplayLimit);
+
+            // Set grid layout from fetched config, with a fallback
+            const currentGridLayout = config.market_analysis_config?.grid_layout_columns ?? 5;
+            setGridLayoutColumns(currentGridLayout);
 
             setAlertConfigs(prevAlertConfigs => {
                 const newAlertConfigs: AlertConfigs = {};
@@ -344,6 +349,42 @@ const App = () => {
         }
     }, [fetchCryptoData]);
 
+    const handleGridLayoutChange = useCallback(async (newCols: number) => {
+        setGridLayoutColumns(newCols); // Optimistic UI Update
+
+        try {
+            const configRes = await fetch(`${API_BASE_URL}/api/alert_configs`);
+            if (!configRes.ok) throw new Error('Failed to fetch current configuration for update');
+            const fullConfig = await configRes.json();
+
+            if (!fullConfig.market_analysis_config) {
+                fullConfig.market_analysis_config = {};
+            }
+            fullConfig.market_analysis_config.grid_layout_columns = newCols;
+
+            const saveRes = await fetch(`${API_BASE_URL}/api/alert_configs`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(fullConfig),
+            });
+
+            if (!saveRes.ok) {
+                const errorData = await saveRes.json();
+                throw new Error(errorData.detail || 'Failed to save grid layout setting');
+            }
+            console.log(`Grid layout successfully saved: ${newCols}`);
+            // No need to refetch data, the CSS will update automatically
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+            setError(`Failed to save settings: ${errorMessage}`);
+            console.error("Error saving grid layout:", err);
+            // Re-fetch config to revert optimistic update on error
+            const configRes = await fetch(`${API_BASE_URL}/api/alert_configs`);
+            const fullConfig = await configRes.json();
+            setGridLayoutColumns(fullConfig.market_analysis_config?.grid_layout_columns ?? 5);
+        }
+    }, []);
+
     const sortedData = useMemo(() => {
         return [...cryptoData].sort((a, b) => {
             if (sortKey === 'active_alerts') {
@@ -509,7 +550,10 @@ const App = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="crypto-grid">
+                        <div
+                            className="crypto-grid"
+                            style={{ '--grid-columns': gridLayoutColumns } as React.CSSProperties}
+                        >
                             {sortedData.map(crypto => (
                                 <CryptoCard
                                     key={crypto.symbol}
@@ -531,6 +575,8 @@ const App = () => {
                 onUpdateCoin={handleUpdateMonitoredCoin}
                 displayLimit={displayLimit}
                 onDisplayLimitChange={handleDisplayLimitChange}
+                gridLayoutColumns={gridLayoutColumns}
+                onGridLayoutChange={handleGridLayoutChange}
             />
             <AlertsPanel
                 isOpen={isAlertsPanelOpen}
