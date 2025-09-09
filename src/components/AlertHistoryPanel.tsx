@@ -22,11 +22,15 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
 
         let url = `${API_BASE_URL}/api/alerts`;
         const params = new URLSearchParams();
-        if (start) params.append('start_date', start);
-        if (end) params.append('end_date', end);
-
-        if (start && end) {
-            url += `?${params.toString()}`;
+        if (start) {
+            params.append('start_date', start);
+        }
+        if (end) {
+            params.append('end_date', end);
+        }
+        const queryString = params.toString();
+        if (queryString) {
+            url += `?${queryString}`;
         }
 
         fetch(url)
