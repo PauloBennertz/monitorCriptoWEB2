@@ -123,21 +123,23 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
             <div className="alert-history-list">
                 {Object.entries(groupedHistory).map(([symbol, alerts]) => (
                     <div key={symbol} className="currency-group">
-                        <h3 className="currency-group-title">{symbol.replace('USDT', '')}</h3>
+                        <h3 className="currency-group-title">
+                            {symbol.replace('USDT', '')}
+                            {startDate && endDate && (
+                                <span style={{ fontSize: '0.9rem', fontWeight: 'normal', marginLeft: '10px' }}>
+                                    (de {new Date(startDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })} até {new Date(endDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })})
+                                </span>
+                            )}
+                        </h3>
                         {alerts.map(alert => (
                             <div key={alert.id} className="alert-history-item">
-                                <div className="alert-history-header">
-                                    <span className="alert-history-symbol">{alert.snapshot.name}</span>
-                                    <span className="alert-history-timestamp" title={new Date(alert.timestamp).toLocaleString('pt-BR')}>
-                                        {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true, locale: ptBR })}
-                                    </span>
-                                </div>
-                                <div className="alert-history-body">
-                                    {alert.condition}
-                                </div>
-                                <div className="alert-history-details">
-                                    Preço no momento do alerta: $ {alert.snapshot.price.toFixed(2)}
-                                </div>
+                                <p style={{ margin: 0 }}>
+                                    <span style={{ fontWeight: 'bold' }}>{new Date(alert.timestamp).toLocaleString('pt-BR')}:</span>
+                                    {' '}
+                                    {alert.description}
+                                    {' '}
+                                    <span style={{ color: '#555', fontSize: '0.9em' }}>(Preço: $ {alert.snapshot.price.toFixed(2)})</span>
+                                </p>
                             </div>
                         ))}
                     </div>
