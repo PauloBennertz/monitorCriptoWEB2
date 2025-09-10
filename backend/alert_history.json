@@ -1,5 +1,137 @@
 [
   {
+    "id": "LINKUSDT-RSI_SOBRECOMPRA-1757517186722",
+    "symbol": "LINKUSDT",
+    "condition": "RSI em Sobrecompra",
+    "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+    "timestamp": "2025-09-10T15:13:06.723Z",
+    "snapshot": {
+      "symbol": "LINKUSDT",
+      "name": "Osmosis allLINK",
+      "price": 23.71,
+      "price_change_24h": 2.73,
+      "volume_24h": 80983643.5154,
+      "market_cap": 16071372728,
+      "rsi_value": 71.15384615384627,
+      "rsi_signal": "71.15",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 23.71
+    }
+  },
+  {
+    "id": "SOLUSDT-RSI_SOBRECOMPRA-1757517186721",
+    "symbol": "SOLUSDT",
+    "condition": "RSI em Sobrecompra",
+    "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+    "timestamp": "2025-09-10T15:13:06.721Z",
+    "snapshot": {
+      "symbol": "SOLUSDT",
+      "name": "Wrapped SOL",
+      "price": 223.75,
+      "price_change_24h": 4.463,
+      "volume_24h": 1183246322.48652,
+      "market_cap": 147221,
+      "rsi_value": 72.80540208717011,
+      "rsi_signal": "72.81",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 223.75
+    }
+  },
+  {
+    "id": "BNBUSDT-RSI_SOBRECOMPRA-1757517186722",
+    "symbol": "BNBUSDT",
+    "condition": "RSI em Sobrecompra",
+    "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+    "timestamp": "2025-09-10T15:13:06.722Z",
+    "snapshot": {
+      "symbol": "BNBUSDT",
+      "name": "Binance Coin (Wormhole)",
+      "price": 901,
+      "price_change_24h": 3.128,
+      "volume_24h": 240919306.742042,
+      "market_cap": 0,
+      "rsi_value": 81.5074250490331,
+      "rsi_signal": "81.51",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 901
+    }
+  },
+  {
+    "id": "ADAUSDT-RSI_SOBRECOMPRA-1757517186720",
+    "symbol": "ADAUSDT",
+    "condition": "RSI em Sobrecompra",
+    "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+    "timestamp": "2025-09-10T15:13:06.720Z",
+    "snapshot": {
+      "symbol": "ADAUSDT",
+      "name": "Cardano",
+      "price": 0.8908,
+      "price_change_24h": 3.066,
+      "volume_24h": 102590290.87565,
+      "market_cap": 0,
+      "rsi_value": 71.48080438756855,
+      "rsi_signal": "71.48",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 0.8908
+    }
+  },
+  {
+    "id": "ETHUSDT-RSI_SOBRECOMPRA-1757517186720",
+    "symbol": "ETHUSDT",
+    "condition": "RSI em Sobrecompra",
+    "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+    "timestamp": "2025-09-10T15:13:06.720Z",
+    "snapshot": {
+      "symbol": "ETHUSDT",
+      "name": "The Ticker Is ETH",
+      "price": 4421.11,
+      "price_change_24h": 3.059,
+      "volume_24h": 1953774869.433202,
+      "market_cap": 0,
+      "rsi_value": 81.16406003988685,
+      "rsi_signal": "81.16",
+      "bollinger_signal": "Acima da Banda",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 4421.11
+    }
+  },
+  {
+    "id": "BTCUSDT-RSI_SOBRECOMPRA-1757517186719",
+    "symbol": "BTCUSDT",
+    "condition": "RSI em Sobrecompra",
+    "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+    "timestamp": "2025-09-10T15:13:06.719Z",
+    "snapshot": {
+      "symbol": "BTCUSDT",
+      "name": "Osmosis allBTC",
+      "price": 114075.64,
+      "price_change_24h": 2.374,
+      "volume_24h": 2036060623.666311,
+      "market_cap": 59864,
+      "rsi_value": 90.4894847044259,
+      "rsi_signal": "90.49",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 114075.64
+    }
+  },
+  {
     "id": "LINKUSDT-RSI_SOBRECOMPRA-1757515593224",
     "symbol": "LINKUSDT",
     "condition": "RSI em Sobrecompra",
