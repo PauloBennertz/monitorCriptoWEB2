@@ -190,19 +190,26 @@ def main():
     run_backtest(historical_df, args.symbol)
 
 
-def run_backtest(df, symbol):
+def run_backtest(df, symbol, output_callback=None):
     """
     Runs the backtest on the given DataFrame.
     Iterates through the data, calculates indicators, and checks for signals.
+    Results are passed to the output_callback function.
     """
+    # If no callback is provided, default to printing to the console for command-line use.
+    if output_callback is None:
+        output_callback = print
+
     logging.info(f"Starting backtest for {symbol} with {len(df)} records.")
 
     min_periods = 226
     if len(df) < min_periods:
-        logging.error(f"Not enough data for a meaningful backtest. Need at least {min_periods} records, but got {len(df)}.")
+        error_msg = f"Not enough data. Need at least {min_periods} records, got {len(df)}."
+        logging.error(error_msg)
+        output_callback(f"ERRO: {error_msg}")
         return
 
-    print("\n--- Backtest Results ---")
+    output_callback("\n--- Backtest Results ---")
 
     # State tracking to only report a signal when the state changes
     active_signals = set()
@@ -247,14 +254,14 @@ def run_backtest(df, symbol):
         for signal, is_active in signals_to_check.items():
             if is_active and signal not in active_signals:
                 # A new signal has been triggered
-                print(f"{timestamp.strftime('%d/%m/%Y %H:%M:%S')} {symbol} - {signal}")
+                message = f"{timestamp.strftime('%d/%m/%Y %H:%M:%S')} {symbol} - {signal}"
+                output_callback(message)
                 active_signals.add(signal)
             elif not is_active and signal in active_signals:
                 # A signal is no longer active, so we remove it from the set.
-                # This allows it to be triggered again in the future.
                 active_signals.remove(signal)
 
-    print("--- Backtest Complete ---")
+    output_callback("--- Backtest Complete ---")
     logging.info("Backtesting loop finished.")
 
 
