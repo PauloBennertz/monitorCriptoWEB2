@@ -6,6 +6,7 @@ import logging
 import sys
 import os
 import argparse
+import threading
 
 
 
@@ -187,14 +188,18 @@ def main():
 
     print(f"\nBacktesting for {args.symbol} from {args.start} to {args.end} with {args.interval} interval...")
 
-    run_backtest(historical_df, args.symbol)
+    # Create dummy events for command-line execution, as it doesn't support pause/stop.
+    stop_event = threading.Event()
+    pause_event = threading.Event()
+    run_backtest(historical_df, args.symbol, stop_event, pause_event)
 
 
-def run_backtest(df, symbol, output_callback=None):
+def run_backtest(df, symbol, stop_event, pause_event, output_callback=None):
     """
     Runs the backtest on the given DataFrame.
     Iterates through the data, calculates indicators, and checks for signals.
     Results are passed to the output_callback function.
+    Can be paused or stopped via threading events.
     """
     # If no callback is provided, default to printing to the console for command-line use.
     if output_callback is None:
@@ -216,6 +221,18 @@ def run_backtest(df, symbol, output_callback=None):
 
     # Iterate through the data, starting from the point where we have enough data.
     for i in range(min_periods, len(df)):
+        # --- Execution Control ---
+        if stop_event.is_set():
+            output_callback("\n--- Backtest Interrompido pelo Usuário ---")
+            break
+
+        # This creates a non-blocking pause
+        while pause_event.is_set():
+            if stop_event.is_set(): # Allow stopping even while paused
+                output_callback("\n--- Backtest Interrompido pelo Usuário ---")
+                return # Exit function entirely
+            time.sleep(0.1)
+
         # Use i+1 to ensure the current candle is included in the window
         df_window = df.iloc[:i+1]
         current_row = df_window.iloc[-1]
