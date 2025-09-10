@@ -294,6 +294,41 @@
           }
         }
       }
+    },
+    {
+      "symbol": "QUSDT",
+      "alert_config": {
+        "conditions": {
+          "rsi_sobrevendido": {
+            "enabled": true,
+            "blinking": true
+          },
+          "rsi_sobrecomprado": {
+            "enabled": true,
+            "blinking": true
+          },
+          "hilo_compra": {
+            "enabled": true,
+            "blinking": true
+          },
+          "mme_cruz_dourada": {
+            "enabled": false,
+            "blinking": true
+          },
+          "mme_cruz_morte": {
+            "enabled": false,
+            "blinking": true
+          },
+          "macd_cruz_alta": {
+            "enabled": true,
+            "blinking": true
+          },
+          "macd_cruz_baixa": {
+            "enabled": true,
+            "blinking": true
+          }
+        }
+      }
     }
   ],
   "sound_config": {

@@ -112,22 +112,9 @@ class BacktesterGUI:
         # Due to the sandbox environment, we use mock data.
         # To use with real data, uncomment the first line and remove the mock data block.
 
-        # historical_df = fetch_historical_data(symbol, start_date, end_date)
+        historical_df = fetch_historical_data(symbol, start_date, end_date)
 
-        # --- MOCK DATA BLOCK (for development in restricted environments) ---
-        import pandas as pd
-        self.queue.put("--- AVISO: Usando dados de teste! A busca real na API está desativada. ---")
-        date_range = pd.date_range(start=start_date, end=end_date, freq='1h', tz='UTC')
-        mock_data = {
-            'timestamp': date_range,
-            'open': 40000 + pd.Series(range(len(date_range))) * 10,
-            'high': 40500 + pd.Series(range(len(date_range))) * 10,
-            'low': 39800 + pd.Series(range(len(date_range))) * 10,
-            'close': 40200 + pd.Series(range(len(date_range))) * 5,
-            'volume': 100 + pd.Series(range(len(date_range)))
-        }
-        historical_df = pd.DataFrame(mock_data)
-        # --- END OF MOCK DATA BLOCK ---
+    
 
         if historical_df.empty:
             self.queue.put(f"ERRO: Não foi possível buscar dados para {symbol}.")
