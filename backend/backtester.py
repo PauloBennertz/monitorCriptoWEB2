@@ -7,6 +7,48 @@ import sys
 import os
 import argparse
 
+
+
+# Passo 1: Ativar a busca de dados reais (MUITO IMPORTANTE)
+# Como o meu ambiente de desenvolvimento tinha restrições de rede, eu deixei o script usando dados de teste para poder construí-lo. Para que ele funcione com dados reais da corretora Binance, você precisa fazer uma pequena edição no arquivo backend/backtester.py:
+
+# Abra o arquivo backend/backtester.py em um editor de texto.
+
+# Procure a linha que está comentada (começa com #):
+
+# # historical_df = fetch_historical_data(args.symbol, args.start, args.end, args.interval)
+# Descomente esta linha, ou seja, apague o # do início.
+
+# Logo abaixo, você verá um bloco de código de teste. Apague ou comente todo este bloco:
+
+# # --- MOCK DATA FOR DEVELOPMENT ---
+# # ... (apague todo o conteúdo até)
+# # --- END OF MOCK DATA BLOCK ---
+# Passo 2: Executar o Script pelo Terminal
+# Depois de fazer a edição acima, você pode usar o script da seguinte forma:
+
+# Abra o seu terminal e navegue até a pasta raiz do projeto.
+
+# Execute o comando abaixo, substituindo os valores pelos que você deseja analisar.
+
+# python3 backend/backtester.py --symbol <SÍMBOLO> --start <DATA_DE_INÍCIO> --end <DATA_DE_FIM>
+# Exemplos de Uso:
+# Para analisar o Bitcoin (BTC) durante todo o ano de 2022:
+
+# python3 backend/backtester.py --symbol BTCUSDT --start 2022-01-01 --end 2022-12-31
+# Para analisar a Ethereum (ETH) no primeiro trimestre de 2023, com intervalo de 4 horas:
+
+# python3 backend/backtester.py --symbol ETHUSDT --start 2023-01-01 --end 2023-03-31 --interval 4h
+# Parâmetros do Comando:
+# --symbol: (Obrigatório) O símbolo da moeda (ex: BTCUSDT).
+# --start: (Obrigatório) A data de início no formato AAAA-MM-DD.
+# --end: (Obrigatório) A data de fim no formato AAAA-MM-DD.
+# --interval: (Opcional) O intervalo das velas. Padrão: 1h. Outros exemplos: 15m, 4h, 1d.
+
+
+
+
+
 # Add the project root to the Python path to allow for relative imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
