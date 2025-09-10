@@ -142,9 +142,9 @@ class BacktesterGUI:
 
     def run_backtest_logic(self, symbol, start_date, end_date):
         # --- IMPORTANT: This block is for using real data. ---
-        # historical_df = fetch_historical_data(symbol, start_date, end_date)
+        historical_df = fetch_historical_data(symbol, start_date, end_date)
 
-        # --- MOCK DATA BLOCK (for development in restricted environments) ---
+        
         self.queue.put("--- AVISO: Usando dados de teste! A busca real na API está desativada. ---")
         date_range = pd.to_datetime(pd.date_range(start=start_date, end=end_date, freq='1h'))
         if date_range.tz is None:
@@ -158,8 +158,7 @@ class BacktesterGUI:
             'volume': 100 + pd.Series(range(len(date_range)))
         }
         historical_df = pd.DataFrame(mock_data)
-        # --- END OF MOCK DATA BLOCK ---
-
+        
         if historical_df.empty:
             self.queue.put(f"ERRO: Não foi possível buscar dados para {symbol}.")
             self.gui_task_done()
