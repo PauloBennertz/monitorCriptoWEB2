@@ -1,17 +1,22 @@
 import logging
 import os
 import json
+import sys
 from threading import Lock
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
+# This ensures that the 'backend' package can be found by Python
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 # --- Import core logic from the existing application ---
 # These imports will be used to power the API endpoints.
 # We will need to adapt the functions to work in an API context.
-from .monitoring_service import (
+from backend.monitoring_service import (
     get_klines_data,
     get_ticker_data,
     get_market_caps_coingecko,
@@ -20,8 +25,8 @@ from .monitoring_service import (
     get_coingecko_global_mapping,
     get_btc_dominance
 )
-from . import app_state
-from . import coin_manager
+from backend import app_state
+from backend import coin_manager
 
 # --- Basic Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -37,7 +42,7 @@ app = FastAPI(
 # This allows the React frontend (running on http://localhost:5173) to communicate with this API.
 origins = [
     "http://localhost:5173",
-    "http://127.0.0.1:5173",
+    "http://12_7.0.0.1:5173",
 ]
 
 app.add_middleware(
@@ -48,17 +53,23 @@ app.add_middleware(
     allow_headers=["*"], # Allow all headers
 )
 
+# --- Determine base path for data files ---
+def get_base_path():
+    # If the application is run as a bundle, the PyInstaller bootloader
+    # sets the sys._MEIPASS attribute to the temporary folder where the app is unpacked.
+    if hasattr(sys, '_MEIPASS'):
+        return sys._MEIPASS
+    # Otherwise, it's running from source, so we can use the script's directory.
+    return os.path.dirname(os.path.abspath(__file__))
+
+BASE_PATH = get_base_path()
+
 # --- Caching ---
 # Simple in-memory cache to hold data that doesn't change often, like the coin list.
 # This avoids hitting the APIs repeatedly for the same information.
 api_cache = {}
 
 # --- API Endpoints ---
-
-@app.get("/")
-async def read_root():
-    """A simple root endpoint to confirm the API is running."""
-    return {"message": "Welcome to the Crypto Monitor Pro API!"}
 
 @app.get("/api/global_data")
 async def get_global_data():
@@ -142,8 +153,8 @@ async def get_crypto_data(symbols: List[str] = Query(..., description="A list of
 
 # --- Configuration and Alert History Endpoints ---
 
-CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), "config.json")
-ALERT_HISTORY_FILE_PATH = os.path.join(os.path.dirname(__file__), "alert_history.json")
+CONFIG_FILE_PATH = os.path.join(BASE_PATH, "config.json")
+ALERT_HISTORY_FILE_PATH = os.path.join(BASE_PATH, "alert_history.json")
 HISTORY_LOCK = Lock()
 
 class Alert(BaseModel):
@@ -359,3 +370,22 @@ async def remove_monitored_coin(symbol: str):
 
 # To run this server, use the following command in your terminal:
 # uvicorn backend.api_server:app --reload --port 8000
+
+# --- Serve Static Files ---
+# This must be placed after all API routes. It serves the built React frontend.
+if hasattr(sys, '_MEIPASS'):
+    # In bundled app, static files are at the root of the temporary directory (_MEIPASS).
+    static_files_path = sys._MEIPASS
+else:
+    # In development, static files are in the 'dist' directory, relative to the project root.
+    # The script is in backend/, so we go up one level to the project root, then into 'dist'.
+    static_files_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'dist'))
+
+if os.path.exists(static_files_path):
+    app.mount("/", StaticFiles(directory=static_files_path, html=True), name="static")
+else:
+    logging.warning(f"Static files directory not found at '{static_files_path}'. The frontend will not be served.")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
