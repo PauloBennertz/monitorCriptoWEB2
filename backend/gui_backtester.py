@@ -92,7 +92,7 @@ class BacktesterGUI:
             self.root.after(100, self.process_queue)
 
     def update_results(self, message):
-        self.results_text.configure(state="normal")
+        self.results_text.text.configure(state="normal")
         if "---" in message: # Style separators differently
              self.results_text.insert(tk.END, message + "\n", "separator")
         else:
@@ -105,7 +105,7 @@ class BacktesterGUI:
                  self.results_data.append({"Timestamp": timestamp_str, "Symbol": self.symbol_entry.get(), "Signal": signal})
              except IndexError:
                  pass # Not a result line
-        self.results_text.configure(state="disabled")
+        self.results_text.text.configure(state="disabled")
         self.results_text.see(tk.END)
         self.results_text.tag_config("separator", foreground="cyan", font=("Arial", 10, "italic"))
 
@@ -129,9 +129,9 @@ class BacktesterGUI:
         self.export_button.config(state="disabled")
         self.status_label.config(text="Buscando dados...")
 
-        self.results_text.config(state="normal")
+        self.results_text.text.config(state="normal")
         self.results_text.delete(1.0, tk.END)
-        self.results_text.config(state="disabled")
+        self.results_text.text.config(state="disabled")
 
         thread = threading.Thread(
             target=self.run_backtest_logic,
