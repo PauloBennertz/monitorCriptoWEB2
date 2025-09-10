@@ -7,3 +7,4 @@ pycoingecko
 pyinstaller
 uvicorn
 fastapi
+openpyxl
