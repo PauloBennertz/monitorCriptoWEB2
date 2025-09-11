@@ -240,8 +240,12 @@ def run_backtest(df, symbol, stop_event, pause_event, output_callback=None):
         timestamp = current_row['timestamp']
 
         # --- Calculate all indicators for the current window ---
-        rsi_value, _, _ = calculate_rsi(df_window)
-        upper_band, lower_band, _, _ = calculate_bollinger_bands(df_window)
+        rsi_series, _, _ = calculate_rsi(df_window)
+        rsi_value = rsi_series.iloc[-1]
+
+        upper_band_series, lower_band_series, _ = calculate_bollinger_bands(df_window)
+        upper_band = upper_band_series.iloc[-1]
+        lower_band = lower_band_series.iloc[-1]
         macd_signal = calculate_macd(df_window)
         _, _, hilo_signal = calculate_hilo_signals(df_window)
 
