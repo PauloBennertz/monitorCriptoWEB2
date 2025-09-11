@@ -1,0 +1,112 @@
+[
+  {
+    "id": "WETHUSDT-RSI_SOBREVENDA-1757599856455",
+    "symbol": "WETHUSDT",
+    "condition": "RSI em Sobrevenda",
+    "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+    "timestamp": "2025-09-11T14:10:56.455Z",
+    "snapshot": {
+      "symbol": "WETHUSDT",
+      "name": "Zora Bridged WETH (Zora Network)",
+      "price": 0,
+      "price_change_24h": 0,
+      "volume_24h": 0,
+      "market_cap": 8264513,
+      "rsi_value": 0,
+      "rsi_signal": "N/A",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 0
+    }
+  },
+  {
+    "id": "WETHUSDT-RSI_SOBREVENDA-1757598934192",
+    "symbol": "WETHUSDT",
+    "condition": "RSI em Sobrevenda",
+    "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+    "timestamp": "2025-09-11T13:55:34.192Z",
+    "snapshot": {
+      "symbol": "WETHUSDT",
+      "name": "Zora Bridged WETH (Zora Network)",
+      "price": 0,
+      "price_change_24h": 0,
+      "volume_24h": 0,
+      "market_cap": 8222841,
+      "rsi_value": 0,
+      "rsi_signal": "N/A",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 0
+    }
+  },
+  {
+    "id": "WETHUSDT-RSI_SOBREVENDA-1757598033996",
+    "symbol": "WETHUSDT",
+    "condition": "RSI em Sobrevenda",
+    "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+    "timestamp": "2025-09-11T13:40:33.996Z",
+    "snapshot": {
+      "symbol": "WETHUSDT",
+      "name": "Zora Bridged WETH (Zora Network)",
+      "price": 0,
+      "price_change_24h": 0,
+      "volume_24h": 0,
+      "market_cap": 8250806,
+      "rsi_value": 0,
+      "rsi_signal": "N/A",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 0
+    }
+  },
+  {
+    "id": "AETHUSDT-RSI_SOBREVENDA-1757597831460",
+    "symbol": "AETHUSDT",
+    "condition": "RSI em Sobrevenda",
+    "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+    "timestamp": "2025-09-11T13:37:11.460Z",
+    "snapshot": {
+      "symbol": "AETHUSDT",
+      "name": "Aave ETH v1",
+      "price": 0,
+      "price_change_24h": 0,
+      "volume_24h": 0,
+      "market_cap": 0,
+      "rsi_value": 0,
+      "rsi_signal": "N/A",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 0
+    }
+  },
+  {
+    "id": "SOLANAUSDT-RSI_SOBREVENDA-1757596895729",
+    "symbol": "SOLANAUSDT",
+    "condition": "RSI em Sobrevenda",
+    "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+    "timestamp": "2025-09-11T13:21:35.729Z",
+    "snapshot": {
+      "symbol": "SOLANAUSDT",
+      "name": "Solana Beach",
+      "price": 0,
+      "price_change_24h": 0,
+      "volume_24h": 0,
+      "market_cap": 609953,
+      "rsi_value": 0,
+      "rsi_signal": "N/A",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 0
+    }
+  }
+]
