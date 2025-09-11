@@ -1,5 +1,27 @@
 [
   {
+    "id": "BTCUSDUSDT-RSI_SOBREVENDA-1757606503721",
+    "symbol": "BTCUSDUSDT",
+    "condition": "RSI em Sobrevenda",
+    "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+    "timestamp": "2025-09-11T16:01:43.721Z",
+    "snapshot": {
+      "symbol": "BTCUSDUSDT",
+      "name": "Bitcoin USD (BTCFi)",
+      "price": 0,
+      "price_change_24h": 0,
+      "volume_24h": 0,
+      "market_cap": 8508256,
+      "rsi_value": 0,
+      "rsi_signal": "N/A",
+      "bollinger_signal": "Nenhum",
+      "macd_signal": "Nenhum",
+      "mme_cross": "Nenhum",
+      "hilo_signal": "Nenhum",
+      "lastPrice": 0
+    }
+  },
+  {
     "id": "WETHUSDT-RSI_SOBREVENDA-1757599856455",
     "symbol": "WETHUSDT",
     "condition": "RSI em Sobrevenda",
