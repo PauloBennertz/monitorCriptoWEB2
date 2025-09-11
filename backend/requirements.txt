@@ -8,3 +8,4 @@ pyinstaller
 uvicorn
 fastapi
 openpyxl
+plotly

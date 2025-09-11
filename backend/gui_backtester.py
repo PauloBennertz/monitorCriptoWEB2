@@ -9,11 +9,12 @@ import queue
 import pandas as pd
 from datetime import datetime
 
-# Import the backtesting logic
+# Import the backtesting and charting logic
 try:
     from backtester import fetch_historical_data, run_backtest
+    from chart_generator import generate_chart
 except ImportError:
-    messagebox.showerror("Erro de Importação", "Não foi possível encontrar o script 'backtester.py'. Certifique-se de que ele está na mesma pasta.")
+    messagebox.showerror("Erro de Importação", "Não foi possível encontrar 'backtester.py' ou 'chart_generator.py'. Certifique-se de que estão na mesma pasta.")
     exit()
 
 class BacktesterGUI:
@@ -24,6 +25,8 @@ class BacktesterGUI:
 
         # --- State and Control Variables ---
         self.results_data = []
+        self.backtest_df = None # To store the dataframe with results
+        self.backtest_signals = None # To store the signals for charting
         self.is_paused = False
         self.stop_event = threading.Event()
         self.pause_event = threading.Event()
@@ -68,6 +71,9 @@ class BacktesterGUI:
 
         spacer = ttk.Frame(action_frame)
         spacer.pack(side=tk.LEFT, expand=True, fill=tk.X)
+
+        self.chart_button = ttk.Button(action_frame, text="Ver Gráfico", command=self.show_chart, state="disabled", bootstyle=PRIMARY)
+        self.chart_button.pack(side=tk.RIGHT, padx=5)
 
         self.export_button = ttk.Button(action_frame, text="Exportar para Excel", command=self.export_to_excel, state="disabled", bootstyle=INFO)
         self.export_button.pack(side=tk.RIGHT, padx=5)
@@ -122,11 +128,14 @@ class BacktesterGUI:
         self.pause_event.clear()
         self.is_paused = False
         self.results_data.clear()
+        self.backtest_df = None
+        self.backtest_signals = None
 
         self.run_button.config(state="disabled")
         self.pause_button.config(state="normal", text="Pausar")
         self.stop_button.config(state="normal")
         self.export_button.config(state="disabled")
+        self.chart_button.config(state="disabled")
         self.status_label.config(text="Buscando dados...")
 
         self.results_text.text.config(state="normal")
@@ -141,10 +150,7 @@ class BacktesterGUI:
         thread.start()
 
     def run_backtest_logic(self, symbol, start_date, end_date):
-        # --- IMPORTANT: This block is for using real data. ---
         historical_df = fetch_historical_data(symbol, start_date, end_date)
-
-        
       
         if historical_df.empty:
             self.queue.put(f"ERRO: Não foi possível buscar dados para {symbol}.")
@@ -152,7 +158,12 @@ class BacktesterGUI:
             return
 
         self.status_label.config(text="Analisando...")
-        run_backtest(historical_df, symbol, self.stop_event, self.pause_event, self.queue.put)
+
+        # Store the results for the chart
+        self.backtest_df, self.backtest_signals = run_backtest(
+            historical_df, symbol, self.stop_event, self.pause_event, self.queue.put
+        )
+
         self.gui_task_done()
 
     def toggle_pause(self):
@@ -175,8 +186,12 @@ class BacktesterGUI:
         self.run_button.config(state="normal")
         self.pause_button.config(state="disabled", text="Pausar")
         self.stop_button.config(state="disabled")
+
         if self.results_data:
             self.export_button.config(state="normal")
+
+        if self.backtest_signals: # If there are any signals, enable the chart button
+            self.chart_button.config(state="normal")
 
     def export_to_excel(self):
         if not self.results_data:
@@ -184,7 +199,6 @@ class BacktesterGUI:
             return
 
         df = pd.DataFrame(self.results_data)
-
         filepath = filedialog.asksaveasfilename(
             defaultextension=".xlsx",
             filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
@@ -199,6 +213,18 @@ class BacktesterGUI:
             messagebox.showinfo("Sucesso", f"Resultados salvos com sucesso em:\n{filepath}")
         except Exception as e:
             messagebox.showerror("Erro ao Salvar", f"Ocorreu um erro ao salvar o arquivo:\n{e}")
+
+    def show_chart(self):
+        if self.backtest_df is not None and self.backtest_signals:
+            # Run chart generation in a separate thread to avoid freezing the GUI
+            chart_thread = threading.Thread(
+                target=generate_chart,
+                args=(self.backtest_df, self.backtest_signals),
+                daemon=True
+            )
+            chart_thread.start()
+        else:
+            messagebox.showinfo("Gerar Gráfico", "Não há dados de backtest para exibir. Execute uma análise primeiro.")
 
 if __name__ == "__main__":
     root = ttk.Window(themename="darkly")
