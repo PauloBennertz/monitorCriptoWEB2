@@ -59,9 +59,8 @@ def generate_chart(df: pd.DataFrame, signals: list):
     ), row=1, col=1)
 
     # 2. Calculate and add Bollinger Bands
-    df['bb_upper'], df['bb_lower'], df['bb_ma'], _ = df.apply(
-        lambda row: calculate_bollinger_bands(df.loc[:row.name]), axis=1, result_type='expand'
-    ).T
+    df['bb_upper'], df['bb_lower'], df['bb_ma'] = calculate_bollinger_bands(df, period=20, std_dev=2)
+
     fig.add_trace(go.Scatter(x=df['timestamp'], y=df['bb_upper'], name='Banda Superior', line=dict(color='cyan', width=1, dash='dash')))
     fig.add_trace(go.Scatter(x=df['timestamp'], y=df['bb_lower'], name='Banda Inferior', line=dict(color='cyan', width=1, dash='dash')))
     fig.add_trace(go.Scatter(x=df['timestamp'], y=df['bb_ma'], name='Média Móvel (BB)', line=dict(color='yellow', width=1, dash='dash')))

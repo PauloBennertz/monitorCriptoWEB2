@@ -11,23 +11,37 @@ def calculate_ema(series, period):
 
 def calculate_rsi(df, period=14):
     """Calcula o Índice de Força Relativa (RSI) para um DataFrame."""
-    if df is None or df.empty or len(df) < period + 1: return 0, 0, 0
+    if df is None or df.empty or len(df) < period + 1:
+        return pd.Series(np.nan, index=df.index), 0, 0
     delta = df['close'].diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    avg_gain, avg_loss = gain.iloc[-1], loss.iloc[-1]
-    if pd.isna(avg_loss) or avg_loss == 0: return 100, avg_gain if not pd.isna(avg_gain) else 0, 0
-    if pd.isna(avg_gain): return 0, 0, avg_loss
-    rs = avg_gain / avg_loss
-    return 100 - (100 / (1 + rs)), avg_gain, avg_loss
+
+    # Evitar divisão por zero
+    rs = gain / loss.replace(0, np.nan)
+    rsi = 100 - (100 / (1 + rs))
+
+    # Retorna a série de RSI e os últimos valores de avg_gain e avg_loss
+    return rsi, gain.iloc[-1], loss.iloc[-1]
 
 def calculate_bollinger_bands(df, period=20, std_dev=2):
-    """Calcula as Bandas de Bollinger para um DataFrame."""
-    if df is None or df.empty or len(df) < period: return 0, 0, 0, 0
-    sma = df['close'].rolling(window=period).mean().iloc[-1]
-    std = df['close'].rolling(window=period).std().iloc[-1]
-    if pd.isna(sma) or pd.isna(std): return 0, 0, sma, std
-    return sma + (std * std_dev), sma - (std * std_dev), sma, std
+    """Calcula as Bandas de Bollinger para um DataFrame, retornando Series."""
+    if df is None or df.empty or len(df) < period:
+        # Retorna Series vazias ou com NaNs do mesmo tamanho do df de entrada
+        nan_series = pd.Series(np.nan, index=df.index)
+        return nan_series, nan_series, nan_series
+
+    # Calcula a Média Móvel Simples
+    sma = df['close'].rolling(window=period, min_periods=1).mean()
+
+    # Calcula o Desvio Padrão
+    std = df['close'].rolling(window=period, min_periods=1).std()
+
+    # Calcula as bandas superior e inferior
+    upper_band = sma + (std * std_dev)
+    lower_band = sma - (std * std_dev)
+
+    return upper_band, lower_band, sma
 
 def calculate_macd(df, fast=12, slow=26, signal=9):
     """Calcula o sinal de cruzamento do MACD (Convergência/Divergência de Médias Móveis)."""
