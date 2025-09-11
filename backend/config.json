@@ -1,0 +1,9 @@
+{
+    "cryptos_to_monitor": [],
+    "market_analysis_config": {
+        "top_n": 100,
+        "min_market_cap": 1000000,
+        "display_limit": 20,
+        "grid_layout_columns": 5
+    }
+}
