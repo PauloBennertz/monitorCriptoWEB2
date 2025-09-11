@@ -93,25 +93,50 @@ class Coin(BaseModel):
     symbol: str
     name: str
 
+from backend.monitoring_service import fetch_all_binance_symbols_startup
+
 @app.get("/api/all_tradable_coins", response_model=List[Coin])
 async def get_all_tradable_coins():
     """
-    Provides a list of all available coins from CoinGecko, including names and symbols.
-    The list is cached by the CoinManager to improve performance.
+    Provides a filtered list of coins that are tradable on Binance with a USDT pair.
+    The list is enriched with names from CoinGecko.
     """
-    logging.info("Fetching all tradable coins from CoinManager...")
+    logging.info("Fetching all tradable coins...")
     try:
-        # The CoinManager handles its own caching.
-        all_coins = coin_manager_instance.get_all_coins()
-        if not all_coins:
+        # 1. Fetch all symbols ending in USDT from Binance
+        # We pass an empty config because we don't need the fallback logic here.
+        binance_symbols = fetch_all_binance_symbols_startup({})
+        if not binance_symbols:
+            raise HTTPException(status_code=503, detail="Could not fetch symbol list from Binance.")
+
+        # Create a set of base assets for efficient lookup (e.g., {'BTC', 'ETH'})
+        tradable_base_assets = {s.replace('USDT', '') for s in binance_symbols}
+
+        # 2. Get the full list of coins from CoinGecko (cached by the manager)
+        all_coingecko_coins = coin_manager_instance.get_all_coins()
+        if not all_coingecko_coins:
             raise HTTPException(status_code=500, detail="Failed to fetch coin list from CoinManager.")
 
-        # We need to filter this list to match Binance's USDT pairs if necessary,
-        # but for now, returning the full list is better for the UI.
-        # This returns a list of dicts like {'id': 'bitcoin', 'symbol': 'btc', 'name': 'Bitcoin'}
-        return all_coins
+        # 3. Filter the CoinGecko list to include only coins tradable on Binance
+        # Also, ensure we use the uppercase symbol consistent with Binance.
+        filtered_coins = [
+            {
+                "id": coin['id'],
+                "symbol": coin['symbol'].upper(), # Use the uppercase symbol
+                "name": coin['name']
+            }
+            for coin in all_coingecko_coins
+            if coin['symbol'].upper() in tradable_base_assets
+        ]
+
+        # Sort the list alphabetically by name for a better user experience
+        sorted_filtered_coins = sorted(filtered_coins, key=lambda x: x['name'])
+
+        logging.info(f"Returning {len(sorted_filtered_coins)} tradable coins.")
+        return sorted_filtered_coins
+
     except Exception as e:
-        logging.error(f"Error fetching all tradable coins from CoinManager: {e}")
+        logging.error(f"Error fetching all tradable coins: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/crypto_data", response_model=List[Dict[str, Any]])
@@ -292,6 +317,12 @@ class CoinSymbol(BaseModel):
 async def add_monitored_coin(coin: CoinSymbol):
     """Adds a new coin to the monitored list in config.json."""
     try:
+        # --- Symbol Normalization ---
+        # A safeguard to correct common client-side formatting errors like 'BTCUSDUSDT'
+        normalized_symbol = coin.symbol.upper()
+        if "USDUSDT" in normalized_symbol:
+            normalized_symbol = normalized_symbol.replace("USDUSDT", "USDT")
+
         with open(CONFIG_FILE_PATH, 'r+', encoding='utf-8') as f:
             config_data = json.load(f)
 
@@ -299,18 +330,18 @@ async def add_monitored_coin(coin: CoinSymbol):
             if 'cryptos_to_monitor' not in config_data:
                 config_data['cryptos_to_monitor'] = []
 
-            # Robust check for existing coin, handling both dict and string formats
+            # Robust check for existing coin using the normalized symbol
             monitored_list = config_data.get('cryptos_to_monitor', [])
             is_present = any(
-                (isinstance(c, dict) and c.get('symbol') == coin.symbol) or
-                (isinstance(c, str) and c == coin.symbol)
+                (isinstance(c, dict) and c.get('symbol') == normalized_symbol) or
+                (isinstance(c, str) and c == normalized_symbol)
                 for c in monitored_list
             )
 
             if not is_present:
                 # Add the new coin with a default alert configuration
                 monitored_list.append({
-                    "symbol": coin.symbol,
+                    "symbol": normalized_symbol, # Use the normalized symbol
                     "alert_config": {
                         "conditions": {
                             "rsi_sobrevendido": {"enabled": True, "blinking": True},
@@ -327,11 +358,11 @@ async def add_monitored_coin(coin: CoinSymbol):
                 f.seek(0)
                 json.dump(config_data, f, indent=2)
                 f.truncate()
-                logging.info(f"Added new coin to monitor: {coin.symbol}")
-                return {"message": f"Coin {coin.symbol} added successfully."}
+                logging.info(f"Added new coin to monitor: {normalized_symbol}")
+                return {"message": f"Coin {normalized_symbol} added successfully."}
             else:
-                logging.warning(f"Attempted to add existing coin: {coin.symbol}")
-                return {"message": f"Coin {coin.symbol} is already being monitored."}
+                logging.warning(f"Attempted to add existing coin: {normalized_symbol}")
+                return {"message": f"Coin {normalized_symbol} is already being monitored."}
 
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Config file not found.")

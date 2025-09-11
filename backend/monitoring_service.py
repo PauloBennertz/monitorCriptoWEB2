@@ -280,15 +280,20 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
     if df is None or df.empty:
         return analysis_result
 
-    rsi_value, _, _ = calculate_rsi(df)
-    upper_band, lower_band, _, _ = calculate_bollinger_bands(df)
+    rsi_series, _, _ = calculate_rsi(df)
+    upper_band_series, lower_band_series, _ = calculate_bollinger_bands(df)
     macd_cross = calculate_macd(df)
     _, _, hilo_signal = calculate_hilo_signals(df)
     emas = calculate_emas(df, periods=[50, 200])
 
+    # Get the latest numeric value from each indicator series, handling potential NaNs
+    rsi_value = rsi_series.iloc[-1] if not rsi_series.empty and pd.notna(rsi_series.iloc[-1]) else 0.0
+    upper_band = upper_band_series.iloc[-1] if not upper_band_series.empty and pd.notna(upper_band_series.iloc[-1]) else 0.0
+    lower_band = lower_band_series.iloc[-1] if not lower_band_series.empty and pd.notna(lower_band_series.iloc[-1]) else 0.0
+
     analysis_result['hilo_signal'] = hilo_signal
-    analysis_result['rsi_value'] = rsi_value if rsi_value else 0.0
-    analysis_result['rsi_signal'] = f"{rsi_value:.2f}" if rsi_value else "N/A"
+    analysis_result['rsi_value'] = rsi_value
+    analysis_result['rsi_signal'] = f"{rsi_value:.2f}" if rsi_value > 0 else "N/A"
 
     if upper_band > 0 and analysis_result['price'] > 0:
         if analysis_result['price'] > upper_band:
