@@ -198,42 +198,43 @@ def run_backtest(df, symbol, stop_event, pause_event, output_callback=None):
     """
     Runs the backtest on the given DataFrame.
     Iterates through the data, calculates indicators, and checks for signals.
-    Results are passed to the output_callback function.
+    Results are passed to the output_callback function and also returned.
     Can be paused or stopped via threading events.
+    Returns:
+        tuple: A tuple containing the DataFrame and a list of signal dictionaries.
     """
-    # If no callback is provided, default to printing to the console for command-line use.
+    # If no callback is provided, default to printing for command-line use.
     if output_callback is None:
         output_callback = print
 
     logging.info(f"Starting backtest for {symbol} with {len(df)} records.")
 
+    all_signals = [] # Store signals for chart generation
     min_periods = 226
+
     if len(df) < min_periods:
         error_msg = f"Not enough data. Need at least {min_periods} records, got {len(df)}."
         logging.error(error_msg)
         output_callback(f"ERRO: {error_msg}")
-        return
+        return df, all_signals
 
     output_callback("\n--- Backtest Results ---")
 
     # State tracking to only report a signal when the state changes
     active_signals = set()
 
-    # Iterate through the data, starting from the point where we have enough data.
+    # Iterate through the data
     for i in range(min_periods, len(df)):
-        # --- Execution Control ---
         if stop_event.is_set():
             output_callback("\n--- Backtest Interrompido pelo Usuário ---")
             break
 
-        # This creates a non-blocking pause
         while pause_event.is_set():
-            if stop_event.is_set(): # Allow stopping even while paused
+            if stop_event.is_set():
                 output_callback("\n--- Backtest Interrompido pelo Usuário ---")
-                return # Exit function entirely
+                return df, all_signals
             time.sleep(0.1)
 
-        # Use i+1 to ensure the current candle is included in the window
         df_window = df.iloc[:i+1]
         current_row = df_window.iloc[-1]
         timestamp = current_row['timestamp']
@@ -247,7 +248,6 @@ def run_backtest(df, symbol, stop_event, pause_event, output_callback=None):
         emas = calculate_emas(df_window, periods=[50, 200])
         mme_cross = "Nenhum"
         if 50 in emas and 200 in emas and len(emas[50]) > 1 and len(emas[200]) > 1:
-            # Check for a crossover at the very last point in the series
             if emas[50].iloc[-2] < emas[200].iloc[-2] and emas[50].iloc[-1] > emas[200].iloc[-1]:
                 mme_cross = "Cruz Dourada"
             elif emas[50].iloc[-2] > emas[200].iloc[-2] and emas[50].iloc[-1] < emas[200].iloc[-1]:
@@ -270,16 +270,20 @@ def run_backtest(df, symbol, stop_event, pause_event, output_callback=None):
         # --- Compare current state with previous state to find new alerts ---
         for signal, is_active in signals_to_check.items():
             if is_active and signal not in active_signals:
-                # A new signal has been triggered
                 message = f"{timestamp.strftime('%d/%m/%Y %H:%M:%S')} {symbol} - {signal}"
                 output_callback(message)
+                all_signals.append({
+                    'timestamp': timestamp,
+                    'message': f"{symbol} - {signal}",
+                    'price': current_row['close']
+                })
                 active_signals.add(signal)
             elif not is_active and signal in active_signals:
-                # A signal is no longer active, so we remove it from the set.
                 active_signals.remove(signal)
 
     output_callback("--- Backtest Complete ---")
     logging.info("Backtesting loop finished.")
+    return df, all_signals
 
 
 if __name__ == '__main__':
