@@ -134,5 +134,5 @@ def generate_chart(df: pd.DataFrame, signals: list):
         )
     )
 
-    # Display the chart in a new window
-    fig.show()
+    # Convert the figure to JSON instead of displaying it
+    return fig.to_json()
