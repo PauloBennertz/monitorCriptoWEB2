@@ -519,9 +519,6 @@ const App = () => {
                         <button className="manage-button" onClick={() => setSettingsModalOpen(true)}>
                             Gerenciar Alertas
                         </button>
-                        <button className="manage-button" onClick={handleOpenBacktester}>
-                            Iniciar Backtester
-                        </button>
                     </div>
                 </div>
                 <div className="header-status-bar">
