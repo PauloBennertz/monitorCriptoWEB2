@@ -1,123 +1,294 @@
+import requests
 import pandas as pd
-import numpy as np
-from .chart_generator import generate_chart # Adjusted import
-
-class Backtester:
-    def __init__(self, historical_data, strategy, initial_capital=100000):
-        self.historical_data = historical_data
-        self.strategy = strategy
-        self.initial_capital = initial_capital
-        # Ensure index is timezone-aware if historical_data's index is
-        if isinstance(historical_data.index, pd.DatetimeIndex):
-            self.positions = pd.DataFrame(index=historical_data.index).fillna(0.0)
-            self.portfolio = pd.DataFrame(index=historical_data.index).fillna(0.0)
-            self.signals = pd.DataFrame(index=historical_data.index)
-        else:
-            # Fallback for non-datetime index, though less ideal
-            self.positions = pd.DataFrame(index=range(len(historical_data))).fillna(0.0)
-            self.portfolio = pd.DataFrame(index=range(len(historical_data))).fillna(0.0)
-            self.signals = pd.DataFrame(index=range(len(historical_data)))
+from datetime import datetime, timezone
+import time
+import logging
+import sys
+import os
+import argparse
+import threading
 
 
-    def _generate_signals(self):
-        """Generates trading signals using the provided strategy."""
-        self.signals['signal'] = self.strategy.generate_signals(self.historical_data)
-        # Ensure 'price' is available for backtesting logic
-        if 'close' in self.historical_data:
-            self.signals['price'] = self.historical_data['close']
-        else:
-            # Handle cases where 'close' might not be the price column
-            # This is a fallback and might need adjustment based on actual data structure
-            self.signals['price'] = self.historical_data.iloc[:, 0]
+
+# Passo 1: Ativar a busca de dados reais (MUITO IMPORTANTE)
+# Como o meu ambiente de desenvolvimento tinha restrições de rede, eu deixei o script usando dados de teste para poder construí-lo. Para que ele funcione com dados reais da corretora Binance, você precisa fazer uma pequena edição no arquivo backend/backtester.py:
+
+# Abra o arquivo backend/backtester.py em um editor de texto.
+
+# Procure a linha que está comentada (começa com #):
+
+# # historical_df = fetch_historical_data(args.symbol, args.start, args.end, args.interval)
+# Descomente esta linha, ou seja, apague o # do início.
+
+# Logo abaixo, você verá um bloco de código de teste. Apague ou comente todo este bloco:
+
+# # --- MOCK DATA FOR DEVELOPMENT ---
+# # ... (apague todo o conteúdo até)
+# # --- END OF MOCK DATA BLOCK ---
+# Passo 2: Executar o Script pelo Terminal
+# Depois de fazer a edição acima, você pode usar o script da seguinte forma:
+
+# Abra o seu terminal e navegue até a pasta raiz do projeto.
+
+# Execute o comando abaixo, substituindo os valores pelos que você deseja analisar.
+
+# python3 backend/backtester.py --symbol <SÍMBOLO> --start <DATA_DE_INÍCIO> --end <DATA_DE_FIM>
+# Exemplos de Uso:
+# Para analisar o Bitcoin (BTC) durante todo o ano de 2022:
+
+# python3 backend/backtester.py --symbol BTCUSDT --start 2022-01-01 --end 2022-12-31
+# Para analisar a Ethereum (ETH) no primeiro trimestre de 2023, com intervalo de 4 horas:
+
+# python3 backend/backtester.py --symbol ETHUSDT --start 2023-01-01 --end 2023-03-31 --interval 4h
+# Parâmetros do Comando:
+# --symbol: (Obrigatório) O símbolo da moeda (ex: BTCUSDT).
+# --start: (Obrigatório) A data de início no formato AAAA-MM-DD.
+# --end: (Obrigatório) A data de fim no formato AAAA-MM-DD.
+# --interval: (Opcional) O intervalo das velas. Padrão: 1h. Outros exemplos: 15m, 4h, 1d.
 
 
-    def _run_backtest(self):
-        """Executes the backtest simulation based on the generated signals."""
-        self.portfolio['holdings'] = 0.0
-        self.portfolio['cash'] = self.initial_capital
-        self.portfolio['total'] = self.initial_capital
-        self.positions['shares'] = 0.0
-
-        # Using .values for faster iteration
-        signals_array = self.signals.values
-        portfolio_array = self.portfolio.values
-        positions_array = self.positions.values
-
-        for i in range(1, len(self.signals)):
-            # Carry over values from the previous day
-            portfolio_array[i, 1] = portfolio_array[i-1, 1]  # cash
-            positions_array[i, 0] = positions_array[i-1, 0]  # shares
-
-            signal = signals_array[i, 0]
-            price = signals_array[i, 1]
-
-            if signal == 1:  # Buy signal
-                shares_to_buy = portfolio_array[i, 1] // price
-                if shares_to_buy > 0:
-                    positions_array[i, 0] += shares_to_buy
-                    portfolio_array[i, 1] -= shares_to_buy * price
-            elif signal == -1:  # Sell signal
-                shares_to_sell = positions_array[i, 0]
-                if shares_to_sell > 0:
-                    portfolio_array[i, 1] += shares_to_sell * price
-                    positions_array[i, 0] = 0
-
-            # Update holdings and total portfolio value
-            portfolio_array[i, 0] = positions_array[i, 0] * price
-            portfolio_array[i, 2] = portfolio_array[i, 1] + portfolio_array[i, 0]
-
-        # Update DataFrames from modified numpy arrays
-        self.portfolio['holdings'], self.portfolio['cash'], self.portfolio['total'] = portfolio_array[:, 0], portfolio_array[:, 1], portfolio_array[:, 2]
-        self.positions['shares'] = positions_array[:, 0]
 
 
-    def get_performance(self):
-        """Returns the portfolio performance DataFrame."""
-        return self.portfolio
 
+# Add the project root to the Python path to allow for relative imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-    def generate_results_chart(self, coin_id):
-        """
-        Generates a JSON representation of the backtest results chart.
+try:
+    from backend import robust_services
+    from backend.indicators import (
+        calculate_rsi, calculate_bollinger_bands, calculate_macd,
+        calculate_emas, calculate_hilo_signals
+    )
+except ImportError as e:
+    print(f"Error importing modules: {e}")
+    print("Please ensure the script is run from the project's root directory or that the backend package is in the Python path.")
+    sys.exit(1)
 
-        Args:
-            coin_id (str): The identifier of the coin being backtested (e.g., 'bitcoin').
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-        Returns:
-            str: A JSON string representing the Plotly chart.
-        """
-        # Note: The `generate_chart` function from chart_generator.py expects a list of signals, not a DataFrame
-        # We need to format the signals correctly.
+BINANCE_API_URL = "https://api.binance.com/api/v3/klines"
+# Binance API returns a maximum of 1000 results per request
+MAX_LIMIT = 1000
 
-        # Create a list of signal dictionaries for the chart generator
-        chart_signals = []
-        for index, row in self.signals.iterrows():
-            if row['signal'] != 0:  # If there is a buy or sell signal
-                signal_type = "Buy Signal" if row['signal'] == 1 else "Sell Signal"
-                chart_signals.append({
-                    'timestamp': index,
-                    'message': f"{coin_id.upper()} - {signal_type}",
-                    'price': row['price']
-                })
+def date_to_milliseconds(date_str):
+    """Converts a YYYY-MM-DD string to milliseconds since epoch."""
+    return int(datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp() * 1000)
 
-        # Call the chart generator with the correct data format
-        return generate_chart(self.historical_data, chart_signals)
+def fetch_historical_data(symbol, start_date, end_date, interval='1h'):
+    """
+    Fetches historical k-line data from Binance for a given symbol and date range.
+    Handles pagination to retrieve all data in the specified range.
+    """
+    logging.info(f"Fetching historical data for {symbol} from {start_date} to {end_date} with {interval} interval.")
 
+    start_ms = date_to_milliseconds(start_date)
+    end_ms = date_to_milliseconds(end_date)
 
-    def run(self, coin_id):
-        """
-        Runs the entire backtesting process and returns the results chart as JSON.
+    all_data = []
 
-        Args:
-            coin_id (str): The identifier for the coin.
+    while start_ms < end_ms:
+        robust_services.rate_limiter.wait_if_needed()
+        params = {
+            'symbol': symbol,
+            'interval': interval,
+            'startTime': start_ms,
+            'endTime': end_ms,
+            'limit': MAX_LIMIT
+        }
 
-        Returns:
-            str: A JSON string of the results chart, or None if an error occurs.
-        """
         try:
-            self._generate_signals()
-            self._run_backtest()
-            return self.generate_results_chart(coin_id)
+            response = requests.get(BINANCE_API_URL, params=params, timeout=15)
+            response.raise_for_status()
+            data = response.json()
+
+            if not data:
+                # No more data available for the period
+                break
+
+            all_data.extend(data)
+
+            # The next request should start after the last timestamp we received.
+            last_timestamp = data[-1][0]
+            start_ms = last_timestamp + 1
+
+            logging.info(f"Fetched {len(data)} records. Next start time: {datetime.fromtimestamp(start_ms / 1000, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}")
+
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Network error while fetching data for {symbol}: {e}")
+            time.sleep(5) # Wait before potentially retrying or exiting
+            break
         except Exception as e:
-            print(f"An error occurred during the backtest run: {e}")
-            return None
+            logging.error(f"An unexpected error occurred: {e}")
+            break
+
+    if not all_data:
+        logging.warning("No data was fetched. Check the symbol and date range.")
+        return pd.DataFrame()
+
+    # Create DataFrame
+    df = pd.DataFrame(all_data, columns=[
+        'open_time', 'open', 'high', 'low', 'close', 'volume',
+        'close_time', 'quote_asset_volume', 'number_of_trades',
+        'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'
+    ])
+
+    # Convert data types
+    df['open_time'] = pd.to_datetime(df['open_time'], unit='ms', utc=True)
+    for col in ['open', 'high', 'low', 'close', 'volume']:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+
+    # Keep only necessary columns and rename open_time for clarity
+    df = df[['open_time', 'open', 'high', 'low', 'close', 'volume']].rename(columns={'open_time': 'timestamp'})
+
+    # Filter again to ensure we are within the requested end_date (Binance endTime is inclusive)
+    end_date_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    df = df[df['timestamp'] < end_date_dt]
+
+    logging.info(f"Successfully fetched a total of {len(df)} records for the specified period.")
+    return df
+
+def main():
+    """Main function to run the backtester from the command line."""
+    parser = argparse.ArgumentParser(
+        description="A command-line tool to backtest cryptocurrency trading strategies.",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument("--symbol", type=str, required=True, help="The cryptocurrency symbol to backtest (e.g., BTCUSDT).")
+    parser.add_argument("--start", type=str, required=True, help="Start date for the backtest in YYYY-MM-DD format.")
+    parser.add_argument("--end", type=str, required=True, help="End date for the backtest in YYYY-MM-DD format.")
+    parser.add_argument("--interval", type=str, default='1h', help="The interval for the k-lines (e.g., 15m, 1h, 4h, 1d).")
+
+    args = parser.parse_args()
+
+    # --- REAL IMPLEMENTATION ---
+    # The following line will be used in a real environment.
+    # Due to network restrictions in this sandbox, it's temporarily commented out.
+    # historical_df = fetch_historical_data(args.symbol, args.start, args.end, args.interval)
+
+    # --- MOCK DATA FOR DEVELOPMENT ---
+    # This block is used to simulate data fetching when the API is not accessible.
+    # It will be removed once the script is run in a non-restricted environment.
+    logging.warning("--- USING MOCK DATA! The live Binance API is currently inaccessible. ---")
+    date_range = pd.date_range(start=args.start, end=args.end, freq=args.interval, tz='UTC')
+    mock_data = {
+        'timestamp': date_range,
+        'open': 40000 + pd.Series(range(len(date_range))) * 10,
+        'high': 40500 + pd.Series(range(len(date_range))) * 10,
+        'low': 39800 + pd.Series(range(len(date_range))) * 10,
+        'close': 40200 + pd.Series(range(len(date_range))) * 5,
+        'volume': 100 + pd.Series(range(len(date_range)))
+    }
+    historical_df = pd.DataFrame(mock_data)
+    # --- END OF MOCK DATA BLOCK ---
+
+    if historical_df.empty:
+        logging.error(f"Could not retrieve data for {args.symbol}. Exiting.")
+        return
+
+    print(f"\nBacktesting for {args.symbol} from {args.start} to {args.end} with {args.interval} interval...")
+
+    # Create dummy events for command-line execution, as it doesn't support pause/stop.
+    stop_event = threading.Event()
+    pause_event = threading.Event()
+    run_backtest(historical_df, args.symbol, stop_event, pause_event)
+
+
+def run_backtest(df, symbol, stop_event, pause_event, output_callback=None):
+    """
+    Runs the backtest on the given DataFrame.
+    Iterates through the data, calculates indicators, and checks for signals.
+    Results are passed to the output_callback function and also returned.
+    Can be paused or stopped via threading events.
+    Returns:
+        tuple: A tuple containing the DataFrame and a list of signal dictionaries.
+    """
+    # If no callback is provided, default to printing for command-line use.
+    if output_callback is None:
+        output_callback = print
+
+    logging.info(f"Starting backtest for {symbol} with {len(df)} records.")
+
+    all_signals = [] # Store signals for chart generation
+    min_periods = 226
+
+    if len(df) < min_periods:
+        error_msg = f"Not enough data. Need at least {min_periods} records, got {len(df)}."
+        logging.error(error_msg)
+        output_callback(f"ERRO: {error_msg}")
+        return df, all_signals
+
+    output_callback("\n--- Backtest Results ---")
+
+    # State tracking to only report a signal when the state changes
+    active_signals = set()
+
+    # Iterate through the data
+    for i in range(min_periods, len(df)):
+        if stop_event.is_set():
+            output_callback("\n--- Backtest Interrompido pelo Usuário ---")
+            break
+
+        while pause_event.is_set():
+            if stop_event.is_set():
+                output_callback("\n--- Backtest Interrompido pelo Usuário ---")
+                return df, all_signals
+            time.sleep(0.1)
+
+        df_window = df.iloc[:i+1]
+        current_row = df_window.iloc[-1]
+        timestamp = current_row['timestamp']
+
+        # --- Calculate all indicators for the current window ---
+        rsi_series, _, _ = calculate_rsi(df_window)
+        rsi_value = rsi_series.iloc[-1]
+
+        upper_band_series, lower_band_series, _ = calculate_bollinger_bands(df_window)
+        upper_band = upper_band_series.iloc[-1]
+        lower_band = lower_band_series.iloc[-1]
+        macd_signal = calculate_macd(df_window)
+        _, _, hilo_signal = calculate_hilo_signals(df_window)
+
+        emas = calculate_emas(df_window, periods=[50, 200])
+        mme_cross = "Nenhum"
+        if 50 in emas and 200 in emas and len(emas[50]) > 1 and len(emas[200]) > 1:
+            if emas[50].iloc[-2] < emas[200].iloc[-2] and emas[50].iloc[-1] > emas[200].iloc[-1]:
+                mme_cross = "Cruz Dourada"
+            elif emas[50].iloc[-2] > emas[200].iloc[-2] and emas[50].iloc[-1] < emas[200].iloc[-1]:
+                mme_cross = "Cruz da Morte"
+
+        # --- Define all possible signals and their current state ---
+        signals_to_check = {
+            "RSI Sobrecompra (>= 70)": rsi_value >= 70,
+            "RSI Sobrevenda (<= 30)": rsi_value <= 30,
+            "Cruzamento de Alta (MACD)": macd_signal == "Cruzamento de Alta",
+            "Cruzamento de Baixa (MACD)": macd_signal == "Cruzamento de Baixa",
+            "Cruz Dourada (MME 50/200)": mme_cross == "Cruz Dourada",
+            "Cruz da Morte (MME 50/200)": mme_cross == "Cruz da Morte",
+            "Sinal de Compra (HiLo)": hilo_signal == "HiLo Buy",
+            "Sinal de Venda (HiLo)": hilo_signal == "HiLo Sell",
+            "Preco Acima da Banda Bollinger": upper_band > 0 and current_row['close'] > upper_band,
+            "Preco Abaixo da Banda Bollinger": lower_band > 0 and current_row['close'] < lower_band,
+        }
+
+        # --- Compare current state with previous state to find new alerts ---
+        for signal, is_active in signals_to_check.items():
+            if is_active and signal not in active_signals:
+                message = f"{timestamp.strftime('%d/%m/%Y %H:%M:%S')} {symbol} - {signal}"
+                output_callback(message)
+                all_signals.append({
+                    'timestamp': timestamp,
+                    'message': f"{symbol} - {signal}",
+                    'price': current_row['close']
+                })
+                active_signals.add(signal)
+            elif not is_active and signal in active_signals:
+                active_signals.remove(signal)
+
+    output_callback("--- Backtest Complete ---")
+    logging.info("Backtesting loop finished.")
+    return df, all_signals
+
+
+if __name__ == '__main__':
+    main()
