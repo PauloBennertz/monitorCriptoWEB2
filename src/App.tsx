@@ -385,6 +385,26 @@ const App = () => {
         }
     }, []);
 
+    const handleStartBacktester = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/start-backtester`, {
+                method: 'POST',
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                // Display a more user-friendly message from the server's response
+                throw new Error(errorData.detail || 'The server could not start the backtester.');
+            }
+            // You can add a user-facing success notification here if you want
+            console.log("Request to start backtester sent successfully.");
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+            // Update state to show the error message in the UI
+            setError(`Error: ${errorMessage}`);
+            console.error("Failed to start backtester:", err);
+        }
+    };
+
     const sortedData = useMemo(() => {
         return [...cryptoData].sort((a, b) => {
             if (sortKey === 'active_alerts') {
@@ -512,6 +532,9 @@ const App = () => {
                         </div>
                         <button className="manage-button" onClick={() => setSettingsModalOpen(true)}>
                             Gerenciar Alertas
+                        </button>
+                        <button className="manage-button" onClick={handleStartBacktester}>
+                            Iniciar Backtester
                         </button>
                     </div>
                 </div>
