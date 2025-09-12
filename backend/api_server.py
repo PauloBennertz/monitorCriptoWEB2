@@ -161,14 +161,21 @@ async def run_backtest_endpoint(request: BacktestRequest):
 
         strategy = MovingAverageCrossoverStrategy()
         backtester = Backtester(historical_data, strategy, request.initial_capital)
-        chart_json = backtester.run(coin_id=request.symbol)
+        chart_result = backtester.run(coin_id=request.symbol)
 
-        if chart_json is None:
+        if chart_result is None:
             raise HTTPException(status_code=500, detail="Backtest run failed and did not produce a chart.")
 
-        # The chart_json is already a JSON string, so we can parse it and return as a dict/JSON object
-        return json.loads(chart_json)
+        # The result can be a JSON string (success) or a dict (error from chart_generator)
+        if isinstance(chart_result, dict) and 'error' in chart_result:
+            logging.error(f"Chart generation failed: {chart_result.get('message')}")
+            raise HTTPException(status_code=503, detail=chart_result.get('message', 'Chart generation service is unavailable.'))
 
+        # On success, chart_result is a JSON string. Parse and return it.
+        return json.loads(chart_result)
+
+    except HTTPException:
+        raise # Re-raise HTTPExceptions to preserve their status code and detail
     except Exception as e:
         logging.error(f"Error during backtest execution: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An internal server error occurred: {str(e)}")
@@ -297,6 +304,96 @@ async def save_alert_configs(config_data: Dict[str, Any]):
     except Exception as e:
         logging.error(f"Error saving configuration file: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An internal server error occurred while saving config: {str(e)}")
+
+class CoinAddRequest(BaseModel):
+    symbol: str
+
+@app.post("/api/monitored_coins")
+async def add_monitored_coin(request: CoinAddRequest):
+    """
+    Adds a new coin to the monitoring list in the configuration.
+    """
+    with CONFIG_LOCK:
+        try:
+            # 1. Read the existing config
+            config = {"cryptos_to_monitor": [], "market_analysis_config": {}}
+            if os.path.exists(CONFIG_FILE_PATH):
+                with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    if content:
+                        config = json.loads(content)
+
+            # 2. Check if the coin is already monitored
+            monitored_symbols = [c['symbol'] for c in config['cryptos_to_monitor']]
+            if request.symbol in monitored_symbols:
+                logging.warning(f"Attempted to add existing coin {request.symbol}. No action taken.")
+                return {"message": f"Coin {request.symbol} is already monitored."}
+
+            # 3. Add the new coin with a default alert configuration
+            new_coin_config = {
+                "symbol": request.symbol,
+                "alert_config": {
+                    "conditions": {
+                        "rsi_sobrevendido": {"enabled": True, "blinking": True},
+                        "rsi_sobrecomprado": {"enabled": True, "blinking": True},
+                        "hilo_compra": {"enabled": True, "blinking": True},
+                        "mme_cruz_dourada": {"enabled": True, "blinking": True},
+                        "mme_cruz_morte": {"enabled": True, "blinking": True},
+                        "macd_cruz_alta": {"enabled": True, "blinking": True},
+                        "macd_cruz_baixa": {"enabled": True, "blinking": True},
+                    }
+                }
+            }
+            config['cryptos_to_monitor'].append(new_coin_config)
+
+            # 4. Write the updated config back to the file
+            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=4)
+
+            logging.info(f"Successfully added {request.symbol} to monitored coins.")
+            return {"message": f"Coin {request.symbol} added successfully."}
+
+        except Exception as e:
+            logging.error(f"Error adding monitored coin: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail="Failed to add coin to configuration.")
+
+@app.delete("/api/monitored_coins/{symbol}")
+async def remove_monitored_coin(symbol: str):
+    """
+    Removes a coin from the monitoring list in the configuration.
+    """
+    with CONFIG_LOCK:
+        try:
+            # 1. Read the existing config
+            if not os.path.exists(CONFIG_FILE_PATH):
+                raise HTTPException(status_code=404, detail="Configuration file not found.")
+
+            with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+
+            # 2. Find and remove the coin
+            initial_count = len(config['cryptos_to_monitor'])
+            config['cryptos_to_monitor'] = [
+                c for c in config['cryptos_to_monitor'] if c.get('symbol') != symbol
+            ]
+
+            if len(config['cryptos_to_monitor']) == initial_count:
+                logging.warning(f"Attempted to remove non-existent coin {symbol}.")
+                raise HTTPException(status_code=404, detail=f"Coin {symbol} not found in monitored list.")
+
+            # 3. Write the updated config back
+            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=4)
+
+            logging.info(f"Successfully removed {symbol} from monitored coins.")
+            return {"message": f"Coin {symbol} removed successfully."}
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            logging.error(f"Error removing monitored coin: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail="Failed to remove coin from configuration.")
+
 
 class Alert(BaseModel):
     id: str
