@@ -278,39 +278,63 @@ const App = () => {
 
     const handleUpdateMonitoredCoin = useCallback(async (symbol: string, action: 'add' | 'remove') => {
         try {
-            let response;
             if (action === 'add') {
-                response = await fetch(`${API_BASE_URL}/api/monitored_coins`, {
+                // Optimistically add a loading placeholder
+                const coinName = allCoins.find(c => c.symbol === symbol)?.name ?? symbol;
+                const placeholder: CryptoData = {
+                    symbol,
+                    name: coinName,
+                    price: 0,
+                    price_change_24h: 0,
+                    volume_24h: 0,
+                    market_cap: 0,
+                    rsi_value: 50,
+                    bollinger_signal: 'Nenhum',
+                    macd_signal: 'Nenhum',
+                    mme_cross: 'Nenhum',
+                    hilo_signal: 'Nenhum',
+                    isLoading: true,
+                };
+                setCryptoData(prevData => [...prevData, placeholder]);
+
+                const response = await fetch(`${API_BASE_URL}/api/monitored_coins`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ symbol }),
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to add monitored coin');
+                }
+
+                // Fetch data in the background to replace the placeholder
+                await fetchCryptoData(false);
+
             } else { // remove
-                response = await fetch(`${API_BASE_URL}/api/monitored_coins/${symbol}`, {
+                // Optimistically remove the coin from the UI
+                setCryptoData(prevData => prevData.filter(coin => coin.symbol !== symbol));
+                setAlerts(prevAlerts => prevAlerts.filter(alert => alert.symbol !== symbol));
+
+                const response = await fetch(`${API_BASE_URL}/api/monitored_coins/${symbol}`, {
                     method: 'DELETE',
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    // If the API call fails, revert the change by refetching
+                    fetchCryptoData(true);
+                    throw new Error(errorData.detail || 'Failed to remove monitored coin');
+                }
             }
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Failed to update monitored coin');
-            }
-
-            // Clear any active alerts for the removed coin
-            if (action === 'remove') {
-                setAlerts(prevAlerts => prevAlerts.filter(alert => alert.symbol !== symbol));
-            }
-
-
-            // Refresh all data to reflect the change
-            await fetchCryptoData(true);
-
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
             setError(errorMessage); // Display error to the user
             console.error(`Failed to ${action} coin ${symbol}:`, err);
+            // On any error, refresh to sync with the server's true state
+            fetchCryptoData(true);
         }
-    }, [fetchCryptoData]);
+    }, [fetchCryptoData, allCoins]);
 
     const handleDisplayLimitChange = useCallback(async (newLimit: number) => {
         // Optimistic UI Update

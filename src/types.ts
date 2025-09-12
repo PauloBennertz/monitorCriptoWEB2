@@ -11,6 +11,7 @@ export interface CryptoData {
     macd_signal:string;
     mme_cross: string;
     hilo_signal: string;
+    isLoading?: boolean; // Added for optimistic UI updates
 }
 
 export interface Alert {
