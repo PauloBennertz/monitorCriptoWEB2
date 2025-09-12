@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+import subprocess
 import sys
 from threading import Lock
 from fastapi import FastAPI, HTTPException, Query
@@ -398,6 +399,33 @@ async def remove_monitored_coin(symbol: str):
         logging.error(f"Error removing monitored coin: {e}")
         raise HTTPException(status_code=500, detail="Error removing monitored coin.")
 
+
+@app.post("/api/start-backtester")
+async def start_backtester():
+    """
+    Starts the gui_backtester.py script as a separate process.
+    """
+    logging.info("Received request to start the backtester GUI.")
+    try:
+        # Construct the full path to the script relative to the server's base path.
+        script_path = os.path.join(BASE_PATH, "gui_backtester.py")
+
+        # Determine the correct python executable to use (the one running the server).
+        python_executable = sys.executable
+
+        if not os.path.exists(script_path):
+            logging.error(f"Backtester script not found at: {script_path}")
+            raise HTTPException(status_code=404, detail=f"Backtester script not found at path: {script_path}")
+
+        # Use Popen to run the script in a new process without blocking the server.
+        # It's launched in the background.
+        subprocess.Popen([python_executable, script_path])
+
+        logging.info(f"Successfully launched script: {script_path}")
+        return {"message": "Backtester GUI started successfully."}
+    except Exception as e:
+        logging.error(f"Failed to start the backtester GUI: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred: {str(e)}")
 
 # To run this server, use the following command in your terminal:
 # uvicorn backend.api_server:app --reload --port 8000
