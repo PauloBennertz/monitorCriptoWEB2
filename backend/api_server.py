@@ -247,6 +247,7 @@ async def get_crypto_data(symbols: List[str] = Query(..., description="A list of
 CONFIG_FILE_PATH = os.path.join(BASE_PATH, "config.json")
 ALERT_HISTORY_FILE_PATH = os.path.join(BASE_PATH, "alert_history.json")
 HISTORY_LOCK = Lock()
+CONFIG_LOCK = Lock()
 
 @app.get("/api/alert_configs")
 async def get_alert_configs():
@@ -275,6 +276,27 @@ async def get_alert_configs():
     except Exception as e:
         logging.error(f"Error reading configuration file: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An internal server error occurred while reading config: {str(e)}")
+
+@app.post("/api/alert_configs")
+async def save_alert_configs(config_data: Dict[str, Any]):
+    """
+    Saves the entire monitoring and UI configuration.
+    """
+    try:
+        # Basic validation
+        if 'cryptos_to_monitor' not in config_data or 'market_analysis_config' not in config_data:
+            raise HTTPException(status_code=400, detail="Invalid configuration structure.")
+
+        with CONFIG_LOCK:
+            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+                json.dump(config_data, f, indent=4)
+        logging.info("Successfully saved configuration to config.json")
+        return {"message": "Configuration saved successfully."}
+    except HTTPException:
+        raise # Re-raise HTTPException to keep its status code and detail
+    except Exception as e:
+        logging.error(f"Error saving configuration file: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred while saving config: {str(e)}")
 
 class Alert(BaseModel):
     id: str
@@ -310,6 +332,40 @@ async def get_alert_history(start_date: Optional[str] = Query(None, description=
     except Exception as e:
         logging.error(f"Error reading or filtering alert history file: {e}")
         raise HTTPException(status_code=500, detail="Error reading or filtering alert history file.")
+
+@app.post("/api/alerts")
+async def save_alert(alert: Alert):
+    """
+    Saves a new alert to the alert history.
+    """
+    try:
+        with HISTORY_LOCK:
+            history = []
+            if os.path.exists(ALERT_HISTORY_FILE_PATH) and os.path.getsize(ALERT_HISTORY_FILE_PATH) > 0:
+                with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+                    try:
+                        history = json.load(f)
+                        if not isinstance(history, list):
+                            logging.warning("Alert history was not a list, re-initializing.")
+                            history = []
+                    except json.JSONDecodeError:
+                        logging.warning("Could not decode alert history, re-initializing.")
+                        history = []
+
+            history.insert(0, alert.model_dump())
+
+            MAX_HISTORY_SIZE = 1000
+            if len(history) > MAX_HISTORY_SIZE:
+                history = history[:MAX_HISTORY_SIZE]
+
+            with open(ALERT_HISTORY_FILE_PATH, 'w', encoding='utf-8') as f:
+                json.dump(history, f, indent=4)
+
+        logging.info(f"Successfully saved alert for {alert.symbol}")
+        return {"message": "Alert saved successfully"}
+    except Exception as e:
+        logging.error(f"Error saving alert to history: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to save alert to history.")
 
 # ... (rest of the file is the same)
 # The file is too long to include the rest of the endpoints, but they are unchanged.
