@@ -5095,11 +5095,6 @@
     "name": "Aptos"
   },
   {
-    "id": "aptos-bridged-wbtc-aptos",
-    "symbol": "wbtc",
-    "name": "Aptos Bridged WBTC (Aptos)"
-  },
-  {
     "id": "aptos-futures",
     "symbol": "apf",
     "name": "Aptos Futures"
@@ -5303,6 +5298,11 @@
     "id": "arbitrum-bridged-weth-arbitrum-one",
     "symbol": "weth",
     "name": "Arbitrum Bridged WETH (Arbitrum One)"
+  },
+  {
+    "id": "arbitrum-bridged-wrapped-eeth",
+    "symbol": "weeth",
+    "name": "Arbitrum Bridged Wrapped eETH (Arbitrum)"
   },
   {
     "id": "arbitrum-bridged-wsteth-arbitrum",
@@ -6945,11 +6945,6 @@
     "name": "Avalanche Bridged GHO (Avalanche)"
   },
   {
-    "id": "avalanche-bridged-wbtc-avalanche",
-    "symbol": "wbtc",
-    "name": "Avalanche Bridged WBTC (Avalanche)"
-  },
-  {
     "id": "avalanche-bridged-weth-avalanche",
     "symbol": "weth",
     "name": "Avalanche Bridged WETH (Avalanche)"
@@ -7432,10 +7427,15 @@
   {
     "id": "babybonk",
     "symbol": "babybonk",
-    "name": "BabyBonk"
+    "name": "BabyBonk [OLD]"
   },
   {
     "id": "babybonk-2",
+    "symbol": "babybonk",
+    "name": "BabyBonk"
+  },
+  {
+    "id": "babybonk-3",
     "symbol": "babybonk",
     "name": "BabyBonk"
   },
@@ -7953,6 +7953,11 @@
     "id": "backbone-labs-staked-juno",
     "symbol": "bjuno",
     "name": "Backbone Labs Staked JUNO"
+  },
+  {
+    "id": "backbone-labs-staked-luna",
+    "symbol": "bluna",
+    "name": "Backbone Labs Staked LUNA"
   },
   {
     "id": "backbone-staked-kujira",
@@ -9720,11 +9725,6 @@
     "name": "Berachain"
   },
   {
-    "id": "berachain-bridged-wbtc-berachain",
-    "symbol": "wbtc",
-    "name": "Berachain Bridged WBTC (Berachain)"
-  },
-  {
     "id": "berachain-governance-token",
     "symbol": "bgt",
     "name": "Berachain Governance Token"
@@ -11113,6 +11113,11 @@
     "id": "bitcoinz",
     "symbol": "btcz",
     "name": "BitcoinZ"
+  },
+  {
+    "id": "bitcoinzk-zyra",
+    "symbol": "zyra",
+    "name": "BitcoinZK"
   },
   {
     "id": "bitcoiva",
@@ -19695,11 +19700,6 @@
     "name": "Coremind"
   },
   {
-    "id": "core-ordinals",
-    "symbol": "core",
-    "name": "CORE (Ordinals)"
-  },
-  {
     "id": "corepound",
     "symbol": "corp",
     "name": "Corepound"
@@ -19708,11 +19708,6 @@
     "id": "coresky",
     "symbol": "csky",
     "name": "Coresky"
-  },
-  {
-    "id": "corestarter",
-    "symbol": "cstr",
-    "name": "CoreStarter"
   },
   {
     "id": "coreto",
@@ -21680,6 +21675,11 @@
     "name": "Daddy Tate"
   },
   {
+    "id": "dadi-insight-token",
+    "symbol": "dit",
+    "name": "DADI Insight Token"
+  },
+  {
     "id": "daeta",
     "symbol": "daeta",
     "name": "D\u00c6TA"
@@ -22278,6 +22278,11 @@
     "id": "dawkoin",
     "symbol": "daw",
     "name": "Dawkoins"
+  },
+  {
+    "id": "dawn",
+    "symbol": "dawn",
+    "name": "Dawn"
   },
   {
     "id": "day-by-day",
@@ -23910,6 +23915,11 @@
     "name": "DIAMOND The Cat Coin"
   },
   {
+    "id": "diamond-token-2",
+    "symbol": "$dit",
+    "name": "DIAMOND TOKEN \ud83d\udc8e"
+  },
+  {
     "id": "dibs-share",
     "symbol": "dshare",
     "name": "Dibs Share"
@@ -25020,6 +25030,11 @@
     "name": "DOGE-1SATELLITE"
   },
   {
+    "id": "doge-1-satellite",
+    "symbol": "doge-1",
+    "name": "DOGE-1 Satellite"
+  },
+  {
     "id": "doge2",
     "symbol": "caesar",
     "name": "Doge2"
@@ -25276,6 +25291,11 @@
   },
   {
     "id": "dogenarii-coin",
+    "symbol": "dogenarii",
+    "name": "Dogenarii coin"
+  },
+  {
+    "id": "dogenarii-coin-2",
     "symbol": "dogenarii",
     "name": "Dogenarii coin"
   },
@@ -29850,6 +29870,11 @@
     "name": "Falcon USD"
   },
   {
+    "id": "falcon-finance-ff",
+    "symbol": "ff",
+    "name": "Falcon Finance"
+  },
+  {
     "id": "falcon-nine",
     "symbol": "f9",
     "name": "Falcon Nine"
@@ -30503,6 +30528,11 @@
     "id": "ferrum-network",
     "symbol": "frm",
     "name": "Ferrum Network"
+  },
+  {
+    "id": "ferscoin",
+    "symbol": "fr",
+    "name": "ferscoin"
   },
   {
     "id": "fetch-ai",
@@ -34435,6 +34465,11 @@
     "name": "Gingers Have No Sol"
   },
   {
+    "id": "ging-gong-kaew",
+    "symbol": "ggk",
+    "name": "Ging Gong Kaew"
+  },
+  {
     "id": "gini",
     "symbol": "$gini",
     "name": "GINI"
@@ -35935,6 +35970,11 @@
     "name": "Gravity Finance"
   },
   {
+    "id": "grdm",
+    "symbol": "grdm",
+    "name": "GRDM"
+  },
+  {
     "id": "greasycex",
     "symbol": "gcx",
     "name": "GreasyCEX"
@@ -36420,6 +36460,11 @@
     "name": "Guardian Token"
   },
   {
+    "id": "guaridos",
+    "symbol": "gudos",
+    "name": "GuaridOS"
+  },
+  {
     "id": "guberto",
     "symbol": "guberto",
     "name": "Guberto"
@@ -36678,6 +36723,11 @@
     "id": "habibi-sol",
     "symbol": "habibi",
     "name": "Habibi (Sol)"
+  },
+  {
+    "id": "habitat-2",
+    "symbol": "habitat",
+    "name": "Habitat"
   },
   {
     "id": "hacash",
@@ -39380,6 +39430,11 @@
     "name": "HyperSwap AI"
   },
   {
+    "id": "hypertrics",
+    "symbol": "hytr",
+    "name": "Hypertrics"
+  },
+  {
     "id": "hyper-usd",
     "symbol": "usdhl",
     "name": "Hyper USD"
@@ -40568,11 +40623,6 @@
     "id": "insane-labz-base",
     "symbol": "labz",
     "name": "Insane Labz (Base)"
-  },
-  {
-    "id": "insc",
-    "symbol": "insc",
-    "name": "INSC (Ordinals)"
   },
   {
     "id": "inscribe",
@@ -45130,11 +45180,6 @@
     "name": "LAID"
   },
   {
-    "id": "laifu",
-    "symbol": "laifu",
-    "name": "LAIFU"
-  },
-  {
     "id": "laika",
     "symbol": "laika",
     "name": "Laika"
@@ -45673,16 +45718,6 @@
     "id": "layerzero-bridged-wbtc-aptos",
     "symbol": "zwbtc",
     "name": "LayerZero Bridged WBTC (Aptos)"
-  },
-  {
-    "id": "layerzero-bridged-wbtc-base",
-    "symbol": "wbtc",
-    "name": "LayerZero Bridged WBTC (Base)"
-  },
-  {
-    "id": "layerzero-bridged-wbtc-soneium",
-    "symbol": "wbtc",
-    "name": "LayerZero Bridged WBTC (Soneium)"
   },
   {
     "id": "layerzero-bridged-weth-aptos",
@@ -46483,6 +46518,11 @@
     "id": "likecoin",
     "symbol": "like",
     "name": "LikeCoin"
+  },
+  {
+    "id": "likes",
+    "symbol": "likes",
+    "name": "likes"
   },
   {
     "id": "lilai",
@@ -55875,11 +55915,6 @@
     "name": "Neva"
   },
   {
-    "id": "nevacoin",
-    "symbol": "neva",
-    "name": "NevaCoin"
-  },
-  {
     "id": "never-go-full",
     "symbol": "retard",
     "name": "Never Go Full"
@@ -56632,7 +56667,12 @@
   {
     "id": "niza-global",
     "symbol": "niza",
-    "name": "Niza Global"
+    "name": "Niza Global [OLD]"
+  },
+  {
+    "id": "niza-global-2",
+    "symbol": "niza",
+    "name": "Niza"
   },
   {
     "id": "nkn",
@@ -57475,11 +57515,6 @@
     "name": "nunu"
   },
   {
-    "id": "nunu-spirits",
-    "symbol": "nnt",
-    "name": "Nunu Spirits"
-  },
-  {
     "id": "nura-labs",
     "symbol": "nura",
     "name": "Nura Labs"
@@ -57847,7 +57882,7 @@
   {
     "id": "octopus-network",
     "symbol": "oct",
-    "name": "Octopus Network"
+    "name": "Omnity Convertible Token"
   },
   {
     "id": "octopuswallet",
@@ -58933,11 +58968,6 @@
     "id": "optimism",
     "symbol": "op",
     "name": "Optimism"
-  },
-  {
-    "id": "optimism-bridged-wbtc-optimism",
-    "symbol": "wbtc",
-    "name": "Optimism Bridged WBTC (Optimism)"
   },
   {
     "id": "optim-oada",
@@ -60965,9 +60995,19 @@
     "name": "PeiPei Sol"
   },
   {
+    "id": "pek",
+    "symbol": "pek",
+    "name": "Pek"
+  },
+  {
     "id": "peko",
     "symbol": "peko",
     "name": "PEKO"
+  },
+  {
+    "id": "pekong",
+    "symbol": "pekong",
+    "name": "PEKONG"
   },
   {
     "id": "pelfort",
@@ -61263,6 +61303,16 @@
     "id": "pepe-doge",
     "symbol": "pepedoge",
     "name": "Pepe Doge"
+  },
+  {
+    "id": "pepe-dollar",
+    "symbol": "pepd",
+    "name": "Pepe Dollar"
+  },
+  {
+    "id": "pepe-dollar-2",
+    "symbol": "pepd",
+    "name": "Pepe Dollar"
   },
   {
     "id": "pepe-final-boss",
@@ -62335,6 +62385,11 @@
     "name": "Pinto"
   },
   {
+    "id": "pinto-coin",
+    "symbol": "$pinto",
+    "name": "Pinto Coin"
+  },
+  {
     "id": "pip",
     "symbol": "pip",
     "name": "PIP"
@@ -63118,6 +63173,11 @@
     "id": "poken",
     "symbol": "pkn",
     "name": "Poken"
+  },
+  {
+    "id": "poki",
+    "symbol": "poki",
+    "name": "POKI"
   },
   {
     "id": "pokpok-agent-brain-by-virtuals",
@@ -65257,7 +65317,7 @@
   {
     "id": "purrcoin",
     "symbol": "purr",
-    "name": "Purrcoin"
+    "name": "purrcoin"
   },
   {
     "id": "purrcy",
@@ -65995,6 +66055,11 @@
     "name": "Rabi"
   },
   {
+    "id": "rabu",
+    "symbol": "rabu",
+    "name": "Rabu"
+  },
+  {
     "id": "raccoon",
     "symbol": "roon",
     "name": "Raccoon"
@@ -66105,6 +66170,11 @@
     "name": "Rage Guy"
   },
   {
+    "id": "rage-guy-2",
+    "symbol": "rage",
+    "name": "RAGE GUY"
+  },
+  {
     "id": "ragingelonmarscoin",
     "symbol": "dogecoin",
     "name": "RagingElonMarsCoin"
@@ -66143,6 +66213,11 @@
     "id": "railgun",
     "symbol": "rail",
     "name": "Railgun"
+  },
+  {
+    "id": "rain",
+    "symbol": "rain",
+    "name": "Rain"
   },
   {
     "id": "rainbow-2",
@@ -68265,11 +68340,6 @@
     "name": "Robots.Farm"
   },
   {
-    "id": "robust-token",
-    "symbol": "rbt",
-    "name": "Robust"
-  },
-  {
     "id": "rock-2",
     "symbol": "rock",
     "name": "Rock"
@@ -70255,6 +70325,11 @@
     "name": "Screaming Hyrax"
   },
   {
+    "id": "screx",
+    "symbol": "scrx",
+    "name": "Screx"
+  },
+  {
     "id": "scribes",
     "symbol": "scribes",
     "name": "Scribes"
@@ -70488,11 +70563,6 @@
     "id": "segment",
     "symbol": "sef",
     "name": "Segment Finance"
-  },
-  {
-    "id": "sei-bridged-wbtc-sei",
-    "symbol": "wbtc",
-    "name": "Sei Bridged WBTC (Sei)"
   },
   {
     "id": "sei-bridged-weth-sei",
@@ -72451,7 +72521,7 @@
   },
   {
     "id": "slopana",
-    "symbol": "slopana",
+    "symbol": "slop",
     "name": "Slopana"
   },
   {
@@ -74003,11 +74073,6 @@
     "id": "sonic-bridged-usdt-sonic",
     "symbol": "usdt",
     "name": "Sonic Bridged USDT (Sonic)"
-  },
-  {
-    "id": "sonic-bridged-wbtc-sonic",
-    "symbol": "wbtc",
-    "name": "Sonic Bridged WBTC (Sonic)"
   },
   {
     "id": "sonic-inu",
@@ -76053,6 +76118,11 @@
     "id": "staysafu",
     "symbol": "safu",
     "name": "StaySAFU"
+  },
+  {
+    "id": "stbgt",
+    "symbol": "stbgt",
+    "name": "stBGT"
   },
   {
     "id": "stbl-gold",
@@ -78125,6 +78195,11 @@
     "name": "MOBLAND"
   },
   {
+    "id": "syndicate-3",
+    "symbol": "synd",
+    "name": "Syndicate"
+  },
+  {
     "id": "syn-dog",
     "symbol": "syn",
     "name": "Syn Dog"
@@ -79938,6 +80013,11 @@
     "id": "the-nutting-professor",
     "symbol": "pronut",
     "name": "The Nutting Professor"
+  },
+  {
+    "id": "the-odor",
+    "symbol": "odor",
+    "name": "The Odor"
   },
   {
     "id": "the-official-bozo",
@@ -82000,6 +82080,11 @@
     "name": "TrendBet"
   },
   {
+    "id": "trendbot",
+    "symbol": "trendbot",
+    "name": "TrendBot"
+  },
+  {
     "id": "trendix",
     "symbol": "trdx",
     "name": "Trendix"
@@ -83323,11 +83408,6 @@
     "id": "unichain-bridged-usdt-unichain",
     "symbol": "usdt",
     "name": "Unichain Bridged USDT (Unichain)"
-  },
-  {
-    "id": "unichain-bridged-wbtc-unichain",
-    "symbol": "wbtc",
-    "name": "LayerZero Bridged WBTC (Unichain)"
   },
   {
     "id": "unichain-bridged-wbtc-unichain-2",
@@ -85215,6 +85295,11 @@
     "name": "Veritaseum"
   },
   {
+    "id": "veronica",
+    "symbol": "veronica",
+    "name": "VERONICA by Virtuals"
+  },
+  {
     "id": "verox",
     "symbol": "vrx",
     "name": "Verox"
@@ -86038,6 +86123,11 @@
     "id": "voucher-ksm",
     "symbol": "vksm",
     "name": "Voucher KSM"
+  },
+  {
+    "id": "vouch-staked-pls",
+    "symbol": "vpls",
+    "name": "Vouch Staked PLS"
   },
   {
     "id": "vow",
