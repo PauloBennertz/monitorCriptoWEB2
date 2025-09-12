@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Plot from 'react-plotly.js';
+
 import { API_BASE_URL } from '../types';
 
 interface BacktesterPanelProps {
