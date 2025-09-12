@@ -10,8 +10,7 @@ import json
 import subprocess
 from packaging.version import parse as parse_version
 import hashlib
-
-from core_components import get_application_path
+from backend.chart_generator import generate_chart 
 
 # --- Constantes ---
 GITHUB_API_URL = "https://api.github.com/repos/PauloBennertz/MonitorCriptomoedas3.2/releases/latest"
