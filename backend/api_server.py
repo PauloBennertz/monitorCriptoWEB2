@@ -248,6 +248,34 @@ CONFIG_FILE_PATH = os.path.join(BASE_PATH, "config.json")
 ALERT_HISTORY_FILE_PATH = os.path.join(BASE_PATH, "alert_history.json")
 HISTORY_LOCK = Lock()
 
+@app.get("/api/alert_configs")
+async def get_alert_configs():
+    """
+    Returns the contents of the monitoring configuration file.
+    """
+    try:
+        if not os.path.exists(CONFIG_FILE_PATH):
+            logging.warning("config.json not found.")
+            # It's better to return a default/empty config than to crash the frontend
+            return {"cryptos_to_monitor": [], "market_analysis_config": {}}
+
+        with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+            try:
+                # Handle empty file case
+                content = f.read()
+                if not content.strip():
+                    logging.warning("config.json is empty.")
+                    return {"cryptos_to_monitor": [], "market_analysis_config": {}}
+
+                config_data = json.loads(content)
+                return config_data
+            except json.JSONDecodeError:
+                logging.error("Failed to decode config.json.")
+                raise HTTPException(status_code=500, detail="Failed to parse configuration file.")
+    except Exception as e:
+        logging.error(f"Error reading configuration file: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred while reading config: {str(e)}")
+
 class Alert(BaseModel):
     id: str
     symbol: str
