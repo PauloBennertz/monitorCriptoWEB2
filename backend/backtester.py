@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from chart_generator import generate_chart # Adjusted import
+from .chart_generator import generate_chart # Adjusted import
 
 class Backtester:
     def __init__(self, historical_data, strategy, initial_capital=100000):

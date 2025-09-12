@@ -1,5 +1,5 @@
 // src/components/AlertHistoryPanel.tsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, API_BASE_URL } from '../types';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -13,28 +13,12 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
     const [history, setHistory] = useState<Alert[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [selectedCoin, setSelectedCoin] = useState<string>('');
 
-    const fetchHistory = (start?: string, end?: string) => {
+    const fetchHistory = () => {
         setIsLoading(true);
         setError(null);
 
-        let url = `${API_BASE_URL}/api/alerts`;
-        const params = new URLSearchParams();
-        if (start) {
-            params.append('start_date', start);
-        }
-        if (end) {
-            params.append('end_date', end);
-        }
-        const queryString = params.toString();
-        if (queryString) {
-            url += `?${queryString}`;
-        }
-
-        fetch(url)
+        fetch(`${API_BASE_URL}/api/alerts`)
             .then(res => {
                 if (!res.ok) {
                     throw new Error('Falha ao buscar o histórico de alertas.');
@@ -58,26 +42,6 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
         }
     }, [isOpen]);
 
-    const groupedHistory = useMemo(() => {
-        const filteredHistory = history.filter(alert => {
-            if (!selectedCoin) return true; // If no coin is selected, show all alerts
-            return alert.symbol === selectedCoin;
-        });
-
-        return filteredHistory.reduce((acc, alert) => {
-            const key = alert.symbol;
-            if (!acc[key]) {
-                acc[key] = [];
-            }
-            acc[key].push(alert);
-            return acc;
-        }, {} as Record<string, Alert[]>);
-    }, [history, selectedCoin]);
-
-    const uniqueCoins = useMemo(() => {
-        const coins = new Set(history.map(alert => alert.symbol));
-        return Array.from(coins);
-    }, [history]);
 
     if (!isOpen) {
         return null;
@@ -105,21 +69,6 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
         }
     };
 
-    const handleFilter = () => {
-        if (!startDate || !endDate) {
-            setError("Por favor, selecione as datas de início e fim.");
-            return;
-        }
-        fetchHistory(startDate, endDate);
-    };
-
-    const handleClearFilter = () => {
-        setStartDate('');
-        setEndDate('');
-        // Fetches the full, unfiltered history
-        fetchHistory();
-    };
-
     const renderContent = () => {
         if (isLoading) {
             return <div className="loading-container">Carregando histórico...</div>;
@@ -128,29 +77,24 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
             return <div className="error-container">{error}</div>;
         }
         if (history.length === 0) {
-            return <p className="no-results-message">Nenhum alerta encontrado para o período selecionado.</p>;
+            return <p className="no-results-message">Nenhum alerta no histórico.</p>;
         }
         return (
             <div className="alert-history-list">
-                {Object.entries(groupedHistory).map(([symbol, alerts]) => (
-                    <div key={symbol} className="currency-group">
-                        <h3 className="currency-group-title">{symbol.replace('USDT', '')}</h3>
-                        {alerts.map(alert => (
-                            <div key={alert.id} className="alert-history-item">
-                                <div className="alert-history-header">
-                                    <span className="alert-history-symbol">{alert.snapshot.name}</span>
-                                    <span className="alert-history-timestamp" title={new Date(alert.timestamp).toLocaleString('pt-BR')}>
-                                        {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true, locale: ptBR })}
-                                    </span>
-                                </div>
-                                <div className="alert-history-body">
-                                    {alert.condition}
-                                </div>
-                                <div className="alert-history-details">
-                                    Preço no momento do alerta: $ {alert.snapshot.price.toFixed(2)}
-                                </div>
-                            </div>
-                        ))}
+                {history.map(alert => (
+                    <div key={alert.id} className="alert-history-item">
+                        <div className="alert-history-header">
+                            <span className="alert-history-symbol">{alert.snapshot.name}</span>
+                            <span className="alert-history-timestamp" title={new Date(alert.timestamp).toLocaleString('pt-BR')}>
+                                {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true, locale: ptBR })}
+                            </span>
+                        </div>
+                        <div className="alert-history-body">
+                            {alert.condition}
+                        </div>
+                        <div className="alert-history-details">
+                            Preço no momento do alerta: $ {alert.snapshot.price.toFixed(2)}
+                        </div>
                     </div>
                 ))}
             </div>
@@ -163,48 +107,6 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
                 <div className="modal-header">
                     <h2 className="modal-title">Histórico de Alertas</h2>
                     <button onClick={onClose} className="close-button" aria-label="Fechar">&times;</button>
-                </div>
-                <div className="filter-container">
-                    <div className="filter-item">
-                        <label htmlFor="start-date">De:</label>
-                        <input
-                            type="date"
-                            id="start-date"
-                            value={startDate}
-                            onChange={e => setStartDate(e.target.value)}
-                        />
-                    </div>
-                    <div className="filter-item">
-                        <label htmlFor="end-date">Até:</label>
-                        <input
-                            type="date"
-                            id="end-date"
-                            value={endDate}
-                            onChange={e => setEndDate(e.target.value)}
-                        />
-                    </div>
-                    <button onClick={handleFilter} className="button" disabled={isLoading}>
-                        Filtrar
-                    </button>
-                    <button onClick={handleClearFilter} className="button button-secondary" disabled={isLoading}>
-                        Limpar
-                    </button>
-                    <div className="filter-item">
-                        <label htmlFor="coin-filter">Moeda:</label>
-                        <select
-                            id="coin-filter"
-                            value={selectedCoin}
-                            onChange={e => setSelectedCoin(e.target.value)}
-                            disabled={isLoading || history.length === 0}
-                        >
-                            <option value="">Todas</option>
-                            {uniqueCoins.map(coin => (
-                                <option key={coin} value={coin}>
-                                    {coin.replace('USDT', '')}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
                 </div>
                 <div className="modal-body">
                     {renderContent()}
