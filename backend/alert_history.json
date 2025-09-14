@@ -1,5 +1,93 @@
 [
     {
+        "id": "MITOUSDT-RSI_SOBRECOMPRA-1757833298961",
+        "symbol": "MITOUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-09-14T07:01:38.961Z",
+        "snapshot": {
+            "symbol": "MITOUSDT",
+            "name": "Mitosis",
+            "price": 0.2379,
+            "price_change_24h": 8.729,
+            "volume_24h": 73993157.00734,
+            "market_cap": 19089029,
+            "rsi_value": 85.24590163934432,
+            "rsi_signal": "85.25",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 0.2379
+        }
+    },
+    {
+        "id": "SOMIUSDT-RSI_SOBREVENDA-1757833298960",
+        "symbol": "SOMIUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-14T07:01:38.960Z",
+        "snapshot": {
+            "symbol": "SOMIUSDT",
+            "name": "Somnia",
+            "price": 1.257,
+            "price_change_24h": 21.192,
+            "volume_24h": 304732380.57873,
+            "market_cap": 200681509,
+            "rsi_value": 26.96764847899567,
+            "rsi_signal": "26.97",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 1.257
+        }
+    },
+    {
+        "id": "SOLUSDT-RSI_SOBRECOMPRA-1757833298959",
+        "symbol": "SOLUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-09-14T07:01:38.959Z",
+        "snapshot": {
+            "symbol": "SOLUSDT",
+            "name": "Wrapped SOL",
+            "price": 246.84,
+            "price_change_24h": 1.811,
+            "volume_24h": 904426760.72023,
+            "market_cap": 160532,
+            "rsi_value": 78.39195979899498,
+            "rsi_signal": "78.39",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 246.84
+        }
+    },
+    {
+        "id": "SOLUSDT-RSI_SOBRECOMPRA-1757818864677",
+        "symbol": "SOLUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-09-14T03:01:04.677Z",
+        "snapshot": {
+            "symbol": "SOLUSDT",
+            "name": "Wrapped SOL",
+            "price": 248.53,
+            "price_change_24h": 2.605,
+            "volume_24h": 862192989.47433,
+            "market_cap": 159479,
+            "rsi_value": 78.7219578518015,
+            "rsi_signal": "78.72",
+            "bollinger_signal": "Acima da Banda",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 248.53
+        }
+    },
+    {
         "id": "ETHUSDT-RSI_SOBRECOMPRA-1757714764193",
         "symbol": "ETHUSDT",
         "condition": "RSI em Sobrecompra",

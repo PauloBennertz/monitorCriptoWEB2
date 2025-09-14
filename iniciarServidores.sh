@@ -1,25 +1,25 @@
 #!/bin/bash
 
-# Activate virtual environment if it exists
-if [ -d ".venv" ]; then
-  echo "Activating virtual environment..."
-  source ./.venv/bin/activate
-else
-  echo "Virtual environment .venv not found. Skipping activation."
-fi
+echo "Iniciando servidores da aplicação MonitorCripto..."
 
-# Start Uvicorn server in the background
-echo "Starting Uvicorn server..."
-uvicorn backend.api_server:app --reload --port 8000 > uvicorn.log 2>&1 &
-UVICORN_PID=$!
-echo "Uvicorn server started with PID $UVICORN_PID"
+# Navega para a pasta raiz da aplicação
+cd ~/monitorCriptoWEB
 
-# Start Vite server in the background
-echo "Starting Vite server..."
-npm run dev -- --host > vite.log 2>&1 &
-VITE_PID=$!
-echo "Vite server started with PID $VITE_PID"
+# --- Iniciar o Backend ---
+echo "Iniciando o Backend em uma sessão 'screen'..."
+# Cria uma nova sessão screen chamada 'backend', entra nela, ativa o venv e inicia o uvicorn
+screen -dmS backend bash -c 'source .venv/bin/activate; uvicorn backend.api_server:app --port 8000'
 
-echo "Servers are starting in the background."
-echo "You can view their logs in uvicorn.log and vite.log"
-echo "To stop the servers, run: kill $UVICORN_PID $VITE_PID"
+# --- Iniciar o Frontend ---
+echo "Iniciando o Frontend em uma sessão 'screen'..."
+# Cria uma nova sessão screen chamada 'frontend', entra nela e inicia o servidor npm
+# Nota: No servidor, geralmente usamos 'npm start' em vez de 'npm run dev'
+screen -dmS frontend bash -c 'npm start'
+
+echo "Servidores iniciados! Verificando as sessões ativas..."
+sleep 2 # Dá um tempinho para as sessões aparecerem
+
+# Mostra as sessões que estão a correr para confirmar
+screen -ls
+
+echo "Processo concluído!"
