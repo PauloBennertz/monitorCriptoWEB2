@@ -1,5 +1,137 @@
 [
     {
+        "id": "ETHUSDT-RSI_SOBREVENDA-1757864972855",
+        "symbol": "ETHUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-14T15:49:32.855Z",
+        "snapshot": {
+            "symbol": "ETHUSDT",
+            "name": "The Ticker Is ETH",
+            "price": 4589.6,
+            "price_change_24h": -1.363,
+            "volume_24h": 1508686176.900686,
+            "market_cap": 0,
+            "rsi_value": 24.86483274909382,
+            "rsi_signal": "24.86",
+            "bollinger_signal": "Abaixo da Banda",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 4588.44
+        }
+    },
+    {
+        "id": "ADAUSDT-RSI_SOBREVENDA-1757864972854",
+        "symbol": "ADAUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-14T15:49:32.854Z",
+        "snapshot": {
+            "symbol": "ADAUSDT",
+            "name": "Cardano",
+            "price": 0.8874,
+            "price_change_24h": -5.435,
+            "volume_24h": 112613212.2097,
+            "market_cap": 0,
+            "rsi_value": 21.903323262839834,
+            "rsi_signal": "21.90",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 0.8865
+        }
+    },
+    {
+        "id": "ETHUSDT-RSI_SOBREVENDA-1757863903895",
+        "symbol": "ETHUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-14T15:31:43.895Z",
+        "snapshot": {
+            "symbol": "ETHUSDT",
+            "name": "The Ticker Is ETH",
+            "price": 4585.29,
+            "price_change_24h": -1.606,
+            "volume_24h": 1557941102.509843,
+            "market_cap": 0,
+            "rsi_value": 24.194947100653067,
+            "rsi_signal": "24.19",
+            "bollinger_signal": "Abaixo da Banda",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 4585.29
+        }
+    },
+    {
+        "id": "XRPUSDT-RSI_SOBREVENDA-1757863903894",
+        "symbol": "XRPUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-14T15:31:43.894Z",
+        "snapshot": {
+            "symbol": "XRPUSDT",
+            "name": "WarioXRPDumbledoreYugioh69Inu",
+            "price": 3.0308,
+            "price_change_24h": -3.101,
+            "volume_24h": 286597028.68085,
+            "market_cap": 0,
+            "rsi_value": 20.372928176795398,
+            "rsi_signal": "20.37",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 3.0308
+        }
+    },
+    {
+        "id": "ADAUSDT-RSI_SOBREVENDA-1757863903893",
+        "symbol": "ADAUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-14T15:31:43.893Z",
+        "snapshot": {
+            "symbol": "ADAUSDT",
+            "name": "Cardano",
+            "price": 0.8841,
+            "price_change_24h": -5.595,
+            "volume_24h": 114050904.97632,
+            "market_cap": 0,
+            "rsi_value": 20.531757754800637,
+            "rsi_signal": "20.53",
+            "bollinger_signal": "Abaixo da Banda",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 0.8841
+        }
+    },
+    {
+        "id": "SUIUSDT-RSI_SOBREVENDA-1757863903892",
+        "symbol": "SUIUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-14T15:31:43.892Z",
+        "snapshot": {
+            "symbol": "SUIUSDT",
+            "name": "Sui",
+            "price": 3.654,
+            "price_change_24h": -3.593,
+            "volume_24h": 134183691.43652,
+            "market_cap": 13041019095,
+            "rsi_value": 28.279883381924222,
+            "rsi_signal": "28.28",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 3.654
+        }
+    },
+    {
         "id": "MITOUSDT-RSI_SOBRECOMPRA-1757833298961",
         "symbol": "MITOUSDT",
         "condition": "RSI em Sobrecompra",
