@@ -2,8 +2,7 @@
 
 echo "Iniciando servidores da aplicação MonitorCripto..."
 
-# Navega para a pasta raiz da aplicação
-cd ~/monitorCriptoWEB
+# A execução será no diretório atual
 
 # --- Iniciar o Backend ---
 echo "Iniciando o Backend em uma sessão 'screen'..."
@@ -14,7 +13,7 @@ screen -dmS backend bash -c 'source .venv/bin/activate; uvicorn backend.api_serv
 echo "Iniciando o Frontend em uma sessão 'screen'..."
 # Cria uma nova sessão screen chamada 'frontend', entra nela e inicia o servidor npm
 # Nota: No servidor, geralmente usamos 'npm start' em vez de 'npm run dev'
-screen -dmS frontend bash -c 'npm start'
+screen -dmS frontend bash -c 'npm run dev'
 
 echo "Servidores iniciados! Verificando as sessões ativas..."
 sleep 2 # Dá um tempinho para as sessões aparecerem
