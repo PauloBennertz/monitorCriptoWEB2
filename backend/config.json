@@ -141,7 +141,147 @@
             }
         },
         {
-            "symbol": "PUMPUSDT",
+            "symbol": "ONDOUSDT",
+            "alert_config": {
+                "conditions": {
+                    "rsi_sobrevendido": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "rsi_sobrecomprado": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "hilo_compra": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "mme_cruz_dourada": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "mme_cruz_morte": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "macd_cruz_alta": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "macd_cruz_baixa": {
+                        "enabled": true,
+                        "blinking": true
+                    }
+                }
+            }
+        },
+        {
+            "symbol": "BNBUSDT",
+            "alert_config": {
+                "conditions": {
+                    "rsi_sobrevendido": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "rsi_sobrecomprado": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "hilo_compra": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "mme_cruz_dourada": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "mme_cruz_morte": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "macd_cruz_alta": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "macd_cruz_baixa": {
+                        "enabled": true,
+                        "blinking": true
+                    }
+                }
+            }
+        },
+        {
+            "symbol": "AVAXUSDT",
+            "alert_config": {
+                "conditions": {
+                    "rsi_sobrevendido": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "rsi_sobrecomprado": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "hilo_compra": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "mme_cruz_dourada": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "mme_cruz_morte": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "macd_cruz_alta": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "macd_cruz_baixa": {
+                        "enabled": true,
+                        "blinking": true
+                    }
+                }
+            }
+        },
+        {
+            "symbol": "TRXUSDT",
+            "alert_config": {
+                "conditions": {
+                    "rsi_sobrevendido": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "rsi_sobrecomprado": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "hilo_compra": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "mme_cruz_dourada": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "mme_cruz_morte": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "macd_cruz_alta": {
+                        "enabled": true,
+                        "blinking": true
+                    },
+                    "macd_cruz_baixa": {
+                        "enabled": true,
+                        "blinking": true
+                    }
+                }
+            }
+        },
+        {
+            "symbol": "LDOUSDT",
             "alert_config": {
                 "conditions": {
                     "rsi_sobrevendido": {
