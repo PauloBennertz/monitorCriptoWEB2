@@ -31,6 +31,7 @@ const SettingsModal = ({
     const [selectedCryptoSymbol, setSelectedCryptoSymbol] = useState<string | null>(null);
     const [telegramBotToken, setTelegramBotToken] = useState('');
     const [telegramChatId, setTelegramChatId] = useState('');
+    const [isTokenVisible, setIsTokenVisible] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -147,11 +148,13 @@ const SettingsModal = ({
                             const config = alertConfigs[selectedCrypto.symbol]?.[alertType] ?? DEFAULT_ALERT_CONFIG;
                             const isPriceAlert = alertType.startsWith('PRECO_');
 
+                            const isMovingAverageAlert = alertDef.periods && alertDef.periods.length > 0;
+
                             return (
                                 <div key={alertType} className="alert-setting-item">
                                     <div className="alert-setting-label">
                                         <span>{alertDef.name}</span>
-                                        {!isPriceAlert && <small>{alertDef.description}</small>}
+                                        {!isPriceAlert && !isMovingAverageAlert && <small>{alertDef.description}</small>}
                                         {isPriceAlert && (
                                             <input
                                                 type="number"
@@ -161,6 +164,16 @@ const SettingsModal = ({
                                                 onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, value: parseFloat(e.target.value) || 0 })}
                                                 disabled={!config.enabled}
                                             />
+                                        )}
+                                        {isMovingAverageAlert && (
+                                            <select
+                                                className="text-input price-input"
+                                                value={config.value || alertDef.periods[0]}
+                                                onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, value: parseInt(e.target.value, 10) })}
+                                                disabled={!config.enabled}
+                                            >
+                                                {alertDef.periods.map(p => <option key={p} value={p}>MME {p}</option>)}
+                                            </select>
                                         )}
                                     </div>
                                     <div className="alert-setting-controls">
@@ -301,14 +314,23 @@ const SettingsModal = ({
                             <span>Bot Token</span>
                             <small>Insira o token do seu bot do Telegram.</small>
                         </div>
-                        <div className="alert-setting-controls">
+                        <div className="alert-setting-controls" style={{ display: 'flex', alignItems: 'center' }}>
                             <input
-                                type="text"
+                                type={isTokenVisible ? 'text' : 'password'}
                                 className="text-input"
                                 placeholder="Seu token do Telegram"
                                 value={telegramBotToken}
                                 onChange={(e) => setTelegramBotToken(e.target.value)}
+                                style={{ flexGrow: 1 }}
                             />
+                            <button
+                                onClick={() => setIsTokenVisible(!isTokenVisible)}
+                                className="button visibility-button"
+                                style={{ marginLeft: '10px', flexShrink: 0 }}
+                                type="button"
+                            >
+                                {isTokenVisible ? 'Ocultar' : 'Mostrar'}
+                            </button>
                         </div>
                     </div>
                     <div className="alert-setting-item">
