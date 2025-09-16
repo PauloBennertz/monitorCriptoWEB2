@@ -58,11 +58,14 @@ export const ALERT_DEFINITIONS: Record<string, { name: string; description: stri
     CRUZ_DA_MORTE: { name: 'Cruz da Morte (MME)', description: 'Sinal de baixa de longo prazo quando a MME de 50 períodos cruza abaixo da de 200.', backendKey: 'mme_cruz_morte' },
     MACD_ALTA: { name: 'Cruzamento de Alta (MACD)', description: 'Sinal de momentum de alta quando a linha MACD cruza para cima da linha de sinal.', backendKey: 'macd_cruz_alta' },
     MACD_BAIXA: { name: 'Cruzamento de Baixa (MACD)', description: 'Sinal de momentum de baixa quando a linha MACD cruza para baixo da linha de sinal.', backendKey: 'macd_cruz_baixa' },
+    PRECO_ACIMA: { name: 'Preço Acima de', description: 'Alerta quando o preço ultrapassa um valor definido.', backendKey: 'preco_alto' },
+    PRECO_ABAIXO: { name: 'Preço Abaixo de', description: 'Alerta quando o preço cai abaixo de um valor definido.', backendKey: 'preco_baixo' },
 };
 
 export const COOLDOWN_OPTIONS = [
     { value: 300, label: '5 minutos' },
     { value: 900, label: '15 minutos' },
+    { value: 1800, label: '30 minutos' },
     { value: 3600, label: '1 hora' },
     { value: 14400, label: '4 horas' },
     { value: 86400, label: '24 horas' },

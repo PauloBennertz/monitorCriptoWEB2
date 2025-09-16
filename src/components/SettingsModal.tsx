@@ -29,9 +29,18 @@ const SettingsModal = ({
     const [view, setView] = useState<'list' | 'add' | 'config'>('list');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCryptoSymbol, setSelectedCryptoSymbol] = useState<string | null>(null);
+    const [telegramBotToken, setTelegramBotToken] = useState('');
+    const [telegramChatId, setTelegramChatId] = useState('');
 
     useEffect(() => {
-        if (!isOpen) {
+        if (isOpen) {
+            fetch('/api/telegram_config')
+                .then(res => res.json())
+                .then(data => {
+                    setTelegramBotToken(data.bot_token || '');
+                    setTelegramChatId(data.chat_id || '');
+                });
+        } else {
             setTimeout(() => {
                 setView('list');
                 setSelectedCryptoSymbol(null);
@@ -39,6 +48,17 @@ const SettingsModal = ({
             }, 300);
         }
     }, [isOpen]);
+
+    const handleSaveTelegramConfig = () => {
+        fetch('/api/telegram_config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bot_token: telegramBotToken, chat_id: telegramChatId }),
+        })
+        .then(res => res.json())
+        .then(() => alert('Configurações do Telegram salvas com sucesso!'))
+        .catch(() => alert('Erro ao salvar as configurações do Telegram.'));
+    };
 
     const monitoredSymbols = useMemo(() => new Set(monitoredCoins.map(c => c.symbol)), [monitoredCoins]);
 
@@ -89,17 +109,59 @@ const SettingsModal = ({
 
     const renderContent = () => {
         if (view === 'config' && selectedCrypto) {
+            const handleSelectAll = (checked: boolean) => {
+                Object.keys(ALERT_DEFINITIONS).forEach(alertType => {
+                    const currentConfig = alertConfigs[selectedCrypto.symbol]?.[alertType] ?? DEFAULT_ALERT_CONFIG;
+                    onConfigChange(selectedCrypto.symbol, alertType, { ...currentConfig, enabled: checked });
+                });
+            };
+
+            const areAllSelected = Object.keys(ALERT_DEFINITIONS).every(alertType => {
+                return alertConfigs[selectedCrypto.symbol]?.[alertType]?.enabled ?? false;
+            });
+
             return (
                 <div className="modal-body">
                     <h4 className="settings-group-title">Selecione os Alertas</h4>
+                    <div className="alert-setting-item">
+                        <div className="alert-setting-label">
+                            <span>Selecionar Todos</span>
+                            <small>Marque para ativar ou desativar todos os alertas abaixo.</small>
+                        </div>
+                        <div className="alert-setting-controls">
+                            <div className="control-item">
+                                <label className="switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={areAllSelected}
+                                        onChange={(e) => handleSelectAll(e.target.checked)}
+                                    />
+                                    <span className="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr style={{ borderColor: '#333', margin: '10px 0' }} />
                     <div className="settings-group">
                         {Object.entries(ALERT_DEFINITIONS).map(([alertType, alertDef]) => {
                             const config = alertConfigs[selectedCrypto.symbol]?.[alertType] ?? DEFAULT_ALERT_CONFIG;
+                            const isPriceAlert = alertType.startsWith('PRECO_');
+
                             return (
                                 <div key={alertType} className="alert-setting-item">
                                     <div className="alert-setting-label">
                                         <span>{alertDef.name}</span>
-                                        <small>{alertDef.description}</small>
+                                        {!isPriceAlert && <small>{alertDef.description}</small>}
+                                        {isPriceAlert && (
+                                            <input
+                                                type="number"
+                                                className="price-input"
+                                                placeholder="Valor do Preço"
+                                                value={config.value || ''}
+                                                onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, value: parseFloat(e.target.value) || 0 })}
+                                                disabled={!config.enabled}
+                                            />
+                                        )}
                                     </div>
                                     <div className="alert-setting-controls">
                                         <div className="control-item">
@@ -228,6 +290,39 @@ const SettingsModal = ({
                             </select>
                         </div>
                     </div>
+                </div>
+
+                <hr style={{ borderColor: '#333', margin: '20px 0' }} />
+
+                <div className="settings-group">
+                    <h4 className="settings-group-title">Configurações do Telegram</h4>
+                    <div className="alert-setting-item">
+                        <div className="alert-setting-label">
+                            <span>Bot Token</span>
+                            <small>Insira o token do seu bot do Telegram.</small>
+                        </div>
+                        <input
+                            type="text"
+                            className="telegram-input"
+                            value={telegramBotToken}
+                            onChange={(e) => setTelegramBotToken(e.target.value)}
+                        />
+                    </div>
+                    <div className="alert-setting-item">
+                        <div className="alert-setting-label">
+                            <span>Chat ID</span>
+                            <small>Insira o ID do chat para onde as notificações serão enviadas.</small>
+                        </div>
+                        <input
+                            type="text"
+                            className="telegram-input"
+                            value={telegramChatId}
+                            onChange={(e) => setTelegramChatId(e.target.value)}
+                        />
+                    </div>
+                    <button onClick={handleSaveTelegramConfig} className="button" style={{ marginTop: '10px' }}>
+                        Salvar Configs do Telegram
+                    </button>
                 </div>
 
                 <hr style={{ borderColor: '#333', margin: '20px 0' }} />
