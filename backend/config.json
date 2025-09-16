@@ -144,6 +144,14 @@
                     "macd_cruz_baixa": {
                         "enabled": true,
                         "blinking": true
+                    },
+                    "preco_alto": {
+                        "enabled": true,
+                        "blinking": false
+                    },
+                    "preco_baixo": {
+                        "enabled": true,
+                        "blinking": false
                     }
                 }
             }
@@ -406,6 +414,6 @@
         "top_n": 100,
         "min_market_cap": 1000000,
         "display_limit": 20,
-        "grid_layout_columns": 5
+        "grid_layout_columns": 3
     }
 }

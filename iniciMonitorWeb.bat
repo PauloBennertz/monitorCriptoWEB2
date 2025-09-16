@@ -5,12 +5,14 @@ echo Starting Vite frontend and Uvicorn backend servers in a single window...
 echo Outputs will be mixed.
 echo This might take a few moments.
 
-REM Ativa o ambiente virtual (para o Uvicorn)
-call venv\Scripts\activate.bat
-
 REM Inicia o Vite em segundo plano (não vai aparecer em uma janela separada)
 echo Starting Vite server (frontend) in background...
 start /b cmd /c "call venv\Scripts\activate.bat && .\node_modules\.bin\vite --host"
+
+
+
+REM Ativa o ambiente virtual (para o Uvicorn)
+call venv\Scripts\activate.bat
 
 REM Espera um tempo para o Vite iniciar completamente.
 timeout /t 15 /nobreak > nul
