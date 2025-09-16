@@ -50,7 +50,7 @@ export interface MarketAnalysisConfig {
 
 export type BasicCoin = Pick<CryptoData, 'symbol' | 'name'>;
 
-export const ALERT_DEFINITIONS: Record<string, { name: string; description: string; backendKey: string }> = {
+export const ALERT_DEFINITIONS: Record<string, { name: string; description: string; backendKey: string, periods?: number[] }> = {
     RSI_SOBREVENDA: { name: 'RSI em Sobrevenda', description: 'Alerta quando o Índice de Força Relativa (RSI) entra em território de sobrevenda (abaixo de 30).', backendKey: 'rsi_sobrevendido' },
     RSI_SOBRECOMPRA: { name: 'RSI em Sobrecompra', description: 'Alerta quando o RSI entra em território de sobrecompra (acima de 70).', backendKey: 'rsi_sobrecomprado' },
     HILO_COMPRA: { name: 'Sinal de Compra HiLo', description: 'Dispara quando o indicador HiLo Activator gera um sinal de compra.', backendKey: 'hilo_compra' },
@@ -60,6 +60,8 @@ export const ALERT_DEFINITIONS: Record<string, { name: string; description: stri
     MACD_BAIXA: { name: 'Cruzamento de Baixa (MACD)', description: 'Sinal de momentum de baixa quando a linha MACD cruza para baixo da linha de sinal.', backendKey: 'macd_cruz_baixa' },
     PRECO_ACIMA: { name: 'Preço Acima de', description: 'Alerta quando o preço ultrapassa um valor definido.', backendKey: 'preco_alto' },
     PRECO_ABAIXO: { name: 'Preço Abaixo de', description: 'Alerta quando o preço cai abaixo de um valor definido.', backendKey: 'preco_baixo' },
+    MEDIA_MOVEL_CIMA: { name: 'Preço Cruzou MME P/ Cima', description: 'Alerta quando o preço cruza uma MME para cima.', backendKey: 'media_movel_cima', periods: [17, 34, 72, 144] },
+    MEDIA_MOVEL_BAIXO: { name: 'Preço Cruzou MME P/ Baixo', description: 'Alerta quando o preço cruza uma MME para baixo.', backendKey: 'media_movel_baixo', periods: [17, 34, 72, 144] },
 };
 
 export const COOLDOWN_OPTIONS = [

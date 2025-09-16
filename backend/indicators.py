@@ -86,3 +86,23 @@ def calculate_hilo_signals(df, length=34, ma_type="EMA", offset=0, simple_hilo=T
     sell_signal = (df['close'].iloc[-2] >= loma.iloc[-2]) and (df['close'].iloc[-1] < loma.iloc[-1])
 
     return buy_signal, sell_signal, "HiLo Buy" if buy_signal else ("HiLo Sell" if sell_signal else "Nenhum")
+
+def calculate_media_movel_cross(df, period=17):
+    """Calcula o cruzamento do preço com uma Média Móvel Exponencial (EMA)."""
+    if df is None or len(df) < period + 1:
+        return "Nenhum"
+
+    ema = calculate_ema(df['close'], period)
+
+    if len(df['close']) < 2 or len(ema) < 2:
+        return "Nenhum"
+
+    # Cruzamento de Alta: Preço cruza a EMA para cima
+    if df['close'].iloc[-2] <= ema.iloc[-2] and df['close'].iloc[-1] > ema.iloc[-1]:
+        return "Cruzamento de Alta"
+
+    # Cruzamento de Baixa: Preço cruza a EMA para baixo
+    if df['close'].iloc[-2] >= ema.iloc[-2] and df['close'].iloc[-1] < ema.iloc[-1]:
+        return "Cruzamento de Baixa"
+
+    return "Nenhum"

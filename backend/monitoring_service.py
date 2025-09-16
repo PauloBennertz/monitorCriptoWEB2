@@ -6,7 +6,7 @@ import copy
 from datetime import datetime, timedelta
 from . import robust_services
 import os
-from .indicators import calculate_rsi, calculate_bollinger_bands, calculate_macd, calculate_emas, calculate_hilo_signals
+from .indicators import calculate_rsi, calculate_bollinger_bands, calculate_macd, calculate_emas, calculate_hilo_signals, calculate_media_movel_cross
 from .notification_service import send_telegram_alert
 from pycoingecko import CoinGeckoAPI
 from .app_state import load_coin_mapping_cache, save_coin_mapping_cache
@@ -207,6 +207,8 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
         'mme_cruz_dourada': {'key': 'CRUZ_DOURADA', 'msg': "MME: Cruz Dourada (50/200)"},
         'hilo_compra': {'key': 'HILO_COMPRA', 'msg': "HiLo: Sinal de Compra"},
         'hilo_venda': {'key': 'HILO_VENDA', 'msg': "HiLo: Sinal de Venda"},
+        'media_movel_cima': {'key': 'MEDIA_MOVEL_CIMA', 'msg': f"Preço cruzou MME {conditions.get('media_movel_cima', {}).get('value', 17)} para Cima"},
+        'media_movel_baixo': {'key': 'MEDIA_MOVEL_BAIXO', 'msg': f"Preço cruzou MME {conditions.get('media_movel_baixo', {}).get('value', 17)} para Baixo"},
     }
 
     active_triggers = []
@@ -223,6 +225,16 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
     if conditions.get('mme_cruz_dourada', {}).get('enabled') and analysis_data.get('mme_cross') == "Cruz Dourada": active_triggers.append(alert_definitions['mme_cruz_dourada'])
     if conditions.get('hilo_compra', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Buy": active_triggers.append(alert_definitions['hilo_compra'])
     if conditions.get('hilo_venda', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Sell": active_triggers.append(alert_definitions['hilo_venda'])
+
+    if (config := conditions.get('media_movel_cima', {})) and config.get('enabled'):
+        period = config.get('value', 17)
+        if analysis_data.get('media_movel_cross', {}).get(period) == "Cruzamento de Alta":
+            active_triggers.append(alert_definitions['media_movel_cima'])
+
+    if (config := conditions.get('media_movel_baixo', {})) and config.get('enabled'):
+        period = config.get('value', 17)
+        if analysis_data.get('media_movel_cross', {}).get(period) == "Cruzamento de Baixa":
+            active_triggers.append(alert_definitions['media_movel_baixo'])
 
     now = datetime.now()
     telegram_config = global_config.get('telegram_config', {})
@@ -278,7 +290,8 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
         'bollinger_signal': "Nenhum",
         'macd_signal': "Nenhum",
         'mme_cross': "Nenhum",
-        'hilo_signal': "Nenhum"
+        'hilo_signal': "Nenhum",
+        'media_movel_cross': {}
     }
 
     symbol_ticker = ticker_data.get(symbol, {})
@@ -318,6 +331,11 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
             analysis_result['mme_cross'] = "Cruz Dourada"
         elif emas[50].iloc[-2] > emas[200].iloc[-2] and emas[50].iloc[-1] < emas[200].iloc[-1]:
             analysis_result['mme_cross'] = "Cruz da Morte"
+
+    for period in [17, 34, 72, 144]:
+        media_movel_signal = calculate_media_movel_cross(df, period=period)
+        if media_movel_signal != "Nenhum":
+            analysis_result['media_movel_cross'][period] = media_movel_signal
 
     return analysis_result
 
