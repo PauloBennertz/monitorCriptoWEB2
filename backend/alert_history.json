@@ -1,5 +1,68 @@
 [
     {
+        "id": "BTCUSDT-MACD_BAIXA-1758030717733",
+        "symbol": "BTCUSDT",
+        "condition": "Cruzamento de Baixa (MACD)",
+        "description": "Sinal de momentum de baixa quando a linha MACD cruza para baixo da linha de sinal.",
+        "timestamp": "2025-09-16T13:51:57.733Z",
+        "snapshot": {
+            "symbol": "BTCUSDT",
+            "name": "Osmosis allBTC",
+            "price": 115015.69,
+            "price_change_24h": 0.384,
+            "volume_24h": 1098195373.4687712,
+            "market_cap": 61843,
+            "rsi_value": 43.57933423291436,
+            "rsi_signal": "43.58",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Cruzamento de Baixa",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "HiLo Sell"
+        }
+    },
+    {
+        "id": "ETHUSDT-MACD_BAIXA-1758030717734",
+        "symbol": "ETHUSDT",
+        "condition": "Cruzamento de Baixa (MACD)",
+        "description": "Sinal de momentum de baixa quando a linha MACD cruza para baixo da linha de sinal.",
+        "timestamp": "2025-09-16T13:51:57.734Z",
+        "snapshot": {
+            "symbol": "ETHUSDT",
+            "name": "The Ticker Is ETH",
+            "price": 4448.97,
+            "price_change_24h": -1.266,
+            "volume_24h": 1190975704.799011,
+            "market_cap": 0,
+            "rsi_value": 21.363462274989857,
+            "rsi_signal": "21.36",
+            "bollinger_signal": "Abaixo da Banda",
+            "macd_signal": "Cruzamento de Baixa",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum"
+        }
+    },
+    {
+        "id": "ETHUSDT-RSI_SOBREVENDA-1758030717734",
+        "symbol": "ETHUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-16T13:51:57.734Z",
+        "snapshot": {
+            "symbol": "ETHUSDT",
+            "name": "The Ticker Is ETH",
+            "price": 4448.97,
+            "price_change_24h": -1.266,
+            "volume_24h": 1190975704.799011,
+            "market_cap": 0,
+            "rsi_value": 21.363462274989857,
+            "rsi_signal": "21.36",
+            "bollinger_signal": "Abaixo da Banda",
+            "macd_signal": "Cruzamento de Baixa",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum"
+        }
+    },
+    {
         "id": "BTCUSDT-MACD_BAIXA-1758030583711",
         "symbol": "BTCUSDT",
         "condition": "Cruzamento de Baixa (MACD)",
