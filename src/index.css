@@ -622,6 +622,30 @@ body {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+.text-input {
+    background-color: var(--background-color);
+    color: var(--text-color-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+}
+
+.text-input:focus {
+    outline: none;
+    border-color: var(--accent-color-blue);
+    box-shadow: 0 0 0 2px rgba(0, 184, 212, 0.3);
+}
+
+.text-input::placeholder {
+    color: var(--text-color-secondary);
+}
+
+.price-input {
+    margin-top: 0.5rem;
+    width: 120px; /* Specific width for price input */
+}
 .alert-setting-controls select {
     background-color: var(--card-background-color);
     color: var(--text-color-primary);

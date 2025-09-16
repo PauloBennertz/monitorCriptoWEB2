@@ -155,7 +155,7 @@ const SettingsModal = ({
                                         {isPriceAlert && (
                                             <input
                                                 type="number"
-                                                className="price-input"
+                                                className="text-input price-input"
                                                 placeholder="Valor do Preço"
                                                 value={config.value || ''}
                                                 onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, value: parseFloat(e.target.value) || 0 })}
@@ -301,28 +301,36 @@ const SettingsModal = ({
                             <span>Bot Token</span>
                             <small>Insira o token do seu bot do Telegram.</small>
                         </div>
-                        <input
-                            type="text"
-                            className="telegram-input"
-                            value={telegramBotToken}
-                            onChange={(e) => setTelegramBotToken(e.target.value)}
-                        />
+                        <div className="alert-setting-controls">
+                            <input
+                                type="text"
+                                className="text-input"
+                                placeholder="Seu token do Telegram"
+                                value={telegramBotToken}
+                                onChange={(e) => setTelegramBotToken(e.target.value)}
+                            />
+                        </div>
                     </div>
                     <div className="alert-setting-item">
                         <div className="alert-setting-label">
                             <span>Chat ID</span>
                             <small>Insira o ID do chat para onde as notificações serão enviadas.</small>
                         </div>
-                        <input
-                            type="text"
-                            className="telegram-input"
-                            value={telegramChatId}
-                            onChange={(e) => setTelegramChatId(e.target.value)}
-                        />
+                        <div className="alert-setting-controls">
+                            <input
+                                type="text"
+                                className="text-input"
+                                placeholder="ID do Chat do Telegram"
+                                value={telegramChatId}
+                                onChange={(e) => setTelegramChatId(e.target.value)}
+                            />
+                        </div>
                     </div>
-                    <button onClick={handleSaveTelegramConfig} className="button" style={{ marginTop: '10px' }}>
-                        Salvar Configs do Telegram
-                    </button>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '10px' }}>
+                        <button onClick={handleSaveTelegramConfig} className="button button-add">
+                            Salvar Configs do Telegram
+                        </button>
+                    </div>
                 </div>
 
                 <hr style={{ borderColor: '#333', margin: '20px 0' }} />
