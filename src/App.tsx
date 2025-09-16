@@ -17,6 +17,7 @@ const App = () => {
     const [sortKey, setSortKey] = useState<keyof CryptoData | 'symbol' | 'active_alerts'>('market_cap');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [alerts, setAlerts] = useState<Alert[]>([]);
+    const [recentAlerts, setRecentAlerts] = useState<Alert[]>([]);
     const [mutedAlerts, setMutedAlerts] = useState<MutedAlert[]>([]);
     const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
     const [isAlertsPanelOpen, setAlertsPanelOpen] = useState(false);
@@ -524,9 +525,15 @@ const App = () => {
     }, [cryptoData, triggerAlert]);
 
 
+    useEffect(() => {
+        const fortyFiveMinutesAgo = new Date(Date.now() - 45 * 60 * 1000);
+        const filtered = alerts.filter(alert => new Date(alert.timestamp) > fortyFiveMinutesAgo);
+        setRecentAlerts(filtered);
+    }, [alerts]);
+
     return (
         <div className="app-container">
-            <AlertTicker alerts={alerts} />
+            <AlertTicker alerts={recentAlerts} />
             <header className="app-header">
                 <div className="header-top">
                     <h1 className="header-title">Crypto Monitor Pro</h1>

@@ -464,8 +464,50 @@ async def save_alert(alert: Alert):
         logging.error(f"Error saving alert to history: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to save alert to history.")
 
-# ... (rest of the file is the same)
-# The file is too long to include the rest of the endpoints, but they are unchanged.
+class TelegramConfigRequest(BaseModel):
+    bot_token: str
+    chat_id: str
+
+@app.get("/api/telegram_config")
+async def get_telegram_config():
+    """
+    Returns the Telegram configuration.
+    """
+    try:
+        if not os.path.exists(CONFIG_FILE_PATH):
+            return {"bot_token": "", "chat_id": ""}
+        with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+            telegram_config = config_data.get("telegram_config", {"bot_token": "", "chat_id": ""})
+            return telegram_config
+    except Exception as e:
+        logging.error(f"Error reading Telegram configuration: {e}")
+        raise HTTPException(status_code=500, detail="Failed to read Telegram configuration.")
+
+@app.post("/api/telegram_config")
+async def save_telegram_config(telegram_config: TelegramConfigRequest):
+    """
+    Saves the Telegram configuration.
+    """
+    with CONFIG_LOCK:
+        try:
+            config = {}
+            if os.path.exists(CONFIG_FILE_PATH):
+                with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    if content:
+                        config = json.loads(content)
+
+            config["telegram_config"] = telegram_config.model_dump()
+
+            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=4)
+
+            logging.info("Successfully saved Telegram configuration.")
+            return {"message": "Telegram configuration saved successfully."}
+        except Exception as e:
+            logging.error(f"Error saving Telegram configuration: {e}")
+            raise HTTPException(status_code=500, detail="Failed to save Telegram configuration.")
 
 # --- Serve Static Files ---
 if hasattr(sys, '_MEIPASS'):

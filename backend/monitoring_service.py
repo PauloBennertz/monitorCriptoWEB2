@@ -10,6 +10,7 @@ from .indicators import calculate_rsi, calculate_bollinger_bands, calculate_macd
 from .notification_service import send_telegram_alert
 from pycoingecko import CoinGeckoAPI
 from .app_state import load_coin_mapping_cache, save_coin_mapping_cache
+from .notification_service import send_telegram_alert
 
 cg_client = CoinGeckoAPI()
 
@@ -177,7 +178,7 @@ def _get_sound_for_trigger(trigger_key, sound_config):
 
     return os.path.join('sons', sound_file)
 
-def _check_and_trigger_alerts(symbol, alert_config, analysis_data):
+def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config):
     """
     Verifica as condições de alerta para um símbolo e retorna uma lista de alertas disparados.
     Refatorado para não ter dependências de GUI (data_queue, sound_config).
@@ -210,8 +211,8 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data):
 
     active_triggers = []
     # Lógica de verificação de condições
-    if conditions.get('preco_baixo', {}).get('enabled') and current_price <= conditions['preco_baixo']['value']: active_triggers.append(alert_definitions['preco_baixo'])
-    if conditions.get('preco_alto', {}).get('enabled') and current_price >= conditions['preco_alto']['value']: active_triggers.append(alert_definitions['preco_alto'])
+    if conditions.get('PRECO_ABAIXO', {}).get('enabled') and current_price <= conditions['PRECO_ABAIXO']['value']: active_triggers.append(alert_definitions['preco_baixo'])
+    if conditions.get('PRECO_ACIMA', {}).get('enabled') and current_price >= conditions['PRECO_ACIMA']['value']: active_triggers.append(alert_definitions['preco_alto'])
     if conditions.get('rsi_sobrevendido', {}).get('enabled') and rsi <= conditions['rsi_sobrevendido']['value']: active_triggers.append(alert_definitions['rsi_sobrevendido'])
     if conditions.get('rsi_sobrecomprado', {}).get('enabled') and rsi >= conditions['rsi_sobrecomprado']['value']: active_triggers.append(alert_definitions['rsi_sobrecomprado'])
     if conditions.get('bollinger_abaixo', {}).get('enabled') and analysis_data.get('bollinger_signal') == "Abaixo da Banda": active_triggers.append(alert_definitions['bollinger_abaixo'])
@@ -224,6 +225,10 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data):
     if conditions.get('hilo_venda', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Sell": active_triggers.append(alert_definitions['hilo_venda'])
 
     now = datetime.now()
+    telegram_config = global_config.get('telegram_config', {})
+    bot_token = telegram_config.get('bot_token')
+    chat_id = telegram_config.get('chat_id')
+
     for trigger in active_triggers:
         trigger_key = trigger['key']
         last_triggered_str = triggered_conditions.get(trigger_key)
@@ -244,6 +249,11 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data):
             'analysis_snapshot': analysis_data
         }
         triggered_alerts.append(alert_info)
+
+        # Envia notificação para o Telegram
+        if bot_token and chat_id:
+            telegram_message = f"🔔 *Alerta de Cripto* 🔔\n\n*Moeda:* {symbol}\n*Condição:* {trigger['msg']}\n*Preço Atual:* ${current_price:.2f}"
+            send_telegram_alert(bot_token, chat_id, telegram_message)
 
         # Atualiza o timestamp do último disparo para o cooldown
         triggered_conditions[trigger_key] = now.isoformat()
@@ -343,7 +353,7 @@ def run_monitoring_cycle(config, coingecko_mapping):
         all_analysis_data.append(analysis_data)
 
         if alert_config := crypto_config.get('alert_config'):
-            triggered_alerts, updated_cooldowns = _check_and_trigger_alerts(symbol, alert_config, analysis_data)
+            triggered_alerts, updated_cooldowns = _check_and_trigger_alerts(symbol, alert_config, analysis_data, config)
             if triggered_alerts:
                 all_triggered_alerts.extend(triggered_alerts)
                 # Atualiza o estado do cooldown na configuração principal
@@ -375,7 +385,7 @@ def run_single_symbol_update(symbol, config, coingecko_mapping):
 
     triggered_alerts = []
     if alert_config := crypto_config.get('alert_config'):
-        triggered_alerts, updated_cooldowns = _check_and_trigger_alerts(symbol, alert_config, analysis_data)
+        triggered_alerts, updated_cooldowns = _check_and_trigger_alerts(symbol, alert_config, analysis_data, config)
         if triggered_alerts:
              alert_config['triggered_conditions'] = updated_cooldowns
 
