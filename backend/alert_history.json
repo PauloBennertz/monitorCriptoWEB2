@@ -1,5 +1,49 @@
 [
     {
+        "id": "AVAXUSDT-MACD_BAIXA-1758041265755",
+        "symbol": "AVAXUSDT",
+        "condition": "Cruzamento de Baixa (MACD)",
+        "description": "Sinal de momentum de baixa quando a linha MACD cruza para baixo da linha de sinal.",
+        "timestamp": "2025-09-16T16:47:45.755Z",
+        "snapshot": {
+            "symbol": "AVAXUSDT",
+            "name": "Binance-Peg Avalanche",
+            "price": 29.97,
+            "price_change_24h": 4.207,
+            "volume_24h": 160096194.3921,
+            "market_cap": 12692974173,
+            "rsi_value": 60.37037037037035,
+            "rsi_signal": "60.37",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Cruzamento de Baixa",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 30.02
+        }
+    },
+    {
+        "id": "AVAXUSDT-MACD_BAIXA-1758040365713",
+        "symbol": "AVAXUSDT",
+        "condition": "Cruzamento de Baixa (MACD)",
+        "description": "Sinal de momentum de baixa quando a linha MACD cruza para baixo da linha de sinal.",
+        "timestamp": "2025-09-16T16:32:45.713Z",
+        "snapshot": {
+            "symbol": "AVAXUSDT",
+            "name": "Binance-Peg Avalanche",
+            "price": 30.03,
+            "price_change_24h": 5.11,
+            "volume_24h": 159986428.215,
+            "market_cap": 12665917206,
+            "rsi_value": 61.74242424242428,
+            "rsi_signal": "61.74",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Cruzamento de Baixa",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "lastPrice": 30.02
+        }
+    },
+    {
         "id": "AVAXUSDT-MACD_BAIXA-1758039300197",
         "symbol": "AVAXUSDT",
         "condition": "Cruzamento de Baixa (MACD)",
