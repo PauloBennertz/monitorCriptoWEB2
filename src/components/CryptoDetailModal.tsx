@@ -99,7 +99,7 @@ const CryptoDetailModal: React.FC<CryptoDetailModalProps> = ({ coin, onClose }) 
                                         layout={{
                                             title: `${coin.symbol} Price and Alerts`,
                                             xaxis: {
-                                                rangeslider: { visible: false }
+                                                rangeslider: { visible: true }
                                             },
                                             yaxis: { title: 'Price (USD)' },
                                             template: 'plotly_dark'
