@@ -22,5 +22,7 @@ def send_telegram_alert(bot_token, chat_id, message):
         logging.info("Alerta enviado para o Telegram com sucesso.")
     except requests.exceptions.RequestException as e:
         logging.error(f"Erro ao enviar alerta para o Telegram: {e}")
+        raise e
     except Exception as e:
         logging.error(f"Erro inesperado ao enviar para o Telegram: {e}")
+        raise e
