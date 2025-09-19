@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import pandas as pd
 import numpy as np
 import requests
@@ -508,6 +508,58 @@ async def save_telegram_config(telegram_config: TelegramConfigRequest):
         except Exception as e:
             logging.error(f"Error saving Telegram configuration: {e}")
             raise HTTPException(status_code=500, detail="Failed to save Telegram configuration.")
+
+
+@app.get("/api/coin_details/{symbol}")
+async def get_coin_details(symbol: str):
+    """
+    Provides detailed information for a specific coin, including recent alerts and historical data for a chart.
+    """
+    try:
+        # 1. Fetch recent alerts for the symbol
+        recent_alerts = []
+        if os.path.exists(ALERT_HISTORY_FILE_PATH):
+            with HISTORY_LOCK:
+                with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+                    try:
+                        history = json.load(f)
+                        # Filter alerts for the given symbol and take the last 10, making sure it's a list
+                        if isinstance(history, list):
+                            recent_alerts = [alert for alert in history if alert.get('symbol') == symbol][:10]
+                    except (json.JSONDecodeError, IndexError):
+                        # Ignore errors if the file is empty or malformed
+                        pass
+
+        # 2. Fetch historical data for the last 7 days
+        end_date = datetime.now(timezone.utc)
+        start_date = end_date - timedelta(days=7)
+
+        end_date_str = end_date.strftime("%Y-%m-%d")
+        start_date_str = start_date.strftime("%Y-%m-%d")
+
+        # Re-using the existing function to fetch k-line data
+        historical_data_df = fetch_historical_data(symbol, start_date_str, end_date_str, interval='1h')
+
+        chart_data = None
+        if not historical_data_df.empty:
+            # Format data for Plotly
+            chart_data = {
+                'x': historical_data_df.index.strftime('%Y-%m-%d %H:%M:%S').tolist(),
+                'open': historical_data_df['open'].tolist(),
+                'high': historical_data_df['high'].tolist(),
+                'low': historical_data_df['low'].tolist(),
+                'close': historical_data_df['close'].tolist(),
+                'type': 'candlestick'
+            }
+
+        return {
+            "alerts": recent_alerts,
+            "chartData": chart_data
+        }
+
+    except Exception as e:
+        logging.error(f"Error fetching details for {symbol}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred while fetching details for {symbol}: {str(e)}")
 
 # --- Serve Static Files ---
 if hasattr(sys, '_MEIPASS'):
