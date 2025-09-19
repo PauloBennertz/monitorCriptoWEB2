@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
 
-def create_chart(df, alerts):
+def generate_chart(df, alerts):
     if df.empty:
         return go.Figure()
 
