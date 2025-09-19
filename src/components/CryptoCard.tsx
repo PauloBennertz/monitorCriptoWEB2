@@ -34,7 +34,13 @@ const LoadingCard = ({ symbol }: { symbol: string }) => (
 );
 
 
-const CryptoCard = ({ data, isBlinkVisible }: { data: CryptoData, isBlinkVisible: boolean }) => {
+interface CryptoCardProps {
+    data: CryptoData;
+    isBlinkVisible: boolean;
+    onClick: (data: CryptoData) => void;
+}
+
+const CryptoCard = ({ data, isBlinkVisible, onClick }: CryptoCardProps) => {
     const [flashClass, setFlashClass] = useState('');
 
     useEffect(() => {
@@ -67,7 +73,7 @@ const CryptoCard = ({ data, isBlinkVisible }: { data: CryptoData, isBlinkVisible
     }
 
     return (
-        <div className={`crypto-card ${blinkingClass}`}>
+        <div className={`crypto-card ${blinkingClass}`} onClick={() => onClick(data)}>
             <div className="card-header">
                 <span className="card-symbol">{data.symbol.replace('USDT', '')}</span>
                 <span className="card-name">{data.name}</span>

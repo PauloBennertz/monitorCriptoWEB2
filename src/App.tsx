@@ -4,6 +4,7 @@ import SettingsModal from './components/SettingsModal';
 import AlertsPanel from './components/AlertsPanel';
 import AlertHistoryPanel from './components/AlertHistoryPanel';
 import BacktesterPanel from './components/BacktesterPanel';
+import CryptoDetailModal from './components/CryptoDetailModal';
 import AlertTicker from './components/AlertTicker'; // Import the new component
 import './components/AlertTicker.css'; // Import the new stylesheet
 import { CryptoData, Alert, MutedAlert, AlertConfigs, AlertConfig, BasicCoin, API_BASE_URL, ALERT_DEFINITIONS, DEFAULT_ALERT_CONFIG, MarketAnalysisConfig } from './types';
@@ -30,7 +31,16 @@ const App = () => {
     const [secondsToNextUpdate, setSecondsToNextUpdate] = useState(180);
     const [btcDominance, setBtcDominance] = useState<number | null>(null);
     const [isBlinkVisible, setIsBlinkVisible] = useState(true);
+    const [selectedCoin, setSelectedCoin] = useState<CryptoData | null>(null);
     const REFRESH_INTERVAL_SECONDS = 180; // 3 minutes
+
+    const handleCardClick = (coin: CryptoData) => {
+        setSelectedCoin(coin);
+    };
+
+    const handleCloseModal = () => {
+        setSelectedCoin(null);
+    };
 
     useEffect(() => {
         const blinkInterval = setInterval(() => {
@@ -596,6 +606,7 @@ const App = () => {
                                     key={crypto.symbol}
                                     data={crypto}
                                     isBlinkVisible={isBlinkVisible}
+                                    onClick={handleCardClick}
                                 />
                             ))}
                         </div>
@@ -629,6 +640,12 @@ const App = () => {
                 isOpen={isBacktesterPanelOpen}
                 onClose={() => setBacktesterPanelOpen(false)}
             />
+            {selectedCoin && (
+                <CryptoDetailModal
+                    coin={selectedCoin}
+                    onClose={handleCloseModal}
+                />
+            )}
         </div>
     );
 };
