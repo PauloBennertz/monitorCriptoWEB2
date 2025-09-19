@@ -62,6 +62,71 @@ const CryptoDetailModal: React.FC<CryptoDetailModalProps> = ({ coin, onClose }) 
         };
     };
 
+    const getAlertAnnotations = () => {
+        if (!details || !details.alerts) {
+            return [];
+        }
+        return details.alerts.map(alert => ({
+            x: alert.timestamp,
+            y: alert.snapshot.price,
+            xref: 'x',
+            yref: 'y',
+            text: alert.condition.replace(/_/g, ' '), // Make condition more readable
+            showarrow: true,
+            arrowhead: 2,
+            ax: 0,
+            ay: -40, // Offset the text above the marker
+            bgcolor: 'rgba(255, 255, 255, 0.7)',
+            bordercolor: '#c7c7c7',
+            borderwidth: 1,
+            font: {
+                color: '#000',
+                size: 12,
+            }
+        }));
+    };
+
+    const chartLayout = {
+        title: {
+            text: `${coin.name} (${coin.symbol.replace('USDT', '')}) - Price and Alerts`,
+            font: {
+                color: '#f8f9fa',
+                size: 18,
+            },
+            x: 0.5,
+            xanchor: 'center',
+        },
+        paper_bgcolor: '#343a40',
+        plot_bgcolor: '#212529',
+        font: {
+            color: '#f8f9fa'
+        },
+        xaxis: {
+            rangeslider: { visible: false },
+            gridcolor: '#495057',
+            linecolor: '#495057',
+        },
+        yaxis: {
+            title: 'Price (USD)',
+            gridcolor: '#495057',
+            linecolor: '#495057',
+        },
+        legend: {
+            font: {
+                color: '#f8f9fa'
+            }
+        },
+        showlegend: true,
+        annotations: getAlertAnnotations(),
+    };
+
+    const styledChartData = details?.chartData ? {
+        ...details.chartData,
+        increasing: { line: { color: '#28a745' } },
+        decreasing: { line: { color: '#dc3545' } },
+        name: 'Price',
+    } : null;
+
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -93,20 +158,10 @@ const CryptoDetailModal: React.FC<CryptoDetailModalProps> = ({ coin, onClose }) 
                             </div>
                             <div className="detail-section">
                                 <h3>Alerts Chart (Last 7 Days)</h3>
-                                {details.chartData ? (
+                                {styledChartData ? (
                                     <Plot
-                                        data={[details.chartData, getAlertMarkers()]}
-                                        layout={{
-                                            title: `${coin.symbol} Price and Alerts`,
-                                            xaxis: {
-                                                rangeslider: { visible: true }
-                                            },
-                                            yaxis: { title: 'Price (USD)' },
-                                            template: 'plotly_dark',
-                                            font: {
-                                                color: 'white'
-                                            }
-                                        }}
+                                        data={[styledChartData, getAlertMarkers()]}
+                                        layout={chartLayout}
                                         config={{ responsive: true }}
                                         className="plotly-chart"
                                     />
