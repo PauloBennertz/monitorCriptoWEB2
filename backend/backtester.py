@@ -1,6 +1,6 @@
 import pandas as pd
 import logging
-from backend.chart_generator import generate_chart
+from .chart_generator import generate_chart
 
 class Backtester:
     """
