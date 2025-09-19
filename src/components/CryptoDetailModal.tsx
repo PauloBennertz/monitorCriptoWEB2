@@ -101,7 +101,8 @@ const CryptoDetailModal: React.FC<CryptoDetailModalProps> = ({ coin, onClose }) 
                                             xaxis: {
                                                 rangeslider: { visible: false }
                                             },
-                                            yaxis: { title: 'Price (USD)' }
+                                            yaxis: { title: 'Price (USD)' },
+                                            template: 'plotly_dark'
                                         }}
                                         config={{ responsive: true }}
                                         className="plotly-chart"
