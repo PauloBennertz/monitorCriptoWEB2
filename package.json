@@ -7,7 +7,7 @@
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
-    "start:backend": "call venv\\Scripts\\activate.bat && uvicorn backend.api_server:app --reload --port 8000",
+    "start:backend": "uvicorn backend.api_server:app --reload --port 8000",
     "start:all": "concurrently \"npm run dev\" \"npm run start:backend\""
   },
   "dependencies": {

@@ -32,9 +32,13 @@ const SettingsModal = ({
     const [telegramBotToken, setTelegramBotToken] = useState('');
     const [telegramChatId, setTelegramChatId] = useState('');
     const [isTokenVisible, setIsTokenVisible] = useState(false);
+    const [testStatus, setTestStatus] = useState<{ fired: boolean, success: boolean, message: string }>({ fired: false, success: false, message: '' });
 
     useEffect(() => {
         if (isOpen) {
+            // Reset test status when modal opens
+            setTestStatus({ fired: false, success: false, message: '' });
+
             fetch('/api/telegram_config')
                 .then(res => res.json())
                 .then(data => {
@@ -42,6 +46,7 @@ const SettingsModal = ({
                     setTelegramChatId(data.chat_id || '');
                 });
         } else {
+            // Delay resetting view state to allow for closing animation
             setTimeout(() => {
                 setView('list');
                 setSelectedCryptoSymbol(null);
@@ -51,14 +56,38 @@ const SettingsModal = ({
     }, [isOpen]);
 
     const handleSaveTelegramConfig = () => {
+        setTestStatus({ fired: false, success: false, message: '' }); // Reset on save
         fetch('/api/telegram_config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ bot_token: telegramBotToken, chat_id: telegramChatId }),
         })
         .then(res => res.json())
-        .then(() => alert('Configurações do Telegram salvas com sucesso!'))
+        .then((data) => {
+            alert(data.message || 'Configurações do Telegram salvas com sucesso!');
+        })
         .catch(() => alert('Erro ao salvar as configurações do Telegram.'));
+    };
+
+    const handleTestTelegram = () => {
+        // Immediately save before testing
+        handleSaveTelegramConfig();
+        setTestStatus({ fired: true, success: false, message: 'Enviando mensagem de teste...' });
+
+        // Use a timeout to ensure the save operation can be processed by the server
+        setTimeout(() => {
+            fetch('/api/test_telegram', { method: 'POST' })
+                .then(async (res) => {
+                    const data = await res.json();
+                    if (!res.ok) {
+                        throw new Error(data.detail || `Erro HTTP ${res.status}`);
+                    }
+                    setTestStatus({ fired: true, success: true, message: data.message });
+                })
+                .catch((err) => {
+                    setTestStatus({ fired: true, success: false, message: err.message || 'Falha no envio. Verifique o console para mais detalhes.' });
+                });
+        }, 500); // 500ms delay
     };
 
     const monitoredSymbols = useMemo(() => new Set(monitoredCoins.map(c => c.symbol)), [monitoredCoins]);
@@ -348,8 +377,22 @@ const SettingsModal = ({
                             />
                         </div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '10px' }}>
-                        <button onClick={handleSaveTelegramConfig} className="button button-add">
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '15px', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                        {testStatus.fired && (
+                            <span
+                                style={{
+                                    marginRight: 'auto',
+                                    color: testStatus.success ? '#4caf50' : '#f44336',
+                                    fontSize: '0.9em'
+                                }}
+                            >
+                                {testStatus.message}
+                            </span>
+                        )}
+                        <button onClick={handleTestTelegram} className="button" type="button">
+                            Testar Envio
+                        </button>
+                        <button onClick={handleSaveTelegramConfig} className="button button-add" type="button">
                             Salvar Configs do Telegram
                         </button>
                     </div>

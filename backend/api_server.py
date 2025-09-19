@@ -32,6 +32,7 @@ from backend import app_state
 from backend import coin_manager
 from backend.backtester import Backtester
 from backend.indicators import calculate_sma
+from backend.notification_service import send_telegram_alert
 
 # --- Basic Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -508,6 +509,58 @@ async def save_telegram_config(telegram_config: TelegramConfigRequest):
         except Exception as e:
             logging.error(f"Error saving Telegram configuration: {e}")
             raise HTTPException(status_code=500, detail="Failed to save Telegram configuration.")
+
+
+@app.post("/api/test_telegram")
+async def test_telegram_endpoint():
+    """
+    Envia uma mensagem de teste para o Telegram usando as credenciais configuradas.
+    """
+    try:
+        # Carregar a configuração para obter as credenciais do Telegram
+        with CONFIG_LOCK:
+            if not os.path.exists(CONFIG_FILE_PATH):
+                raise HTTPException(status_code=404, detail="Arquivo de configuração não encontrado.")
+
+            config = {}
+            with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                content = f.read()
+                if content:
+                    config = json.loads(content)
+
+        telegram_config = config.get("telegram_config", {})
+        bot_token = telegram_config.get("bot_token")
+        chat_id = telegram_config.get("chat_id")
+
+        if not bot_token or not chat_id or "AQUI" in str(bot_token) or "AQUI" in str(chat_id):
+            raise HTTPException(status_code=400, detail="Token ou Chat ID do Telegram não configurado. Por favor, salve suas credenciais primeiro.")
+
+        test_message = "✅ Mensagem de teste do Crypto Monitor Pro!\n\nSua configuração do Telegram parece estar funcionando corretamente."
+
+        # A função send_telegram_alert agora relança a exceção, permitindo a captura aqui.
+        send_telegram_alert(bot_token, chat_id, test_message)
+
+        return {"message": "Mensagem de teste enviada com sucesso!"}
+
+    except HTTPException:
+        raise # Re-lança para manter o status e detalhe originais
+
+    except requests.exceptions.RequestException as e:
+        error_detail = f"Erro de rede ao contatar o Telegram: {e}"
+        if e.response:
+            status_code = e.response.status_code
+            if status_code == 400:
+                error_detail = "Requisição inválida. Verifique se o Chat ID está correto e se o bot foi adicionado ao canal/grupo."
+            elif status_code == 401:
+                error_detail = "Não autorizado. Verifique se o seu Token de Bot do Telegram é válido."
+            elif status_code == 404:
+                error_detail = "Não encontrado. Verifique o Chat ID, pois o chat pode não existir."
+        logging.error(f"Erro na comunicação com a API do Telegram: {error_detail}", exc_info=True)
+        raise HTTPException(status_code=500, detail=error_detail)
+
+    except Exception as e:
+        logging.error(f"Erro inesperado no endpoint de teste do Telegram: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Ocorreu um erro inesperado: {str(e)}")
 
 
 @app.get("/api/coin_details/{symbol}")
