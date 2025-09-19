@@ -1,7 +1,7 @@
 {
     "telegram_config": {
-        "bot_token": "123456:ABC-DEF1234567890",
-        "chat_id": "123456789"
+        "bot_token": "8295388108:AAGpOwj8f0C6GuQ8pLSNZjM0cntunuTTYqw",
+        "chat_id": "8295388108"
     },
     "cryptos_to_monitor": [],
     "market_analysis_config": {}
