@@ -536,8 +536,8 @@ const App = () => {
 
 
     useEffect(() => {
-        const fortyFiveMinutesAgo = new Date(Date.now() - 45 * 60 * 1000);
-        const filtered = alerts.filter(alert => new Date(alert.timestamp) > fortyFiveMinutesAgo);
+        const sixtyMinutesAgo = new Date(Date.now() - 60 * 60 * 1000);
+        const filtered = alerts.filter(alert => new Date(alert.timestamp) > sixtyMinutesAgo);
         setRecentAlerts(filtered);
     }, [alerts]);
 

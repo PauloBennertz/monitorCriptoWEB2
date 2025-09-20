@@ -11,8 +11,8 @@ from datetime import datetime
 
 # Import the backtesting and charting logic
 try:
-    from backtester import fetch_historical_data, run_backtest
-    from chart_generator import generate_chart
+    from .backtester import fetch_historical_data, run_backtest
+    from .chart_generator import generate_chart
 except ImportError:
     messagebox.showerror("Erro de Importação", "Não foi possível encontrar 'backtester.py' ou 'chart_generator.py'. Certifique-se de que estão na mesma pasta.")
     exit()
