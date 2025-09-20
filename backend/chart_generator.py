@@ -1,35 +1,78 @@
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import pandas as pd
 
 def generate_chart(df, alerts):
     if df.empty:
-        return go.Figure()
+        fig = go.Figure()
+        fig.update_layout(title_text="No data to display")
+        fig.show()
+        return
 
-    fig = make_subplots(rows=1, cols=1, shared_xaxes=True, vertical_spacing=0.1)
+    fig = go.Figure(data=[go.Candlestick(x=df['timestamp'],
+                                           open=df['open'],
+                                           high=df['high'],
+                                           low=df['low'],
+                                           close=df['close'],
+                                           name='Price')])
 
-    fig.add_trace(go.Candlestick(x=df.index,
-                                open=df['Open'],
-                                high=df['High'],
-                                low=df['Low'],
-                                close=df['Close'],
-                                name='trace 0'),
-                  row=1, col=1)
+    # Sort alerts by timestamp to handle overlaps systematically
+    alerts.sort(key=lambda a: a['timestamp'])
 
-    alert_points = df.loc[df.index.isin(alerts)]
-    fig.add_trace(go.Scatter(x=alert_points.index,
-                             y=alert_points['High'] * 1.05,  # Posição um pouco acima da vela
-                             mode='markers',
-                             marker=dict(color='red', size=10, symbol='triangle-up'),
-                             name='Alerts'),
-                  row=1, col=1)
+    last_x_pos = None
+    last_y_offset = -40
+
+    for alert in alerts:
+        current_x_pos = alert['timestamp']
+        ay_offset = -40
+
+        # Check if the current alert is close in time to the last one
+        if last_x_pos is not None:
+            # Assuming timestamps are pandas Timestamps
+            time_difference = pd.to_timedelta(current_x_pos - last_x_pos).total_seconds()
+            # If alerts are within 6 hours of each other, alternate the y-offset
+            if time_difference < 6 * 3600:
+                ay_offset = last_y_offset - 30 if last_y_offset < -40 else -70
+
+        fig.add_annotation(
+            x=current_x_pos,
+            y=alert['price'],
+            text=alert['message'],
+            showarrow=True,
+            arrowhead=1,
+            ax=0,
+            ay=ay_offset,
+            bgcolor="rgba(255, 255, 255, 0.7)",
+            font=dict(
+                family="sans-serif",
+                size=12,
+                color="#000000"
+            ),
+            align="center",
+            bordercolor="#c7c7c7",
+            borderwidth=2,
+            borderpad=4,
+        )
+
+        fig.add_trace(go.Scatter(
+            x=[current_x_pos],
+            y=[alert['price']],
+            mode='markers',
+            marker=dict(
+                color='red',
+                size=10,
+                symbol='triangle-down' if 'venda' in alert['message'].lower() else 'triangle-up'
+            ),
+            showlegend=False
+        ))
+
+        last_x_pos = current_x_pos
+        last_y_offset = ay_offset
+
 
     fig.update_layout(
+        title_text="Backtest Results",
         xaxis_rangeslider_visible=False,
-        showlegend=True,
         template='plotly_dark'
     )
-    return fig
 
-def fig_to_base64(fig):
-    return fig.to_image(format="png")
+    fig.show()
