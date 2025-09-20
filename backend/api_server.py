@@ -30,7 +30,7 @@ from backend.monitoring_service import (
 )
 from backend import app_state
 from backend import coin_manager
-from backend.backtester import Backtester
+from backend.backtester import Backtester, fetch_historical_data
 from backend.indicators import calculate_sma
 from backend.notification_service import send_telegram_alert
 
@@ -68,80 +68,7 @@ BASE_PATH = get_base_path()
 
 # --- Backtesting Components ---
 
-BINANCE_API_URL = "https://api.binance.com/api/v3/klines"
-MAX_LIMIT = 1000
-
-def date_to_milliseconds(date_str):
-    """Converts a YYYY-MM-DD string to milliseconds since epoch."""
-    return int(datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp() * 1000)
-
-def fetch_historical_data(symbol, start_date, end_date, interval='1h'):
-    """
-    Fetches historical k-line data from Binance for a given symbol and date range.
-    Handles pagination to retrieve all data in the specified range.
-    """
-    logging.info(f"Fetching historical data for {symbol} from {start_date} to {end_date} with {interval} interval.")
-    start_ms = date_to_milliseconds(start_date)
-    end_ms = date_to_milliseconds(end_date)
-    all_data = []
-
-    while start_ms < end_ms:
-        params = {
-            'symbol': symbol,
-            'interval': interval,
-            'startTime': start_ms,
-            'endTime': end_ms,
-            'limit': MAX_LIMIT
-        }
-        try:
-            response = requests.get(BINANCE_API_URL, params=params, timeout=15)
-            response.raise_for_status()
-            data = response.json()
-            if not data:
-                break
-            all_data.extend(data)
-            last_timestamp = data[-1][0]
-            start_ms = last_timestamp + 1
-            logging.info(f"Fetched {len(data)} records. Next start time: {datetime.fromtimestamp(start_ms / 1000, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}")
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Network error while fetching data for {symbol}: {e}")
-            time.sleep(5)
-            break
-        except Exception as e:
-            logging.error(f"An unexpected error occurred: {e}")
-            break
-
-    if not all_data:
-        logging.warning("No data was fetched. Check the symbol and date range.")
-        return pd.DataFrame()
-
-    df = pd.DataFrame(all_data, columns=[
-        'open_time', 'open', 'high', 'low', 'close', 'volume',
-        'close_time', 'quote_asset_volume', 'number_of_trades',
-        'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'
-    ])
-    df['timestamp'] = pd.to_datetime(df['open_time'], unit='ms', utc=True)
-    for col in ['open', 'high', 'low', 'close', 'volume']:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-    df = df[['timestamp', 'open', 'high', 'low', 'close', 'volume']].set_index('timestamp')
-    end_date_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-    df = df[df.index < end_date_dt]
-    logging.info(f"Successfully fetched a total of {len(df)} records for the specified period.")
-    return df
-
-class MovingAverageCrossoverStrategy:
-    def __init__(self, short_window=40, long_window=100):
-        self.short_window = short_window
-        self.long_window = long_window
-
-    def generate_signals(self, data):
-        signals = pd.DataFrame(index=data.index)
-        signals['signal'] = 0.0
-        signals['short_mavg'] = calculate_sma(data['close'], self.short_window)
-        signals['long_mavg'] = calculate_sma(data['close'], self.long_window)
-        signals['signal'][self.short_window:] = np.where(signals['short_mavg'][self.short_window:] > signals['long_mavg'][self.short_window:], 1.0, 0.0)
-        signals['positions'] = signals['signal'].diff()
-        return signals['positions']
+from backend.backtester import MovingAverageCrossoverStrategy
 
 class BacktestRequest(BaseModel):
     symbol: str
@@ -563,51 +490,97 @@ async def test_telegram_endpoint():
         raise HTTPException(status_code=500, detail=f"Ocorreu um erro inesperado: {str(e)}")
 
 
+from backend.indicators import calculate_rsi, calculate_bollinger_bands, calculate_emas, calculate_hilo_signals
 @app.get("/api/coin_details/{symbol}")
 async def get_coin_details(symbol: str):
     """
     Provides detailed information for a specific coin, including recent alerts and historical data for a chart.
     """
     try:
-        # 1. Fetch recent alerts for the symbol
+        # 1. Fetch recent alerts for the symbol from the last 7 days
+        end_date = datetime.now(timezone.utc)
+        start_date_alerts = end_date - timedelta(days=7)
+
         recent_alerts = []
         if os.path.exists(ALERT_HISTORY_FILE_PATH):
             with HISTORY_LOCK:
                 with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
                     try:
                         history = json.load(f)
-                        # Filter alerts for the given symbol and take the last 10, making sure it's a list
                         if isinstance(history, list):
-                            recent_alerts = [alert for alert in history if alert.get('symbol') == symbol][:10]
-                    except (json.JSONDecodeError, IndexError):
-                        # Ignore errors if the file is empty or malformed
+                            # Filter alerts for the given symbol and within the date range
+                            symbol_alerts = [
+                                alert for alert in history
+                                if alert.get('symbol') == symbol and
+                                pd.to_datetime(alert.get('timestamp')).tz_convert('UTC') >= start_date_alerts
+                            ]
+                            recent_alerts = sorted(symbol_alerts, key=lambda x: x['timestamp'], reverse=True)
+                    except (json.JSONDecodeError, IndexError, TypeError):
                         pass
 
-        # 2. Fetch historical data for the last 7 days
-        end_date = datetime.now(timezone.utc)
-        start_date = end_date - timedelta(days=7)
-
+        # 2. Fetch historical data for the last 30 days to have enough data for indicators
+        start_date_data = end_date - timedelta(days=30)
         end_date_str = end_date.strftime("%Y-%m-%d")
-        start_date_str = start_date.strftime("%Y-%m-%d")
+        start_date_data_str = start_date_data.strftime("%Y-%m-%d")
 
-        # Re-using the existing function to fetch k-line data
-        historical_data_df = fetch_historical_data(symbol, start_date_str, end_date_str, interval='1h')
+        historical_data_df = fetch_historical_data(symbol, start_date_data_str, end_date_str, interval='1h')
 
-        chart_data = None
-        if not historical_data_df.empty:
-            # Format data for Plotly
-            chart_data = {
-                'x': historical_data_df.index.strftime('%Y-%m-%d %H:%M:%S').tolist(),
-                'open': historical_data_df['open'].tolist(),
-                'high': historical_data_df['high'].tolist(),
-                'low': historical_data_df['low'].tolist(),
-                'close': historical_data_df['close'].tolist(),
-                'type': 'candlestick'
-            }
+        if historical_data_df.empty:
+            return {"alerts": recent_alerts, "chartData": None, "indicators": {}}
+
+        # 3. Calculate Indicators
+        rsi, _, _ = calculate_rsi(historical_data_df)
+        upper_band, lower_band, sma_20 = calculate_bollinger_bands(historical_data_df)
+        emas = calculate_emas(historical_data_df, periods=[9, 21, 50, 200])
+
+        # We only need the last 7 days of data for the chart itself
+        historical_data_df_chart = historical_data_df[historical_data_df.index >= start_date_alerts]
+
+        # 4. Format data for Plotly
+        chart_data = {
+            'x': historical_data_df_chart.index.strftime('%Y-%m-%d %H:%M:%S').tolist(),
+            'open': historical_data_df_chart['open'].tolist(),
+            'high': historical_data_df_chart['high'].tolist(),
+            'low': historical_data_df_chart['low'].tolist(),
+            'close': historical_data_df_chart['close'].tolist(),
+            'type': 'candlestick',
+            'name': symbol
+        }
+
+        indicators_data = {
+            'rsi': {'x': rsi.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': rsi.tolist(), 'name': 'RSI'},
+            'bollinger_upper': {'x': upper_band.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': upper_band.tolist(), 'name': 'BB Upper'},
+            'bollinger_lower': {'x': lower_band.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': lower_band.tolist(), 'name': 'BB Lower'},
+            'sma_20': {'x': sma_20.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': sma_20.tolist(), 'name': 'SMA 20'},
+        }
+        for period, ema_series in emas.items():
+            indicators_data[f'ema_{period}'] = {'x': ema_series.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': ema_series.tolist(), 'name': f'EMA {period}'}
+
+        # 5. Prepare alerts for annotations
+        annotations = []
+        for alert in recent_alerts:
+            # Find the closest data point in time to place the annotation
+            alert_time = pd.to_datetime(alert['timestamp']).tz_convert('UTC')
+            if not historical_data_df_chart.empty:
+                closest_time_index = historical_data_df_chart.index.get_indexer([alert_time], method='nearest')[0]
+                closest_time = historical_data_df_chart.index[closest_time_index]
+                price_at_alert = historical_data_df_chart.loc[closest_time]['high']
+
+                annotations.append({
+                    'x': closest_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'y': price_at_alert,
+                    'text': alert['condition'], # Using 'condition' as it's more concise
+                    'showarrow': True,
+                    'arrowhead': 1,
+                    'ax': 0,
+                    'ay': -40 # Frontend can dynamically adjust this
+                })
 
         return {
-            "alerts": recent_alerts,
-            "chartData": chart_data
+            "alerts": recent_alerts, # Keep sending raw alerts for display in a list
+            "chartData": chart_data,
+            "indicatorsData": indicators_data,
+            "annotations": annotations
         }
 
     except Exception as e:
