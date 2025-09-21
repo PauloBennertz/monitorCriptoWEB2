@@ -526,7 +526,7 @@ async def get_coin_details(symbol: str):
         historical_data_df = fetch_historical_data(symbol, start_date_data_str, end_date_str, interval='1h')
 
         if historical_data_df.empty:
-            return {"alerts": recent_alerts, "chartData": None, "indicators": {}}
+            return {"alerts": recent_alerts, "chartData": None, "indicatorsData": {}}
 
         # 3. Calculate Indicators
         rsi, _, _ = calculate_rsi(historical_data_df)
@@ -563,18 +563,20 @@ async def get_coin_details(symbol: str):
             alert_time = pd.to_datetime(alert['timestamp']).tz_convert('UTC')
             if not historical_data_df_chart.empty:
                 closest_time_index = historical_data_df_chart.index.get_indexer([alert_time], method='nearest')[0]
-                closest_time = historical_data_df_chart.index[closest_time_index]
-                price_at_alert = historical_data_df_chart.loc[closest_time]['high']
+                # Check if a valid index was found
+                if closest_time_index != -1:
+                    closest_time = historical_data_df_chart.index[closest_time_index]
+                    price_at_alert = historical_data_df_chart.loc[closest_time]['high']
 
-                annotations.append({
-                    'x': closest_time.strftime('%Y-%m-%d %H:%M:%S'),
-                    'y': price_at_alert,
-                    'text': alert['condition'], # Using 'condition' as it's more concise
-                    'showarrow': True,
-                    'arrowhead': 1,
-                    'ax': 0,
-                    'ay': -40 # Frontend can dynamically adjust this
-                })
+                    annotations.append({
+                        'x': closest_time.strftime('%Y-%m-%d %H:%M:%S'),
+                        'y': price_at_alert,
+                        'text': alert['condition'], # Using 'condition' as it's more concise
+                        'showarrow': True,
+                        'arrowhead': 1,
+                        'ax': 0,
+                        'ay': -40 # Frontend can dynamically adjust this
+                    })
 
         return {
             "alerts": recent_alerts, # Keep sending raw alerts for display in a list
