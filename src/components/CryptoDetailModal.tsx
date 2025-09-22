@@ -18,30 +18,26 @@ interface CoinDetail {
 
 const CryptoDetailModal: React.FC<CryptoDetailModalProps> = ({ coin, onClose }) => {
     const [details, setDetails] = useState<CoinDetail | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchDetails = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/coin_details/${coin.symbol}`);
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to fetch coin details');
-                }
-                const data: CoinDetail = await response.json();
-                setDetails(data);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'An unknown error occurred');
-            } finally {
-                setIsLoading(false);
+    const handleFetchDetails = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/coin_details/${coin.symbol}`);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to fetch coin details');
             }
-        };
-
-        fetchDetails();
-    }, [coin.symbol]);
+            const data: CoinDetail = await response.json();
+            setDetails(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Function to dynamically adjust annotation positions to avoid overlap
     const getAdjustedAnnotations = (annotations: any[], chartData: any) => {
@@ -167,44 +163,54 @@ const CryptoDetailModal: React.FC<CryptoDetailModalProps> = ({ coin, onClose }) 
                     <button onClick={onClose} className="close-button">&times;</button>
                 </div>
                 <div className="modal-body">
-                    {isLoading ? (
-                        <div className="loading-container">Loading chart data...</div>
-                    ) : error ? (
-                        <div className="error-container">
-                            <p>Error loading chart:</p>
-                            <p><strong>{error}</strong></p>
-                        </div>
-                    ) : details ? (
-                        <>
+                    <div className="chart-area">
+                        {isLoading && <div className="loading-container">Loading chart data...</div>}
+                        {error && (
+                            <div className="error-container">
+                                <p>Error loading chart:</p>
+                                <p><strong>{error}</strong></p>
+                                <button onClick={handleFetchDetails} className="retry-button">Try Again</button>
+                            </div>
+                        )}
+                        {details && chartData.length > 0 && (
                             <div className="chart-container">
-                                {chartData.length > 0 ? (
-                                    <Plot
-                                        data={chartData}
-                                        layout={chartLayout}
-                                        config={{ responsive: true, displaylogo: false }}
-                                        style={{ width: '100%', height: '100%' }}
-                                    />
+                                <Plot
+                                    data={chartData}
+                                    layout={chartLayout}
+                                    config={{ responsive: true, displaylogo: false }}
+                                    style={{ width: '100%', height: '100%' }}
+                                />
+                            </div>
+                        )}
+                        {details && chartData.length === 0 && !isLoading && <p>No chart data available for this period.</p>}
+
+                        {!isLoading && !error && !details && (
+                            <div className="initial-chart-view">
+                                <p>Click the button to generate the chart and view recent alerts.</p>
+                                <button onClick={handleFetchDetails} className="generate-chart-button">
+                                    Generate Chart
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {details && (
+                         <div className="detail-section">
+                            <h3>Recent Alerts (Last 7 Days)</h3>
+                            <ul className="alert-list">
+                                {details.alerts.length > 0 ? (
+                                    details.alerts.map(alert => (
+                                        <li key={alert.id}>
+                                            <strong>{alert.condition.replace(/_/g, ' ')}</strong> - {format(new Date(alert.timestamp), 'dd/MM/yyyy HH:mm')}
+                                            <small>Price: ${alert.snapshot.price.toFixed(4)}</small>
+                                        </li>
+                                    ))
                                 ) : (
-                                    <p>No chart data available for this period.</p>
+                                    <p>No recent alerts for this coin.</p>
                                 )}
-                            </div>
-                            <div className="detail-section">
-                                <h3>Recent Alerts (Last 7 Days)</h3>
-                                <ul className="alert-list">
-                                    {details.alerts.length > 0 ? (
-                                        details.alerts.map(alert => (
-                                            <li key={alert.id}>
-                                                <strong>{alert.condition.replace(/_/g, ' ')}</strong> - {format(new Date(alert.timestamp), 'dd/MM/yyyy HH:mm')}
-                                                <small>Price: ${alert.snapshot.price.toFixed(4)}</small>
-                                            </li>
-                                        ))
-                                    ) : (
-                                        <p>No recent alerts for this coin.</p>
-                                    )}
-                                </ul>
-                            </div>
-                        </>
-                    ) : null}
+                            </ul>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
