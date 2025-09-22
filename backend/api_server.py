@@ -546,10 +546,10 @@ async def get_coin_details(symbol: str):
         # 4. Format data for Plotly
         chart_data = {
             'x': historical_data_df_chart.index.strftime('%Y-%m-%d %H:%M:%S').tolist(),
-            'open': historical_data_df_chart['open'].tolist(),
-            'high': historical_data_df_chart['high'].tolist(),
-            'low': historical_data_df_chart['low'].tolist(),
-            'close': historical_data_df_chart['close'].tolist(),
+            'open': series_to_json_list(historical_data_df_chart['open']),
+            'high': series_to_json_list(historical_data_df_chart['high']),
+            'low': series_to_json_list(historical_data_df_chart['low']),
+            'close': series_to_json_list(historical_data_df_chart['close']),
             'type': 'candlestick',
             'name': symbol
         }
@@ -575,9 +575,12 @@ async def get_coin_details(symbol: str):
                     closest_time = historical_data_df_chart.index[closest_time_index]
                     price_at_alert = historical_data_df_chart.loc[closest_time]['high']
 
+                    # Replace NaN with None for JSON compatibility
+                    y_price = price_at_alert if pd.notna(price_at_alert) else None
+
                     annotations.append({
                         'x': closest_time.strftime('%Y-%m-%d %H:%M:%S'),
-                        'y': price_at_alert,
+                        'y': y_price,
                         'text': alert['condition'], # Using 'condition' as it's more concise
                         'showarrow': True,
                         'arrowhead': 1,
