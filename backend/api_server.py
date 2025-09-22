@@ -491,6 +491,13 @@ async def test_telegram_endpoint():
 
 
 from backend.indicators import calculate_rsi, calculate_bollinger_bands, calculate_emas, calculate_hilo_signals
+
+def series_to_json_list(series: pd.Series) -> list:
+    """Converts a pandas Series to a list, replacing NaN with None for JSON compatibility."""
+    if series is None or series.empty:
+        return []
+    return series.where(pd.notna(series), None).tolist()
+
 @app.get("/api/coin_details/{symbol}")
 async def get_coin_details(symbol: str):
     """
@@ -548,13 +555,13 @@ async def get_coin_details(symbol: str):
         }
 
         indicators_data = {
-            'rsi': {'x': rsi.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': rsi.tolist(), 'name': 'RSI'},
-            'bollinger_upper': {'x': upper_band.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': upper_band.tolist(), 'name': 'BB Upper'},
-            'bollinger_lower': {'x': lower_band.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': lower_band.tolist(), 'name': 'BB Lower'},
-            'sma_20': {'x': sma_20.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': sma_20.tolist(), 'name': 'SMA 20'},
+            'rsi': {'x': rsi.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': series_to_json_list(rsi), 'name': 'RSI'},
+            'bollinger_upper': {'x': upper_band.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': series_to_json_list(upper_band), 'name': 'BB Upper'},
+            'bollinger_lower': {'x': lower_band.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': series_to_json_list(lower_band), 'name': 'BB Lower'},
+            'sma_20': {'x': sma_20.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': series_to_json_list(sma_20), 'name': 'SMA 20'},
         }
         for period, ema_series in emas.items():
-            indicators_data[f'ema_{period}'] = {'x': ema_series.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': ema_series.tolist(), 'name': f'EMA {period}'}
+            indicators_data[f'ema_{period}'] = {'x': ema_series.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': series_to_json_list(ema_series), 'name': f'EMA {period}'}
 
         # 5. Prepare alerts for annotations
         annotations = []
