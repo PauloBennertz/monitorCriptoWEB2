@@ -9,3 +9,4 @@ uvicorn
 fastapi
 openpyxl
 plotly
+httpx
