@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import Plot from 'react-plotly.js';
 import { Alert, API_BASE_URL } from '../types';
@@ -63,7 +63,7 @@ const ChartFullScreen: React.FC = () => {
         }));
     };
 
-    const chartLayout = {
+    const chartLayout = useMemo(() => ({
         title: `${coinName} - Full Screen Chart`,
         paper_bgcolor: '#1a1a1a',
         plot_bgcolor: '#1a1a1a',
@@ -100,37 +100,40 @@ const ChartFullScreen: React.FC = () => {
         },
         autosize: true,
         annotations: details?.annotations && details.chartData ? getAdjustedAnnotations(details.annotations, details.chartData) : [],
-    };
+    }), [coinName, details]);
 
-    const chartData: any[] = [];
-    if (details?.chartData) {
-        chartData.push({
-            ...details.chartData,
-            type: 'candlestick',
-            increasing: { line: { color: '#00b589', width: 2 } },
-            decreasing: { line: { color: '#f74668', width: 2 } },
-            name: 'Price',
-        });
-    }
-
-    if (details?.indicatorsData) {
-        Object.values(details.indicatorsData).forEach(indicator => {
-            const isRSI = indicator.name.includes('RSI');
-            chartData.push({
-                x: indicator.x,
-                y: indicator.y,
-                name: indicator.name,
-                type: 'scatter',
-                mode: 'lines',
-                yaxis: isRSI ? 'y2' : 'y',
-                line: {
-                    color: isRSI ? '#ffc107' : undefined, // Let Plotly decide other colors or set them
-                    width: 1.5,
-                    dash: isRSI ? 'dot' : 'solid',
-                }
+    const chartData = useMemo(() => {
+        const data: any[] = [];
+        if (details?.chartData) {
+            data.push({
+                ...details.chartData,
+                type: 'candlestick',
+                increasing: { line: { color: '#00b589', width: 2 } },
+                decreasing: { line: { color: '#f74668', width: 2 } },
+                name: 'Price',
             });
-        });
-    }
+        }
+
+        if (details?.indicatorsData) {
+            Object.values(details.indicatorsData).forEach(indicator => {
+                const isRSI = indicator.name.includes('RSI');
+                data.push({
+                    x: indicator.x,
+                    y: indicator.y,
+                    name: indicator.name,
+                    type: 'scatter',
+                    mode: 'lines',
+                    yaxis: isRSI ? 'y2' : 'y',
+                    line: {
+                        color: isRSI ? '#ffc107' : undefined, // Let Plotly decide other colors or set them
+                        width: 1.5,
+                        dash: isRSI ? 'dot' : 'solid',
+                    }
+                });
+            });
+        }
+        return data;
+    }, [details]);
 
     if (isLoading) {
         return <div className="fullscreen-loading">Loading chart...</div>;
