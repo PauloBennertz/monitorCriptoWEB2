@@ -9,7 +9,7 @@ import os
 from .indicators import calculate_rsi, calculate_bollinger_bands, calculate_macd, calculate_emas, calculate_hilo_signals, calculate_media_movel_cross
 from .notification_service import send_telegram_alert
 from pycoingecko import CoinGeckoAPI
-from .app_state import load_coin_mapping_cache, save_coin_mapping_cache
+from .app_state import load_coin_list_cache, save_coin_list_cache
 from .notification_service import send_telegram_alert
 
 cg_client = CoinGeckoAPI()
@@ -59,17 +59,15 @@ def get_ticker_data():
         logging.error(f"Erro ao buscar dados de 24h (ticker): {e}")
         return {}
 
-def get_market_caps_coingecko(symbols_to_monitor, coingecko_mapping):
+def get_market_caps_coingecko(symbols_to_monitor, all_coins):
     """Busca o valor de mercado (market cap) para uma lista de moedas via CoinGecko."""
     logging.info(f"Buscando market caps para os seguintes símbolos: {symbols_to_monitor}")
     market_caps = {}
     coin_ids_to_fetch = []
     symbol_to_coin_id = {}
 
-    try:
-        all_coins = cg_client.get_coins_list()
-    except Exception as e:
-        logging.error(f"Falha ao buscar a lista de moedas da CoinGecko: {e}")
+    if not all_coins:
+        logging.error("A lista de moedas da CoinGecko não está disponível.")
         return {}
 
     for binance_symbol in symbols_to_monitor:
@@ -104,28 +102,25 @@ def get_market_caps_coingecko(symbols_to_monitor, coingecko_mapping):
         logging.error(f"Erro ao buscar market caps da CoinGecko: {e}")
         return {}
 
-def get_coingecko_global_mapping():
+def get_cached_coin_list():
     """
-    Busca a lista de moedas da CoinGecko para mapear Símbolo -> Nome.
-    Utiliza um cache local que é atualizado a cada 24 horas.
+    Busca a lista de moedas da CoinGecko, utilizando um cache local que é atualizado a cada 24 horas.
     """
-    cached_mapping = load_coin_mapping_cache()
-    if cached_mapping is not None:
-        return cached_mapping
+    cached_list = load_coin_list_cache()
+    if cached_list is not None:
+        return cached_list
 
-    logging.info("Buscando novo mapeamento de nomes da CoinGecko (cache expirado ou inexistente)...")
+    logging.info("Buscando nova lista de moedas da CoinGecko (cache expirado ou inexistente)...")
     robust_services.rate_limiter.wait_if_needed()
     try:
         coins_list = cg_client.get_coins_list()
-        mapping = {coin['symbol'].upper(): coin['name'] for coin in coins_list}
+        save_coin_list_cache(coins_list) # Salva a lista completa no cache
 
-        save_coin_mapping_cache(mapping) # Salva o novo mapeamento no cache
-
-        logging.info("Mapeamento de nomes CoinGecko carregado e cache atualizado.")
-        return mapping
+        logging.info("Lista de moedas da CoinGecko carregada e cache atualizado.")
+        return coins_list
     except Exception as e:
-        logging.error(f"Não foi possível buscar mapeamento da CoinGecko: {e}")
-        return {}
+        logging.error(f"Não foi possível buscar a lista de moedas da CoinGecko: {e}")
+        return []
 
 def fetch_all_binance_symbols_startup(existing_config):
     """Busca todos os símbolos USDT da Binance na inicialização."""

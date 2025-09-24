@@ -25,7 +25,7 @@ from backend.monitoring_service import (
     get_market_caps_coingecko,
     _analyze_symbol,
     fetch_all_binance_symbols_startup,
-    get_coingecko_global_mapping,
+    get_cached_coin_list,
     get_btc_dominance
 )
 from backend import app_state
@@ -43,6 +43,25 @@ app = FastAPI(
     description="API server for the Crypto Monitor Pro web application.",
     version="1.0.0"
 )
+
+# --- Global cache for coin data ---
+all_coins = []
+coingecko_mapping = {}
+
+@app.on_event("startup")
+async def startup_event():
+    """
+    Load the coin list and create the mapping at startup.
+    This data is cached and will be refreshed periodically.
+    """
+    global all_coins, coingecko_mapping
+    logging.info("Application startup: Loading initial coin data...")
+    all_coins = get_cached_coin_list()
+    if all_coins:
+        coingecko_mapping = {coin['symbol'].upper(): coin['name'] for coin in all_coins}
+        logging.info(f"Loaded {len(all_coins)} coins and created mapping.")
+    else:
+        logging.error("Failed to load coin list at startup. Some functionalities might be limited.")
 
 # --- CORS (Cross-Origin Resource Sharing) Configuration ---
 origins = [
@@ -166,8 +185,13 @@ async def get_crypto_data(symbols: List[str] = Query(..., description="A list of
         ticker_data = get_ticker_data()
         if not ticker_data:
             raise HTTPException(status_code=503, detail="Could not fetch ticker data from Binance.")
-        coingecko_mapping = get_coingecko_global_mapping()
-        market_caps = get_market_caps_coingecko(symbols, coingecko_mapping)
+
+        # Use the globally cached coin list and mapping
+        if not all_coins:
+            logging.warning("Coin list is not available. Market cap and coin names may be missing.")
+
+        market_caps = get_market_caps_coingecko(symbols, all_coins)
+
         results = []
         for symbol in symbols:
             market_cap = market_caps.get(symbol)
