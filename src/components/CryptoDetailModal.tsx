@@ -160,19 +160,27 @@ const CryptoDetailModal: React.FC<CryptoDetailModalProps> = ({ coin, onClose }) 
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>{coin.name} ({coin.symbol.replace('USDT', '')})</h2>
-                    <div>
+                    <button onClick={onClose} className="close-button">&times;</button>
+                </div>
+                <div className="modal-body">
+                    <div style={{ padding: '0 1rem 0.5rem', textAlign: 'right' }}>
                         <button
                             onClick={() => window.open(`/chart/${coin.symbol}`, '_blank')}
                             className="maximize-button"
-                            title="Open chart in a new tab"
-                            style={{ marginRight: '10px', background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}
+                            title="Abrir gráfico em tela cheia"
+                            style={{
+                                background: '#007bff',
+                                color: 'white',
+                                border: 'none',
+                                padding: '8px 12px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                            }}
                         >
-                            &#x26F6;
+                            Maximizar Gráfico
                         </button>
-                        <button onClick={onClose} className="close-button">&times;</button>
                     </div>
-                </div>
-                <div className="modal-body">
                     <div className="chart-area">
                         {isLoading && <div className="loading-container">Loading chart data...</div>}
                         {error && (
