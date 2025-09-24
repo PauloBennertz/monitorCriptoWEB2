@@ -522,6 +522,19 @@ def series_to_json_list(series: pd.Series) -> list:
         return []
     return series.where(pd.notna(series), None).tolist()
 
+def convert_nan_to_none(obj):
+    """
+    Recursively converts float('nan') to None in a dictionary or list,
+    as NaN is not a valid JSON value.
+    """
+    if isinstance(obj, dict):
+        return {k: convert_nan_to_none(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_nan_to_none(i) for i in obj]
+    elif isinstance(obj, float) and np.isnan(obj):
+        return None
+    return obj
+
 @app.get("/api/coin_details/{symbol}")
 async def get_coin_details(symbol: str):
     """
@@ -612,12 +625,13 @@ async def get_coin_details(symbol: str):
                         'ay': -40 # Frontend can dynamically adjust this
                     })
 
-        return {
-            "alerts": recent_alerts, # Keep sending raw alerts for display in a list
+        response_data = {
+            "alerts": recent_alerts,
             "chartData": chart_data,
             "indicatorsData": indicators_data,
             "annotations": annotations
         }
+        return convert_nan_to_none(response_data)
 
     except Exception as e:
         logging.error(f"Error fetching details for {symbol}: {e}", exc_info=True)
