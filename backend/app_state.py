@@ -42,12 +42,12 @@ def update_last_fetch_timestamp():
     state['last_api_fetch_timestamp'] = time.time()
     save_app_state(state)
 
-MAPPING_CACHE_FILE = os.path.join(get_application_path(), "coin_mapping.json")
+MAPPING_CACHE_FILE = os.path.join(get_application_path(), "coin_list_cache.json")
 
-def load_coin_mapping_cache():
+def load_coin_list_cache():
     """
-    Carrega o mapeamento de nomes de moedas do cache se não tiver mais de 24 horas.
-    Retorna o mapeamento ou None se o cache estiver velho ou não existir.
+    Carrega a lista de moedas do cache se não tiver mais de 24 horas.
+    Retorna a lista de moedas ou None se o cache estiver velho ou não existir.
     """
     if not os.path.exists(MAPPING_CACHE_FILE):
         return None
@@ -58,25 +58,25 @@ def load_coin_mapping_cache():
 
         last_updated = cache_data.get("timestamp", 0)
         if (time.time() - last_updated) < 86400:  # 24 horas em segundos
-            logging.info("Mapeamento de moedas carregado do cache.")
-            return cache_data.get("mapping")
+            logging.info("Lista de moedas carregada do cache.")
+            return cache_data.get("coin_list")
         else:
-            logging.info("Cache de mapeamento de moedas está expirado.")
+            logging.info("Cache da lista de moedas está expirado.")
             return None
     except (json.JSONDecodeError, FileNotFoundError):
         return None
 
-def save_coin_mapping_cache(mapping):
+def save_coin_list_cache(coin_list):
     """
-    Salva o mapeamento de nomes de moedas no cache com o timestamp atual.
+    Salva a lista de moedas no cache com o timestamp atual.
     """
     cache_data = {
         "timestamp": time.time(),
-        "mapping": mapping
+        "coin_list": coin_list
     }
     try:
         with open(MAPPING_CACHE_FILE, 'w', encoding='utf-8') as f:
             json.dump(cache_data, f, indent=4)
-        logging.info("Cache de mapeamento de moedas salvo com sucesso.")
+        logging.info("Cache da lista de moedas salvo com sucesso.")
     except Exception as e:
-        logging.error(f"Erro ao salvar o cache de mapeamento de moedas: {e}")
+        logging.error(f"Erro ao salvar o cache da lista de moedas: {e}")
