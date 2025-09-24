@@ -160,7 +160,17 @@ const CryptoDetailModal: React.FC<CryptoDetailModalProps> = ({ coin, onClose }) 
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>{coin.name} ({coin.symbol.replace('USDT', '')})</h2>
-                    <button onClick={onClose} className="close-button">&times;</button>
+                    <div>
+                        <button
+                            onClick={() => window.open(`/chart/${coin.symbol}`, '_blank')}
+                            className="maximize-button"
+                            title="Open chart in a new tab"
+                            style={{ marginRight: '10px', background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}
+                        >
+                            &#x26F6;
+                        </button>
+                        <button onClick={onClose} className="close-button">&times;</button>
+                    </div>
                 </div>
                 <div className="modal-body">
                     <div className="chart-area">
