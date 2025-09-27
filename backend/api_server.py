@@ -31,6 +31,7 @@ from backend.monitoring_service import (
 from backend import app_state
 from backend import coin_manager
 from backend.backtester import Backtester, fetch_historical_data
+from backend.historical_analyzer import analyze_historical_alerts
 from backend.indicators import calculate_sma
 from backend.notification_service import send_telegram_alert
 
@@ -126,6 +127,63 @@ async def run_backtest_endpoint(request: BacktestRequest):
     except Exception as e:
         logging.error(f"Error during backtest execution: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An internal server error occurred: {str(e)}")
+
+
+# --- Historical Alert Analysis Endpoint ---
+class HistoricalAlertsRequest(BaseModel):
+    symbol: str
+    start_date: str
+    end_date: str
+    alert_config: Dict[str, Any]
+
+@app.post("/api/historical_alerts")
+async def get_historical_alerts(request: HistoricalAlertsRequest):
+    """
+    Runs a historical analysis to find what alerts would have been triggered for a given
+    symbol, date range, and alert configuration.
+    """
+    try:
+        logging.info(f"Received historical alert analysis request for {request.symbol}")
+
+        triggered_alerts = analyze_historical_alerts(
+            symbol=request.symbol,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            alert_config=request.alert_config
+        )
+
+        return {"alerts": triggered_alerts}
+
+    except Exception as e:
+        logging.error(f"Error during historical alert analysis: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred during analysis: {str(e)}")
+
+
+@app.get("/api/historical_data")
+async def get_historical_data_endpoint(
+    symbol: str = Query(...),
+    start_date: str = Query(...),
+    end_date: str = Query(...)
+):
+    """
+    Fetches raw historical k-line data for a given symbol and date range.
+    """
+    try:
+        historical_data = fetch_historical_data(symbol, start_date, end_date)
+        if historical_data.empty:
+            raise HTTPException(status_code=404, detail="No historical data found for the given parameters.")
+
+        # Convert DataFrame to JSON format suitable for charting libraries
+        historical_data.reset_index(inplace=True)
+        historical_data['timestamp'] = historical_data['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+        return historical_data.to_dict(orient='records')
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error fetching historical data for {symbol}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred while fetching historical data: {str(e)}")
+
 
 # --- Existing API Endpoints ---
 
