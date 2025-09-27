@@ -43,13 +43,30 @@ def calculate_bollinger_bands(df, period=20, std_dev=2):
 
     return upper_band, lower_band, sma
 
-def calculate_macd(df, fast=12, slow=26, signal=9):
-    """Calcula o sinal de cruzamento do MACD (Convergência/Divergência de Médias Móveis)."""
-    if df is None or len(df) < slow + signal: return "N/A"
+def calculate_macd(df, fast=12, slow=26, signal=9, return_series=False):
+    """
+    Calcula o sinal de cruzamento do MACD (Convergência/Divergência de Médias Móveis).
+    Se return_series=True, retorna uma Pandas Series com os sinais para todo o histórico.
+    """
+    if df is None or len(df) < slow + signal:
+        return pd.Series("Nenhum", index=df.index) if return_series else "N/A"
+        
     exp1 = df['close'].ewm(span=fast, adjust=False).mean()
     exp2 = df['close'].ewm(span=slow, adjust=False).mean()
     macd = exp1 - exp2
     signal_line = macd.ewm(span=signal, adjust=False).mean()
+    
+    # LÓGICA CORRIGIDA PARA HISTÓRICO
+    if return_series:
+        signals = pd.Series("Nenhum", index=df.index)
+        # MACD Crossover logic for the entire series
+        high_cross = (macd.shift(1) < signal_line.shift(1)) & (macd > signal_line)
+        signals.loc[high_cross] = "Cruzamento de Alta"
+        low_cross = (macd.shift(1) > signal_line.shift(1)) & (macd < signal_line)
+        signals.loc[low_cross] = "Cruzamento de Baixa"
+        return signals
+
+    # LÓGICA ORIGINAL PARA MONITORAMENTO AO VIVO (PRESERVADA)
     if len(macd) < 2 or len(signal_line) < 2: return "Nenhum"
     if macd.iloc[-2] < signal_line.iloc[-2] and macd.iloc[-1] > signal_line.iloc[-1]: return "Cruzamento de Alta"
     if macd.iloc[-2] > signal_line.iloc[-2] and macd.iloc[-1] < signal_line.iloc[-1]: return "Cruzamento de Baixa"
@@ -63,13 +80,14 @@ def calculate_emas(df, periods=[50, 200]):
         if len(df) >= period: emas[period] = df['close'].ewm(span=period, adjust=False).mean()
     return emas
 
-def calculate_hilo_signals(df, length=34, ma_type="EMA", offset=0, simple_hilo=True):
+def calculate_hilo_signals(df, length=34, ma_type="EMA", offset=0, simple_hilo=True, return_series=False):
     """
     Calcula os sinais do indicador HiLo traduzido do Pine Script.
-    Retorna uma tupla (sinal_compra, sinal_venda) onde o sinal é True ou False.
+    Retorna uma tupla (sinal_compra_bool, sinal_venda_bool, sinal_string_ou_series).
     """
     if df is None or df.empty or len(df) < length + offset + 1:
-        return False, False, None
+        signal_output = pd.Series("Nenhum", index=df.index) if return_series else None
+        return False, False, signal_output
 
     if ma_type == "EMA":
         hima = calculate_ema(df['high'], length).shift(offset)
@@ -78,12 +96,23 @@ def calculate_hilo_signals(df, length=34, ma_type="EMA", offset=0, simple_hilo=T
         hima = calculate_sma(df['high'], length).shift(offset)
         loma = calculate_sma(df['low'], length).shift(offset)
 
-    # Lógica de "crossover" e "crossunder"
+    # Lógica de "crossover" e "crossunder" para toda a série
+    buy_signals_series = (df['close'].shift(1) <= hima.shift(1)) & (df['close'] > hima)
+    sell_signals_series = (df['close'].shift(1) >= loma.shift(1)) & (df['close'] < loma)
+    
+    # LÓGICA CORRIGIDA PARA HISTÓRICO
+    if return_series:
+        signals = pd.Series("Nenhum", index=df.index)
+        signals.loc[buy_signals_series] = "HiLo Buy"
+        signals.loc[sell_signals_series] = "HiLo Sell"
+        return buy_signals_series, sell_signals_series, signals
+
+    # LÓGICA ORIGINAL PARA MONITORAMENTO AO VIVO (PRESERVADA)
     # Buy signal: close crosses above hima (the high moving average)
-    buy_signal = (df['close'].iloc[-2] <= hima.iloc[-2]) and (df['close'].iloc[-1] > hima.iloc[-1])
+    buy_signal = buy_signals_series.iloc[-1] if not buy_signals_series.empty else False
 
     # Sell signal: close crosses below loma (the low moving average)
-    sell_signal = (df['close'].iloc[-2] >= loma.iloc[-2]) and (df['close'].iloc[-1] < loma.iloc[-1])
+    sell_signal = sell_signals_series.iloc[-1] if not sell_signals_series.empty else False
 
     return buy_signal, sell_signal, "HiLo Buy" if buy_signal else ("HiLo Sell" if sell_signal else "Nenhum")
 

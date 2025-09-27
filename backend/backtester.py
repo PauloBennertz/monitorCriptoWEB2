@@ -7,6 +7,7 @@ from .chart_generator import generate_chart
 from .indicators import calculate_sma
 import numpy as np
 
+
 BINANCE_API_URL = "https://api.binance.com/api/v3/klines"
 MAX_LIMIT = 1000
 

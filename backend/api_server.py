@@ -157,6 +157,44 @@ async def get_historical_alerts(request: HistoricalAlertsRequest):
         raise HTTPException(status_code=500, detail=f"An internal server error occurred during analysis: {str(e)}")
 
 
+# NOVO ENDPOINT: /api/historical_klines (Para o Gráfico de Alta Performance)
+@app.get("/api/historical_klines")
+async def historical_klines_endpoint(
+    symbol: str = Query(..., title="Crypto Symbol (e.g., BTCUSDT)"),
+    start_date: str = Query(..., title="Start Date (YYYY-MM-DD)"),
+    end_date: str = Query(..., title="End Date (YYYY-MM-DD)"),
+    interval: str = Query("1h", title="Kline Interval (e.g., 1h, 1d)")
+):
+    """
+    Busca dados históricos de K-lines e os retorna no formato numérico (timestamp em ms)
+    otimizado para bibliotecas de gráficos de alta performance como Lightweight Charts.
+    """
+    try:
+        # 1. Busca os dados usando a função existente
+        df = fetch_historical_data(symbol, start_date, end_date, interval=interval)
+
+        if df.empty:
+            return [] # Retorna lista vazia se não houver dados
+
+        # 2. Prepara o DataFrame para o formato esperado pelo Lightweight Charts:
+        # O DataFrame retornado por fetch_historical_data tem o timestamp como index (datetime).
+        
+        # Converte o index (timestamp datetime) para milissegundos (int)
+        # 10**6 é para converter nanosegundos (padrão Pandas Int64Index) para milissegundos
+        df['open_time'] = (df.index.astype(int) / 10**6).astype(int)
+        
+        # Seleciona as colunas necessárias e retorna como lista de objetos
+        # O frontend (HistoricalResultChart.tsx) precisa de open, high, low, close e o timestamp 'open_time'
+        df_final = df.reset_index(drop=True)[['open_time', 'open', 'high', 'low', 'close', 'volume']]
+        
+        # 3. Retorna o DataFrame como uma lista de dicionários (JSON), com NaN convertidos para None
+        return convert_nan_to_none(df_final.to_dict('records'))
+
+    except Exception as e:
+        logging.error(f"Erro ao buscar dados históricos K-lines para o gráfico: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar dados históricos K-lines: {e}")
+
+
 @app.get("/api/historical_data")
 async def get_historical_data_endpoint(
     symbol: str = Query(...),
@@ -165,14 +203,17 @@ async def get_historical_data_endpoint(
 ):
     """
     Fetches raw historical k-line data for a given symbol and date range.
+    (This endpoint retains its original behavior for compatibility with other parts of the application.)
     """
     try:
+        # O intervalo de 1h é implicitamente usado aqui, herdado da chamada a fetch_historical_data sem especificar.
         historical_data = fetch_historical_data(symbol, start_date, end_date)
         if historical_data.empty:
             raise HTTPException(status_code=404, detail="No historical data found for the given parameters.")
 
-        # Convert DataFrame to JSON format suitable for charting libraries
+        # Convert DataFrame to JSON format suitable for charting libraries (original formatting)
         historical_data.reset_index(inplace=True)
+        # O formato de string é mantido aqui para não quebrar outras partes do código
         historical_data['timestamp'] = historical_data['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
         return historical_data.to_dict(orient='records')
 
@@ -184,6 +225,7 @@ async def get_historical_data_endpoint(
 
 
 # --- Existing API Endpoints ---
+# A correção da indentação estava provavelmente aqui.
 
 @app.get("/api/global_data")
 async def get_global_data():

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Coin } from '../types';
+import { Coin } from '../types'; // Keeping the import just in case 'Coin' is still needed for context, though 'coins' state is removed
 import ResultsTable from './ResultsTable';
 import HistoricalResultChart from './HistoricalResultChart'; // Import the chart component
 
@@ -64,8 +64,9 @@ const columnStyles: React.CSSProperties = {
 };
 
 const HistoricalAnalysisPanel: React.FC<HistoricalAnalysisPanelProps> = ({ isOpen, onClose }) => {
-  const [coins, setCoins] = useState<Coin[]>([]);
-  const [selectedCoin, setSelectedCoin] = useState<string>('');
+  // REMOVIDO: const [coins, setCoins] = useState<Coin[]>([]);
+  // ALTERADO: Inicializa com um par comum para dar o exemplo de formato.
+  const [selectedCoin, setSelectedCoin] = useState<string>('BTCUSDT');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [alertConfig, setAlertConfig] = useState(() => {
@@ -86,24 +87,7 @@ const HistoricalAnalysisPanel: React.FC<HistoricalAnalysisPanelProps> = ({ isOpe
   const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
   const [showChart, setShowChart] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const fetchCoins = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/api/all_tradable_coins');
-        if (!response.ok) throw new Error('Failed to fetch coins');
-        const data: Coin[] = await response.json();
-        setCoins(data);
-        if (data.length > 0) {
-          setSelectedCoin(data[0].symbol);
-        }
-      } catch (error) {
-        console.error("Error fetching coins:", error);
-        setError("Falha ao carregar a lista de moedas.");
-      }
-    };
-    fetchCoins();
-  }, [isOpen]);
+  // REMOVIDO: useEffect para fetchCoins
 
   const handleAlertConfigChange = (key: string, field: 'enabled' | 'value', value: boolean | string) => {
     setAlertConfig(prev => ({
@@ -171,10 +155,16 @@ const HistoricalAnalysisPanel: React.FC<HistoricalAnalysisPanelProps> = ({ isOpe
       <form onSubmit={handleAnalysisSubmit}>
         <div style={formContainerStyles}>
           <div style={columnStyles}>
-            <label>Moeda:</label>
-            <select value={selectedCoin} onChange={(e) => setSelectedCoin(e.target.value)} style={{ padding: '8px', borderRadius: '4px' }}>
-              {coins.map(coin => <option key={coin.id} value={coin.symbol}>{coin.name}</option>)}
-            </select>
+            <label>Moeda (Ex: BTCUSDT):</label>
+            {/* SUBSTITUÍDO: O campo de seleção (select) foi substituído pelo campo de texto (input) */}
+            <input
+              type="text"
+              value={selectedCoin}
+              onChange={(e) => setSelectedCoin(e.target.value.toUpperCase())}
+              required
+              placeholder="Ex: XRPUSDT"
+              style={{ padding: '8px', borderRadius: '4px' }}
+            />
             <label>Data de Início:</label>
             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required style={{ padding: '8px', borderRadius: '4px' }}/>
             <label>Data de Fim:</label>
