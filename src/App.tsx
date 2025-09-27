@@ -5,6 +5,7 @@ import SettingsModal from './components/SettingsModal';
 import AlertsPanel from './components/AlertsPanel';
 import AlertHistoryPanel from './components/AlertHistoryPanel';
 import BacktesterPanel from './components/BacktesterPanel';
+import HistoricalAnalysisPanel from './components/HistoricalAnalysisPanel'; // Import the new panel
 import CryptoDetailModal from './components/CryptoDetailModal';
 import ChartFullScreen from './components/ChartFullScreen';
 import AlertTicker from './components/AlertTicker'; // Import the new component
@@ -26,6 +27,7 @@ const App = () => {
     const [isAlertsPanelOpen, setAlertsPanelOpen] = useState(false);
     const [isHistoryPanelOpen, setHistoryPanelOpen] = useState(false);
     const [isBacktesterPanelOpen, setBacktesterPanelOpen] = useState(false);
+    const [isHistoricalAnalysisPanelOpen, setHistoricalAnalysisPanelOpen] = useState(false);
     const [alertConfigs, setAlertConfigs] = useState<AlertConfigs>({});
     const [displayLimit, setDisplayLimit] = useState(20);
     const [gridLayoutColumns, setGridLayoutColumns] = useState(5);
@@ -555,6 +557,9 @@ const App = () => {
                                 <button className="manage-button" onClick={() => setHistoryPanelOpen(true)}>
                                     Histórico
                                 </button>
+                                <button className="manage-button" onClick={() => setHistoricalAnalysisPanelOpen(true)}>
+                                    Análise Histórica
+                                </button>
                                 <div className="alerts-button-container">
                                      <button className="manage-button" onClick={() => setAlertsPanelOpen(true)}>
                                         Notificações
@@ -643,6 +648,10 @@ const App = () => {
                     <BacktesterPanel
                         isOpen={isBacktesterPanelOpen}
                         onClose={() => setBacktesterPanelOpen(false)}
+                    />
+                    <HistoricalAnalysisPanel
+                        isOpen={isHistoricalAnalysisPanelOpen}
+                        onClose={() => setHistoricalAnalysisPanelOpen(false)}
                     />
                     {selectedCoin && (
                         <CryptoDetailModal
