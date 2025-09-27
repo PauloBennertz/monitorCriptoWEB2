@@ -65,10 +65,8 @@ async def startup_event():
         logging.error("Failed to load coin list at startup. Some functionalities might be limited.")
 
 # --- CORS (Cross-Origin Resource Sharing) Configuration ---
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+# Allow all origins for local development to avoid issues with 127.0.0.1 vs localhost vs network IP
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
