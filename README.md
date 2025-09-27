@@ -1,9 +1,10 @@
+# type: ignore
 # 🚀 Crypto Monitor Pro
 
-Monitor de criptomoedas em tempo real com sistema de alertas configurável, construído com React e FastAPI.
+Monitor de criptomoedas em tempo real com sistema de alertas configurável, construído com React e FastAPI. # type: ignore
 
 ## 📋 Descrição
-Esta aplicação web fornece uma visão geral do mercado de criptomoedas, permitindo aos usuários monitorar métricas chave em tempo real e configurar alertas personalizados para várias condições de mercado.
+Esta aplicação web fornece uma visão geral do mercado de criptomoedas, permitindo aos usuários monitorar métricas chave em tempo real e configurar alertas personalizados para várias condições de mercado. # pyright: ignore[reportUndefinedVariable]
 
 ## 🛠️ Tecnologias
 - **Frontend**: React, TypeScript, Vite
@@ -26,7 +27,7 @@ Esta aplicação web fornece uma visão geral do mercado de criptomoedas, permit
 
 2.  **Instale as dependências do Backend:**
     Recomenda-se o uso de um ambiente virtual.
-    ```bash
+    ```bash # type: ignore
     pip install -r backend/requirements.txt
     ```
 
@@ -35,7 +36,7 @@ Esta aplicação web fornece uma visão geral do mercado de criptomoedas, permit
     npm install
     ```
 
-4.  **Execute o Servidor da API (Backend):**
+4.  **Execute o Servidor da API (Backend):** # type: ignore
     A partir do diretório raiz do projeto, execute:
     ```bash
     uvicorn backend.api_server:app --reload --port 8000
@@ -73,6 +74,6 @@ Esta aplicação web fornece uma visão geral do mercado de criptomoedas, permit
 ## 🤝 Contribuição
 1.  Fork o projeto
 2.  Crie uma branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit suas mudanças (`git commit -m 'Add AmazingFeature'`)
+3.  Commit suas mudanças (`git commit -m 'Add AmazingFeature'`) # type: ignore
 4.  Push para a branch (`git push origin feature/AmazingFeature`)
 5.  Abra um Pull Request

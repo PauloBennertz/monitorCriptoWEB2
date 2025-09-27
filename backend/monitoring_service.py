@@ -416,7 +416,7 @@ def get_btc_dominance():
         global_data = cg_client.get_global()
 
         # A estrutura da resposta é {'data': {'market_cap_percentage': {'btc': 49.9}}}
-        btc_dominance = global_data.get('data', {}).get('market_cap_percentage', {}).get('btc')
+        btc_dominance = global_data.get('market_cap_percentage', {}).get('btc')
 
         if btc_dominance is not None and isinstance(btc_dominance, (int, float)):
             # Retorna o número puro para ser formatado no frontend

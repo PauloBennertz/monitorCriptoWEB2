@@ -1,5 +1,147 @@
 [
     {
+        "id": "LINKUSDT-RSI_SOBREVENDA-1758997371792",
+        "symbol": "LINKUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-27T18:22:51.792Z",
+        "snapshot": {
+            "symbol": "LINKUSDT",
+            "name": "Osmosis allLINK",
+            "price": 20.83,
+            "price_change_24h": -1.699,
+            "volume_24h": 28739879.3126,
+            "market_cap": 14135055345,
+            "rsi_value": 27.083333333333442,
+            "rsi_signal": "27.08",
+            "bollinger_signal": "Abaixo da Banda",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 20.83
+        }
+    },
+    {
+        "id": "XPLUSDT-MACD_ALTA-1758997371791",
+        "symbol": "XPLUSDT",
+        "condition": "Cruzamento de Alta (MACD)",
+        "description": "Sinal de momentum de alta quando a linha MACD cruza para cima da linha de sinal.",
+        "timestamp": "2025-09-27T18:22:51.791Z",
+        "snapshot": {
+            "symbol": "XPLUSDT",
+            "name": "Pulse",
+            "price": 1.5658,
+            "price_change_24h": 16.703,
+            "volume_24h": 962161751.60799,
+            "market_cap": 2872253242,
+            "rsi_value": 69.13197519929143,
+            "rsi_signal": "69.13",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Cruzamento de Alta",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 1.5658
+        }
+    },
+    {
+        "id": "BNBUSDT-MACD_BAIXA-1758997371789",
+        "symbol": "BNBUSDT",
+        "condition": "Cruzamento de Baixa (MACD)",
+        "description": "Sinal de momentum de baixa quando a linha MACD cruza para baixo da linha de sinal.",
+        "timestamp": "2025-09-27T18:22:51.789Z",
+        "snapshot": {
+            "symbol": "BNBUSDT",
+            "name": "Binance Coin (Wormhole)",
+            "price": 969.12,
+            "price_change_24h": 0.535,
+            "volume_24h": 238590445.38245,
+            "market_cap": 0,
+            "rsi_value": 46.51058081945069,
+            "rsi_signal": "46.51",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Cruzamento de Baixa",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {
+                "17": "Cruzamento de Baixa"
+            },
+            "lastPrice": 969.12
+        }
+    },
+    {
+        "id": "XPLUSDT-MACD_ALTA-1758996892888",
+        "symbol": "XPLUSDT",
+        "condition": "Cruzamento de Alta (MACD)",
+        "description": "Sinal de momentum de alta quando a linha MACD cruza para cima da linha de sinal.",
+        "timestamp": "2025-09-27T18:14:52.888Z",
+        "snapshot": {
+            "symbol": "XPLUSDT",
+            "name": "Pulse",
+            "price": 1.5534,
+            "price_change_24h": 17.619,
+            "volume_24h": 962329967.72801,
+            "market_cap": 2928578255,
+            "rsi_value": 67.25549332184403,
+            "rsi_signal": "67.26",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Cruzamento de Alta",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 1.5534
+        }
+    },
+    {
+        "id": "BNBUSDT-MACD_BAIXA-1758996892887",
+        "symbol": "BNBUSDT",
+        "condition": "Cruzamento de Baixa (MACD)",
+        "description": "Sinal de momentum de baixa quando a linha MACD cruza para baixo da linha de sinal.",
+        "timestamp": "2025-09-27T18:14:52.887Z",
+        "snapshot": {
+            "symbol": "BNBUSDT",
+            "name": "Binance Coin (Wormhole)",
+            "price": 968.51,
+            "price_change_24h": 0.521,
+            "volume_24h": 240143409.10962,
+            "market_cap": 0,
+            "rsi_value": 45.89071523767211,
+            "rsi_signal": "45.89",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Cruzamento de Baixa",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {
+                "17": "Cruzamento de Baixa"
+            },
+            "lastPrice": 968.51
+        }
+    },
+    {
+        "id": "LINKUSDT-RSI_SOBREVENDA-1758996892888",
+        "symbol": "LINKUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-27T18:14:52.888Z",
+        "snapshot": {
+            "symbol": "LINKUSDT",
+            "name": "Osmosis allLINK",
+            "price": 20.8,
+            "price_change_24h": -1.608,
+            "volume_24h": 29119120.704,
+            "market_cap": 14135055345,
+            "rsi_value": 25.490196078431623,
+            "rsi_signal": "25.49",
+            "bollinger_signal": "Abaixo da Banda",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "HiLo Sell",
+            "media_movel_cross": {},
+            "lastPrice": 20.8
+        }
+    },
+    {
         "id": "LINKUSDT-RSI_SOBREVENDA-1758993181680",
         "symbol": "LINKUSDT",
         "condition": "RSI em Sobrevenda",
