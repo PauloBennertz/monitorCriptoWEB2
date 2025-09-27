@@ -1,5 +1,93 @@
 [
     {
+        "id": "LINKUSDT-RSI_SOBREVENDA-1758993181680",
+        "symbol": "LINKUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-27T17:13:01.680Z",
+        "snapshot": {
+            "symbol": "LINKUSDT",
+            "name": "Osmosis allLINK",
+            "price": 20.84,
+            "price_change_24h": 0.096,
+            "volume_24h": 32745903.9654,
+            "market_cap": 14134888166,
+            "rsi_value": 25.490196078431623,
+            "rsi_signal": "25.49",
+            "bollinger_signal": "Abaixo da Banda",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {}
+        }
+    },
+    {
+        "id": "LINKUSDT-RSI_SOBREVENDA-1758993081986",
+        "symbol": "LINKUSDT",
+        "condition": "RSI em Sobrevenda",
+        "description": "Alerta quando o \u00cdndice de For\u00e7a Relativa (RSI) entra em territ\u00f3rio de sobrevenda (abaixo de 30).",
+        "timestamp": "2025-09-27T17:11:21.986Z",
+        "snapshot": {
+            "symbol": "LINKUSDT",
+            "name": "Osmosis allLINK",
+            "price": 20.84,
+            "price_change_24h": 0.096,
+            "volume_24h": 32745903.9654,
+            "market_cap": 14134888166,
+            "rsi_value": 25.490196078431623,
+            "rsi_signal": "25.49",
+            "bollinger_signal": "Abaixo da Banda",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {}
+        }
+    },
+    {
+        "id": "HYPERUSDT-RSI_SOBRECOMPRA-1758991718951",
+        "symbol": "HYPERUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-09-27T16:48:38.951Z",
+        "snapshot": {
+            "symbol": "HYPERUSDT",
+            "name": "Hyperlane",
+            "price": 0.2628,
+            "price_change_24h": 3.75,
+            "volume_24h": 2909344.24702,
+            "market_cap": 0,
+            "rsi_value": 73.59307359307346,
+            "rsi_signal": "73.59",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {}
+        }
+    },
+    {
+        "id": "XPLUSDT-RSI_SOBRECOMPRA-1758991718949",
+        "symbol": "XPLUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-09-27T16:48:38.949Z",
+        "snapshot": {
+            "symbol": "XPLUSDT",
+            "name": "Pulse",
+            "price": 1.5341,
+            "price_change_24h": 15.694,
+            "volume_24h": 983369211.46738,
+            "market_cap": 2857093209,
+            "rsi_value": 71.96731615336267,
+            "rsi_signal": "71.97",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {}
+        }
+    },
+    {
         "id": "XPLUSDT-RSI_SOBRECOMPRA-1758980661239",
         "symbol": "XPLUSDT",
         "condition": "RSI em Sobrecompra",
