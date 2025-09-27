@@ -27,13 +27,11 @@ class CoinManager:
             return None
 
     def _load_or_fetch_coins(self):
-        """Loads the coin list from the local cache or fetches it if outdated or non-existent."""
+        """Loads the coin list from the local cache, or fetches it once if it doesn't exist."""
         if os.path.exists(self.coin_list_path):
-            file_mod_time = datetime.fromtimestamp(os.path.getmtime(self.coin_list_path))
-            if datetime.now() - file_mod_time < self.update_interval:
-                logging.info("Loading coin list from local cache.")
-                with open(self.coin_list_path, 'r', encoding='utf-8') as f:
-                    return json.load(f)
+            logging.info("Loading coin list from local cache (updates disabled).")
+            with open(self.coin_list_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
 
         return self._fetch_coins_from_api()
 
