@@ -57,6 +57,7 @@ def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert
 
         # Helper to create alert dictionary
         def create_alert(condition_key, message):
+            logging.info(f"  -> ALERT TRIGGERED: {condition_key} at {timestamp} with price {current_price}")
             return {
                 "timestamp": timestamp.isoformat(),
                 "symbol": symbol,
@@ -68,52 +69,72 @@ def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert
         # Check RSI alerts
         if 'rsi_sobrevendido' in conditions and conditions['rsi_sobrevendido']['enabled']:
             rsi_value = rsi_series.iloc[i]
-            if rsi_value <= conditions['rsi_sobrevendido'].get('value', 30):
+            rsi_target = conditions['rsi_sobrevendido'].get('value', 30)
+            logging.debug(f"[{timestamp}] Checking RSI Sobrevendido: Value={rsi_value:.2f}, Target=<={rsi_target}")
+            if rsi_value <= rsi_target:
                 msg = f"RSI em Sobrevenda ({rsi_value:.2f})"
                 triggered_alerts.append(create_alert('rsi_sobrevendido', msg))
 
         if 'rsi_sobrecomprado' in conditions and conditions['rsi_sobrecomprado']['enabled']:
             rsi_value = rsi_series.iloc[i]
-            if rsi_value >= conditions['rsi_sobrecomprado'].get('value', 70):
+            rsi_target = conditions['rsi_sobrecomprado'].get('value', 70)
+            logging.debug(f"[{timestamp}] Checking RSI Sobrecomprado: Value={rsi_value:.2f}, Target=>={rsi_target}")
+            if rsi_value >= rsi_target:
                 msg = f"RSI em Sobrecompra ({rsi_value:.2f})"
                 triggered_alerts.append(create_alert('rsi_sobrecomprado', msg))
 
         # Check Bollinger Bands alerts
         if 'bollinger_abaixo' in conditions and conditions['bollinger_abaixo']['enabled']:
-            if current_price < lower_band.iloc[i]:
+            bb_lower = lower_band.iloc[i]
+            logging.debug(f"[{timestamp}] Checking Bollinger Abaixo: Price={current_price:.2f}, Lower Band={bb_lower:.2f}")
+            if current_price < bb_lower:
                 triggered_alerts.append(create_alert('bollinger_abaixo', "Preço Abaixo da Banda de Bollinger"))
 
         if 'bollinger_acima' in conditions and conditions['bollinger_acima']['enabled']:
-            if current_price > upper_band.iloc[i]:
+            bb_upper = upper_band.iloc[i]
+            logging.debug(f"[{timestamp}] Checking Bollinger Acima: Price={current_price:.2f}, Upper Band={bb_upper:.2f}")
+            if current_price > bb_upper:
                 triggered_alerts.append(create_alert('bollinger_acima', "Preço Acima da Banda de Bollinger"))
 
         # Check MACD Cross alerts
         if 'macd_cruz_alta' in conditions and conditions['macd_cruz_alta']['enabled']:
-            if macd_cross_series.iloc[i] == "Cruzamento de Alta":
+            macd_signal = macd_cross_series.iloc[i]
+            logging.debug(f"[{timestamp}] Checking MACD Alta: Signal='{macd_signal}'")
+            if macd_signal == "Cruzamento de Alta":
                 triggered_alerts.append(create_alert('macd_cruz_alta', "MACD: Cruzamento de Alta"))
 
         if 'macd_cruz_baixa' in conditions and conditions['macd_cruz_baixa']['enabled']:
-            if macd_cross_series.iloc[i] == "Cruzamento de Baixa":
+            macd_signal = macd_cross_series.iloc[i]
+            logging.debug(f"[{timestamp}] Checking MACD Baixa: Signal='{macd_signal}'")
+            if macd_signal == "Cruzamento de Baixa":
                 triggered_alerts.append(create_alert('macd_cruz_baixa', "MACD: Cruzamento de Baixa"))
 
         # Check EMA Cross alerts (Golden/Death)
         if 'mme_cruz_dourada' in conditions and conditions['mme_cruz_dourada']['enabled']:
-            # Golden Cross: short EMA crosses above long EMA
-            if emas[50].iloc[i-1] < emas[200].iloc[i-1] and emas[50].iloc[i] > emas[200].iloc[i]:
+            ema_50_prev, ema_200_prev = emas[50].iloc[i-1], emas[200].iloc[i-1]
+            ema_50_curr, ema_200_curr = emas[50].iloc[i], emas[200].iloc[i]
+            logging.debug(f"[{timestamp}] Checking Golden Cross: Prev(50={ema_50_prev:.2f}, 200={ema_200_prev:.2f}), Curr(50={ema_50_curr:.2f}, 200={ema_200_curr:.2f})")
+            if ema_50_prev < ema_200_prev and ema_50_curr > ema_200_curr:
                 triggered_alerts.append(create_alert('mme_cruz_dourada', "MME: Cruz Dourada (50/200)"))
 
         if 'mme_cruz_morte' in conditions and conditions['mme_cruz_morte']['enabled']:
-            # Death Cross: short EMA crosses below long EMA
-            if emas[50].iloc[i-1] > emas[200].iloc[i-1] and emas[50].iloc[i] < emas[200].iloc[i]:
+            ema_50_prev, ema_200_prev = emas[50].iloc[i-1], emas[200].iloc[i-1]
+            ema_50_curr, ema_200_curr = emas[50].iloc[i], emas[200].iloc[i]
+            logging.debug(f"[{timestamp}] Checking Death Cross: Prev(50={ema_50_prev:.2f}, 200={ema_200_prev:.2f}), Curr(50={ema_50_curr:.2f}, 200={ema_200_curr:.2f})")
+            if ema_50_prev > ema_200_prev and ema_50_curr < ema_200_curr:
                 triggered_alerts.append(create_alert('mme_cruz_morte', "MME: Cruz da Morte (50/200)"))
 
         # Check HiLo alerts
         if 'hilo_compra' in conditions and conditions['hilo_compra']['enabled']:
-            if hilo_signal_series.iloc[i] == "HiLo Buy":
+            hilo_signal = hilo_signal_series.iloc[i]
+            logging.debug(f"[{timestamp}] Checking HiLo Compra: Signal='{hilo_signal}'")
+            if hilo_signal == "HiLo Buy":
                 triggered_alerts.append(create_alert('hilo_compra', "HiLo: Sinal de Compra"))
 
         if 'hilo_venda' in conditions and conditions['hilo_venda']['enabled']:
-            if hilo_signal_series.iloc[i] == "HiLo Sell":
+            hilo_signal = hilo_signal_series.iloc[i]
+            logging.debug(f"[{timestamp}] Checking HiLo Venda: Signal='{hilo_signal}'")
+            if hilo_signal == "HiLo Sell":
                 triggered_alerts.append(create_alert('hilo_venda', "HiLo: Sinal de Venda"))
 
 
