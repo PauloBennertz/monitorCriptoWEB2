@@ -734,7 +734,7 @@ async def get_historical_analysis_chart_html(request: ChartGenerationRequest, ba
         if df.empty:
             raise HTTPException(status_code=404, detail="Nenhum dado histórico encontrado para o período.")
 
-        chart_alerts = [{'timestamp': pd.to_datetime(a['timestamp']), 'price': a['price_at_alert'], 'message': a['condition']} for a in request.alerts]
+        chart_alerts = [{'timestamp': pd.to_datetime(a['timestamp']), 'price': a['price'], 'message': a['condition']} for a in request.alerts]
 
         with tempfile.NamedTemporaryFile(suffix=".html", delete=False) as tmpfile:
             html_path = tmpfile.name
