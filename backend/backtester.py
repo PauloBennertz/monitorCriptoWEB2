@@ -3,7 +3,7 @@ import logging
 import requests
 import time
 from datetime import datetime, timezone
-from .chart_generator import generate_chart
+from .chart_generator import generate_chart_image as generate_chart
 from .indicators import calculate_sma
 import numpy as np
 

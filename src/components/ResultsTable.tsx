@@ -1,55 +1,46 @@
 import React from 'react';
-
-const tableStyles: React.CSSProperties = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  marginTop: '20px',
-  color: '#fff',
-};
-
-const thStyles: React.CSSProperties = {
-  border: '1px solid #555',
-  padding: '10px',
-  backgroundColor: '#3a3a3a',
-  textAlign: 'left',
-};
-
-const tdStyles: React.CSSProperties = {
-  border: '1px solid #555',
-  padding: '8px',
-  textAlign: 'left',
-};
+import { Alert } from '../types';
+import { format } from 'date-fns';
 
 interface ResultsTableProps {
-  alerts: any[];
+  alerts: Alert[]; // O nome da prop deve ser 'alerts'
 }
 
 const ResultsTable: React.FC<ResultsTableProps> = ({ alerts }) => {
-  if (alerts.length === 0) {
-    return <p>Nenhum alerta foi gerado para os critérios selecionados.</p>;
+  if (!alerts || alerts.length === 0) {
+    return <p>Nenhum alerta encontrado para os critérios selecionados.</p>;
   }
 
   return (
-    <table style={tableStyles}>
-      <thead>
-        <tr>
-          <th style={thStyles}>Data e Hora</th>
-          <th style={thStyles}>Condição do Alerta</th>
-          <th style={thStyles}>Descrição</th>
-          <th style={thStyles}>Preço (USD)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {alerts.map((alert, index) => (
-          <tr key={index}>
-            <td style={tdStyles}>{new Date(alert.timestamp).toLocaleString('pt-BR')}</td>
-            <td style={tdStyles}>{alert.condition}</td>
-            <td style={tdStyles}>{alert.description}</td>
-            <td style={tdStyles}>${alert.price.toFixed(2)}</td>
+    <div className="results-table-container">
+      <h4>Resultados da Análise</h4>
+      <table className="results-table">
+        <thead>
+          <tr>
+            <th>Data e Hora</th>
+            <th>Condição do Alerta</th>
+            <th>Preço no Momento</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {alerts.map((alert, index) => (
+            <tr key={alert.id || index}>
+              <td>{format(new Date(alert.timestamp), 'dd/MM/yyyy HH:mm:ss')}</td>
+              <td>{alert.condition}</td>
+              {/* CORREÇÃO AQUI: 
+                Verificamos se 'alert.snapshot' e 'alert.snapshot.price' existem.
+                Se não existirem, mostramos 'N/A' em vez de causar um erro.
+              */}
+              <td>
+                {alert.snapshot && typeof alert.snapshot.price === 'number'
+                  ? `$ ${alert.snapshot.price.toFixed(4)}`
+                  : 'N/A'}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };
 

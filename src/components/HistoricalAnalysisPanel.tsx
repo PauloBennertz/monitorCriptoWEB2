@@ -1,235 +1,265 @@
-import React, { useState, useEffect } from 'react';
-import { Coin } from '../types'; // Keeping the import just in case 'Coin' is still needed for context, though 'coins' state is removed
+import React, { useState, useEffect, useCallback } from 'react';
+import { API_BASE_URL, BasicCoin, Alert, ALERT_DEFINITIONS } from '../types';
 import ResultsTable from './ResultsTable';
-import HistoricalResultChart from './HistoricalResultChart'; // Import the chart component
-
-// Basic styling for the panel - can be moved to a CSS file later
-const panelStyles: React.CSSProperties = {
-  position: 'fixed',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: '80%',
-  maxWidth: '1000px',
-  height: '80vh',
-  backgroundColor: '#2c2c2c',
-  border: '1px solid #555',
-  borderRadius: '8px',
-  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5)',
-  zIndex: 1000,
-  display: 'flex',
-  flexDirection: 'column',
-  padding: '20px',
-  color: '#fff',
-};
-
-const closeButtonStyles: React.CSSProperties = {
-  position: 'absolute',
-  top: '10px',
-  right: '10px',
-  background: 'transparent',
-  border: 'none',
-  color: '#fff',
-  fontSize: '24px',
-  cursor: 'pointer',
-};
 
 interface HistoricalAnalysisPanelProps {
-  isOpen: boolean;
-  onClose: () => void;
+    isOpen: boolean;
+    onClose: () => void;
 }
 
-// A simplified version of the main app's alert definitions for the form
-const ALERT_OPTIONS = {
-  rsi_sobrevendido: { name: 'RSI Sobrevendido', hasValue: true, defaultValue: 30 },
-  rsi_sobrecomprado: { name: 'RSI Sobrecomprado', hasValue: true, defaultValue: 70 },
-  hilo_compra: { name: 'HiLo Sinal de Compra', hasValue: false },
-  hilo_venda: { name: 'HiLo Sinal de Venda', hasValue: false },
-  mme_cruz_dourada: { name: 'MME Cruz Dourada', hasValue: false },
-  mme_cruz_morte: { name: 'MME Cruz da Morte', hasValue: false },
-  macd_cruz_alta: { name: 'MACD Cruz de Alta', hasValue: false },
-  macd_cruz_baixa: { name: 'MACD Cruz de Baixa', hasValue: false },
-};
+interface AnalysisParams {
+    symbol: string;
+    startDate: string;
+    endDate: string;
+}
 
-const formContainerStyles: React.CSSProperties = {
-  display: 'flex',
-  gap: '20px',
-  marginBottom: '20px',
-};
+const initialAlertConditions = Object.keys(ALERT_DEFINITIONS).reduce((acc, key) => {
+    acc[key] = true;
+    return acc;
+}, {} as { [key: string]: boolean });
 
-const columnStyles: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '10px',
-};
 
 const HistoricalAnalysisPanel: React.FC<HistoricalAnalysisPanelProps> = ({ isOpen, onClose }) => {
-  // REMOVIDO: const [coins, setCoins] = useState<Coin[]>([]);
-  // ALTERADO: Inicializa com um par comum para dar o exemplo de formato.
-  const [selectedCoin, setSelectedCoin] = useState<string>('BTCUSDT');
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
-  const [alertConfig, setAlertConfig] = useState(() => {
-    const initialConfig: any = {};
-    Object.keys(ALERT_OPTIONS).forEach((key) => {
-      const option = ALERT_OPTIONS[key as keyof typeof ALERT_OPTIONS];
-      initialConfig[key] = {
-        enabled: true,
-        value: option.defaultValue,
-      };
-    });
-    return initialConfig;
-  });
+    const [allCoins, setAllCoins] = useState<BasicCoin[]>([]);
+    const [symbol, setSymbol] = useState('');
+    const [startDate, setStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+    const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [results, setResults] = useState<Alert[]>([]);
+    const [analysisParams, setAnalysisParams] = useState<AnalysisParams | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredCoins, setFilteredCoins] = useState<BasicCoin[]>([]);
+    const [isCoinListVisible, setIsCoinListVisible] = useState(false);
+    const [alertConditions, setAlertConditions] = useState(initialAlertConditions);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [results, setResults] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
-  const [showChart, setShowChart] = useState<boolean>(false);
+    const fetchAllCoins = useCallback(async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/all_tradable_coins`);
+            if (!res.ok) throw new Error('Failed to fetch coin list');
+            const data: BasicCoin[] = await res.json();
+            setAllCoins(data);
+        } catch (err) {
+            setError('Could not load coin list for selection.');
+            console.error(err);
+        }
+    }, []);
 
-  // REMOVIDO: useEffect para fetchCoins
+    useEffect(() => {
+        if (isOpen) fetchAllCoins();
+    }, [isOpen, fetchAllCoins]);
 
-  const handleAlertConfigChange = (key: string, field: 'enabled' | 'value', value: boolean | string) => {
-    setAlertConfig(prev => ({
-      ...prev,
-      [key]: {
-        ...prev[key],
-        [field]: field === 'enabled' ? value : Number(value),
-      },
-    }));
-  };
+    useEffect(() => {
+        if (searchTerm.length > 1) {
+            const filtered = allCoins.filter(coin =>
+                coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredCoins(filtered.slice(0, 100));
+            setIsCoinListVisible(true);
+        } else {
+            setFilteredCoins([]);
+            setIsCoinListVisible(false);
+        }
+    }, [searchTerm, allCoins]);
 
-  const handleAnalysisSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowChart(false); // Hide chart on new analysis
-    setIsLoading(true);
-    setError(null);
-    setResults([]);
-
-    const backendAlertConfig = {
-      conditions: Object.keys(alertConfig).reduce((acc, key) => {
-        acc[key] = {
-          enabled: alertConfig[key].enabled,
-          ...(alertConfig[key].value !== undefined && { value: Number(alertConfig[key].value) })
-        };
-        return acc;
-      }, {} as any),
+    const handleCoinSelect = (selectedCoin: BasicCoin) => {
+        setSymbol(selectedCoin.symbol + 'USDT');
+        setSearchTerm(`${selectedCoin.name} (${selectedCoin.symbol})`);
+        setIsCoinListVisible(false);
     };
 
-    try {
-      const response = await fetch('http://localhost:8000/api/historical_alerts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          symbol: selectedCoin,
-          start_date: startDate,
-          end_date: endDate,
-          alert_config: backendAlertConfig,
-        }),
-      });
+    const handleAlertConditionChange = (alertKey: string) => {
+        setAlertConditions(prev => ({ ...prev, [alertKey]: !prev[alertKey] }));
+    };
 
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.detail || 'An unknown error occurred');
-      }
+    const handleRunAnalysis = async () => {
+        if (!symbol || !startDate || !endDate) {
+            setError('Por favor, selecione uma moeda e um intervalo de datas.');
+            return;
+        }
+        setIsLoading(true);
+        setError(null);
+        setResults([]);
+        setAnalysisParams(null);
 
-      const data = await response.json();
-      setResults(data.alerts);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch analysis results.');
-    } finally {
-      setIsLoading(false);
-      setSearchPerformed(true); // Mark that a search has been performed
-    }
-  };
+        const selectedAlertsConfig = Object.entries(alertConditions)
+            .reduce((acc, [key, value]) => {
+                const backendKey = ALERT_DEFINITIONS[key]?.backendKey;
+                if (backendKey) {
+                    acc[backendKey] = { enabled: value, blinking: true };
+                }
+                return acc;
+            }, {} as { [key: string]: { enabled: boolean; blinking: boolean } });
 
-  if (!isOpen) {
-    return null;
-  }
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/historical_alerts`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    symbol: symbol,
+                    start_date: startDate,
+                    end_date: endDate,
+                    alert_config: { conditions: selectedAlertsConfig }
+                }),
+            });
 
-  return (
-    <div style={panelStyles}>
-      <button onClick={onClose} style={closeButtonStyles}>&times;</button>
-      <h2>Análise Histórica de Alertas</h2>
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Falha ao executar a análise histórica');
+            }
 
-      <form onSubmit={handleAnalysisSubmit}>
-        <div style={formContainerStyles}>
-          <div style={columnStyles}>
-            <label>Moeda (Ex: BTCUSDT):</label>
-            {/* SUBSTITUÍDO: O campo de seleção (select) foi substituído pelo campo de texto (input) */}
-            <input
-              type="text"
-              value={selectedCoin}
-              onChange={(e) => setSelectedCoin(e.target.value.toUpperCase())}
-              required
-              placeholder="Ex: XRPUSDT"
-              style={{ padding: '8px', borderRadius: '4px' }}
-            />
-            <label>Data de Início:</label>
-            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required style={{ padding: '8px', borderRadius: '4px' }}/>
-            <label>Data de Fim:</label>
-            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required style={{ padding: '8px', borderRadius: '4px' }}/>
-          </div>
+            const data = await response.json();
+            setResults(data.alerts);
+            setAnalysisParams({ symbol, startDate, endDate });
 
-          <div style={columnStyles}>
-            <label>Condições de Alerta:</label>
-            <div style={{ maxHeight: '150px', overflowY: 'auto', padding: '10px', border: '1px solid #555', borderRadius: '4px' }}>
-              {Object.entries(ALERT_OPTIONS).map(([key, option]) => (
-                <div key={key} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                  <input
-                    id={`checkbox-${key}`}
-                    type="checkbox"
-                    checked={alertConfig[key].enabled}
-                    onChange={(e) => handleAlertConfigChange(key, 'enabled', e.target.checked)}
-                  />
-                  <label htmlFor={`checkbox-${key}`} style={{ marginLeft: '5px' }}>{option.name}</label>
-                  {option.hasValue && (
-                    <input
-                      type="number"
-                      value={alertConfig[key].value ?? ''}
-                      onChange={(e) => handleAlertConfigChange(key, 'value', e.target.value)}
-                      disabled={!alertConfig[key].enabled}
-                      style={{ width: '60px', marginLeft: 'auto', padding: '4px' }}
-                    />
-                  )}
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Ocorreu um erro desconhecido.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    const handleDownload = async (format: 'image' | 'html') => {
+        if (!analysisParams || results.length === 0) {
+            setError('Execute uma análise primeiro para gerar o gráfico.');
+            return;
+        }
+
+        const endpoint = format === 'image' ? 'chart_image' : 'chart_html';
+        const url = `${API_BASE_URL}/api/historical_analysis/${endpoint}`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    symbol: analysisParams.symbol,
+                    start_date: analysisParams.startDate,
+                    end_date: analysisParams.endDate,
+                    alerts: results.map(r => ({
+                        timestamp: r.timestamp,
+                        // CORREÇÃO AQUI: Usamos 'optional chaining' (?.) e um valor padrão (?? 0)
+                        // para garantir que não haja erro se 'snapshot' ou 'price' não existirem.
+                        price_at_alert: r.snapshot?.price ?? 0,
+                        condition: r.condition,
+                    })),
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Falha ao gerar o gráfico.');
+            }
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `${analysisParams.symbol}_analysis_${new Date().toISOString().split('T')[0]}.${format === 'image' ? 'png' : 'html'}`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Ocorreu um erro desconhecido ao gerar o gráfico.');
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content historical-analysis-panel" onClick={e => e.stopPropagation()}>
+                <div className="modal-header">
+                    <h2>Análise Histórica de Alertas</h2>
+                    <button onClick={onClose} className="close-button">&times;</button>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <button type="submit" disabled={isLoading} style={{ padding: '10px 20px', cursor: 'pointer' }}>
-          {isLoading ? 'Analisando...' : 'Analisar'}
-        </button>
-      </form>
+                <div className="modal-body">
+                    <div className="form-section">
+                        <div className="form-group" style={{ position: 'relative' }}>
+                            <label htmlFor="coin-search">Digite a Moeda</label>
+                            <input
+                                type="text"
+                                id="coin-search"
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                placeholder="Ex: Bitcoin ou BTC"
+                                onFocus={() => searchTerm.length > 1 && setIsCoinListVisible(true)}
+                            />
+                            {isCoinListVisible && (
+                                <ul className="coin-search-results">
+                                    {filteredCoins.length > 0 ? (
+                                        filteredCoins.map(coin => (
+                                            <li key={coin.id} onClick={() => handleCoinSelect(coin)}>
+                                                {coin.name} ({coin.symbol})
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <li>Nenhum resultado</li>
+                                    )}
+                                </ul>
+                            )}
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="start-date">Data de Início</label>
+                            <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="end-date">Data de Fim</label>
+                            <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                        </div>
+                    </div>
 
-      <div style={{ marginTop: '20px', flex: 1, overflowY: 'auto' }}>
-        {isLoading && <p>Carregando resultados...</p>}
-        {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
-        {searchPerformed && !isLoading && !error && (
-          <div>
-            {showChart ? (
-              <HistoricalResultChart
-                symbol={selectedCoin}
-                startDate={startDate}
-                endDate={endDate}
-                alerts={results}
-              />
-            ) : (
-              <ResultsTable alerts={results} />
-            )}
-            {results.length > 0 && (
-              <button
-                onClick={() => setShowChart(prev => !prev)}
-                style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}
-              >
-                {showChart ? 'Mostrar Tabela de Resultados' : 'Gerar Gráfico com Alertas'}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+                    <div className="alert-selection-section">
+                        <h4>Selecione os Alertas para Simular</h4>
+                        <div className="checkbox-grid">
+                            {Object.entries(ALERT_DEFINITIONS).map(([key, def]) => (
+                                <div key={key} className="checkbox-item">
+                                    <input
+                                        type="checkbox"
+                                        id={`alert-${key}`}
+                                        checked={alertConditions[key]}
+                                        onChange={() => handleAlertConditionChange(key)}
+                                    />
+                                    <label htmlFor={`alert-${key}`}>{def.name}</label>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="form-section" style={{ marginTop: '20px' }}>
+                        <button onClick={handleRunAnalysis} disabled={isLoading} className="button button-primary">
+                            {isLoading ? 'A analisar...' : 'Executar Análise'}
+                        </button>
+                    </div>
+
+                    {isLoading && <div className="loading-container">A executar análise...</div>}
+                    {error && <div className="error-container">{error}</div>}
+
+                    {results.length > 0 && !isLoading && (
+                        <>
+                            <div className="download-section" style={{ margin: '20px 0', padding: '15px', border: '1px solid #444', borderRadius: '5px', backgroundColor: '#2c2c2e' }}>
+                                <h4>Download do Gráfico da Análise</h4>
+                                <p>Baixe o resultado da simulação acima como um gráfico interativo (HTML) ou imagem (PNG).</p>
+                                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                    <button onClick={() => handleDownload('html')} className="button button-primary">
+                                        Baixar Gráfico Interativo (HTML)
+                                    </button>
+                                    <button onClick={() => handleDownload('image')} className="button">
+                                        Baixar Gráfico como Imagem (PNG)
+                                    </button>
+                                </div>
+                            </div>
+                            {/* Corrigindo a prop passada para a tabela */}
+                            <ResultsTable alerts={results} />
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default HistoricalAnalysisPanel;

@@ -55,13 +55,14 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
         setIsLoading(true);
         setError(null);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/alerts/history`, {
+            // NOTA: O endpoint correto para limpar o histórico pode variar. Verifique o seu backend.
+            const res = await fetch(`${API_BASE_URL}/api/alerts`, {
                 method: 'DELETE',
             });
             if (!res.ok) {
                 throw new Error('Falha ao limpar o histórico.');
             }
-            setHistory([]); // Clear history on the frontend
+            setHistory([]); // Limpa o histórico na interface
         } catch (err) {
             setError(err.message || 'Um erro desconhecido ocorreu ao tentar limpar o histórico.');
         } finally {
@@ -71,7 +72,7 @@ const AlertHistoryPanel: React.FC<AlertHistoryPanelProps> = ({ isOpen, onClose }
 
     const renderContent = () => {
         if (isLoading) {
-            return <div className="loading-container">Carregando histórico...</div>;
+            return <div className="loading-container">A carregar histórico...</div>;
         }
         if (error) {
             return <div className="error-container">{error}</div>;

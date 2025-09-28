@@ -552,7 +552,7 @@ const App = () => {
                     <AlertTicker alerts={recentAlerts} />
                     <header className="app-header">
                         <div className="header-top">
-                            <h1 className="header-title">Crypto Monitor Pro</h1>
+                            <h1 className="header-title">Crypto Monitor Pro12</h1>
                              <div className="header-actions">
                                 <button className="manage-button" onClick={() => setHistoryPanelOpen(true)}>
                                     Histórico
