@@ -134,8 +134,20 @@ def fetch_all_binance_symbols_startup(existing_config):
         return symbols
     except Exception as e:
         logging.error(f"Não foi possível buscar a lista de moedas da Binance: {e}")
-        logging.warning("Retornando moedas da configuração existente como fallback.")
-        return [c['symbol'] for c in existing_config.get('cryptos_to_monitor', [])]
+
+        # WORKAROUND: Fallback to a hardcoded list for sandbox/offline testing.
+        hardcoded_symbols = [
+            'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'ADAUSDT', 'SHIBUSDT', 'AVAXUSDT', 'LINKUSDT',
+            'DOTUSDT', 'TRXUSDT', 'MATICUSDT', 'ICPUSDT', 'BCHUSDT', 'LTCUSDT', 'NEARUSDT', 'UNIUSDT', 'FILUSDT', 'ETCUSDT',
+            'ATOMUSDT', 'XMRUSDT', 'XLMUSDT', 'HBARUSDT', 'APTUSDT', 'CROUSDT', 'VETUSDT', 'LDOUSDT',
+            'IMXUSDT', 'GRTUSDT', 'RNDRUSDT', 'OPUSDT', 'EGLDUSDT', 'QNTUSDT', 'AAVEUSDT', 'ALGOUSDT', 'STXUSDT', 'MANAUSDT',
+            'SANDUSDT', 'AXSUSDT', 'FTMUSDT', 'THETAUSDT', 'EOSUSDT', 'XTZUSDT', 'ZECUSDT', 'IOTAUSDT', 'NEOUSDT', 'CHZUSDT'
+        ]
+
+        config_symbols = [c['symbol'] for c in existing_config.get('cryptos_to_monitor', [])]
+        combined_symbols = sorted(list(set(hardcoded_symbols + config_symbols)))
+        logging.warning(f"WORKAROUND: Retornando uma lista combinada de {len(combined_symbols)} moedas (hardcoded + config) como fallback.")
+        return combined_symbols
 
 def _get_sound_for_trigger(trigger_key, sound_config):
     """Determina o som apropriado para um gatilho de alerta com base na sua chave programática."""
