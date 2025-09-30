@@ -116,22 +116,33 @@ def calculate_hilo_signals(df, length=34, ma_type="EMA", offset=0, simple_hilo=T
 
     return buy_signal, sell_signal, "HiLo Buy" if buy_signal else ("HiLo Sell" if sell_signal else "Nenhum")
 
-def calculate_media_movel_cross(df, period=17):
-    """Calcula o cruzamento do preço com uma Média Móvel Exponencial (EMA)."""
+def calculate_media_movel_cross(df, period=17, return_series=False):
+    """
+    Calcula o cruzamento do preço com uma Média Móvel Exponencial (EMA).
+    Se return_series=True, retorna uma Pandas Series com os sinais para todo o histórico.
+    """
     if df is None or len(df) < period + 1:
-        return "Nenhum"
+        return pd.Series("Nenhum", index=df.index) if return_series else "Nenhum"
 
     ema = calculate_ema(df['close'], period)
 
+    # Lógica de "crossover" e "crossunder" para toda a série
+    high_cross = (df['close'].shift(1) <= ema.shift(1)) & (df['close'] > ema)
+    low_cross = (df['close'].shift(1) >= ema.shift(1)) & (df['close'] < ema)
+
+    if return_series:
+        signals = pd.Series("Nenhum", index=df.index)
+        signals.loc[high_cross] = "Cruzamento de Alta"
+        signals.loc[low_cross] = "Cruzamento de Baixa"
+        return signals
+
+    # Lógica para monitoramento ao vivo
     if len(df['close']) < 2 or len(ema) < 2:
         return "Nenhum"
 
-    # Cruzamento de Alta: Preço cruza a EMA para cima
-    if df['close'].iloc[-2] <= ema.iloc[-2] and df['close'].iloc[-1] > ema.iloc[-1]:
+    if high_cross.iloc[-1]:
         return "Cruzamento de Alta"
-
-    # Cruzamento de Baixa: Preço cruza a EMA para baixo
-    if df['close'].iloc[-2] >= ema.iloc[-2] and df['close'].iloc[-1] < ema.iloc[-1]:
+    if low_cross.iloc[-1]:
         return "Cruzamento de Baixa"
 
     return "Nenhum"
