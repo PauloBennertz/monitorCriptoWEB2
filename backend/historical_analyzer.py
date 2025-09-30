@@ -15,108 +15,98 @@ logging.basicConfig(level=logging.INFO)
 
 def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert_config: dict):
     """
-    Analyzes historical data for a symbol to find when alert conditions would have been met.
-
-    Args:
-        symbol (str): The cryptocurrency symbol (e.g., 'BTCUSDT').
-        start_date (str): The start date for analysis (YYYY-MM-DD).
-        end_date (str): The end date for analysis (YYYY-MM-DD).
-        alert_config (dict): A dictionary containing the alert conditions to check.
-
-    Returns:
-        list: A list of dictionaries, where each dictionary represents a triggered alert.
+    Analyzes historical data for a symbol to find when alert conditions would have been met,
+    using an efficient vectorized approach.
     """
     logging.info(f"Starting historical alert analysis for {symbol} from {start_date} to {end_date}.")
 
-    # Fetch historical data
     historical_df = fetch_historical_data(symbol, start_date, end_date, interval='1h')
     if historical_df.empty:
         logging.warning(f"No historical data found for {symbol} in the given date range.")
         return []
 
-    triggered_alerts = []
     conditions = alert_config.get('conditions', {})
+    all_alerts = []
 
-    # --- Calculate all indicators at once for efficiency ---
+    # --- 1. Calculate all indicators at once ---
     rsi_series, _, _ = calculate_rsi(historical_df)
     upper_band, lower_band, _ = calculate_bollinger_bands(historical_df)
     macd_cross_series = calculate_macd(historical_df, return_series=True)
     emas = calculate_emas(historical_df, periods=[50, 200])
     _, _, hilo_signal_series = calculate_hilo_signals(historical_df, return_series=True)
 
-    # Calculate MME Cross signals if needed
-    mme_cross_periods = [17, 34, 72, 144]
-    mme_cross_signals = {}
-    if conditions.get('media_movel_cima', {}).get('enabled') or conditions.get('media_movel_baixo', {}).get('enabled'):
-        for period in mme_cross_periods:
-            mme_cross_signals[period] = calculate_media_movel_cross(historical_df, period=period, return_series=True)
+    # --- 2. Define a helper to process triggers ---
+    def process_triggers(mask, condition_key_template, message_template):
+        triggered_points = historical_df.loc[mask]
+        for timestamp, row in triggered_points.iterrows():
+            # Allow formatting with period if applicable
+            period = getattr(row, 'period', '')
+            condition_key = condition_key_template.format(period=period)
+            message = message_template.format(price=row['close'], rsi=rsi_series.loc[timestamp], period=period)
 
-    # --- Iterate through each candle to check for alerts ---
-    for i in range(1, len(historical_df)):
-        timestamp = historical_df.index[i]
-        current_price = historical_df['close'].iloc[i]
-
-        # Helper to create alert dictionary with the correct 'snapshot' structure
-        def create_alert(condition_key, message):
-            logging.info(f"  -> ALERT TRIGGERED: {condition_key} at {timestamp} with price {current_price}")
-            return {
+            all_alerts.append({
                 "timestamp": timestamp.isoformat(),
                 "symbol": symbol,
                 "condition": condition_key,
                 "description": message,
-                "snapshot": {"price": current_price},
-            }
+                "snapshot": {"price": row['close']},
+            })
 
-        # Check RSI alerts
-        if conditions.get('rsi_sobrevendido', {}).get('enabled'):
-            rsi_value = rsi_series.iloc[i]
-            if rsi_value <= conditions.get('rsi_sobrevendido', {}).get('value', 30):
-                triggered_alerts.append(create_alert('rsi_sobrevendido', f"RSI em Sobrevenda ({rsi_value:.2f})"))
+    # --- 3. Generate and process triggers for each condition ---
+    if conditions.get('rsi_sobrevendido', {}).get('enabled'):
+        mask = rsi_series <= conditions.get('rsi_sobrevendido', {}).get('value', 30)
+        process_triggers(mask, 'rsi_sobrevendido', "RSI em Sobrevenda ({rsi:.2f})")
 
-        if conditions.get('rsi_sobrecomprado', {}).get('enabled'):
-            rsi_value = rsi_series.iloc[i]
-            if rsi_value >= conditions.get('rsi_sobrecomprado', {}).get('value', 70):
-                triggered_alerts.append(create_alert('rsi_sobrecomprado', f"RSI em Sobrecompra ({rsi_value:.2f})"))
+    if conditions.get('rsi_sobrecomprado', {}).get('enabled'):
+        mask = rsi_series >= conditions.get('rsi_sobrecomprado', {}).get('value', 70)
+        process_triggers(mask, 'rsi_sobrecomprado', "RSI em Sobrecompra ({rsi:.2f})")
 
-        # Check Bollinger Bands alerts
-        if conditions.get('bollinger_abaixo', {}).get('enabled') and current_price < lower_band.iloc[i]:
-            triggered_alerts.append(create_alert('bollinger_abaixo', "Preço Abaixo da Banda de Bollinger"))
-        if conditions.get('bollinger_acima', {}).get('enabled') and current_price > upper_band.iloc[i]:
-            triggered_alerts.append(create_alert('bollinger_acima', "Preço Acima da Banda de Bollinger"))
+    if conditions.get('bollinger_abaixo', {}).get('enabled'):
+        process_triggers(historical_df['close'] < lower_band, 'bollinger_abaixo', "Preço Abaixo da Banda de Bollinger")
 
-        # Check MACD Cross alerts
-        if conditions.get('macd_cruz_alta', {}).get('enabled') and macd_cross_series.iloc[i] == "Cruzamento de Alta":
-            triggered_alerts.append(create_alert('macd_cruz_alta', "MACD: Cruzamento de Alta"))
-        if conditions.get('macd_cruz_baixa', {}).get('enabled') and macd_cross_series.iloc[i] == "Cruzamento de Baixa":
-            triggered_alerts.append(create_alert('macd_cruz_baixa', "MACD: Cruzamento de Baixa"))
+    if conditions.get('bollinger_acima', {}).get('enabled'):
+        process_triggers(historical_df['close'] > upper_band, 'bollinger_acima', "Preço Acima da Banda de Bollinger")
 
-        # Check EMA Cross alerts (Golden/Death)
+    if conditions.get('macd_cruz_alta', {}).get('enabled'):
+        process_triggers(macd_cross_series == "Cruzamento de Alta", 'macd_cruz_alta', "MACD: Cruzamento de Alta")
+
+    if conditions.get('macd_cruz_baixa', {}).get('enabled'):
+        process_triggers(macd_cross_series == "Cruzamento de Baixa", 'macd_cruz_baixa', "MACD: Cruzamento de Baixa")
+
+    if 50 in emas and 200 in emas:
         if conditions.get('mme_cruz_dourada', {}).get('enabled'):
-            if emas[50].iloc[i-1] < emas[200].iloc[i-1] and emas[50].iloc[i] > emas[200].iloc[i]:
-                triggered_alerts.append(create_alert('mme_cruz_dourada', "MME: Cruz Dourada (50/200)"))
+            mask = (emas[50].shift(1) < emas[200].shift(1)) & (emas[50] > emas[200])
+            process_triggers(mask, 'mme_cruz_dourada', "MME: Cruz Dourada (50/200)")
         if conditions.get('mme_cruz_morte', {}).get('enabled'):
-            if emas[50].iloc[i-1] > emas[200].iloc[i-1] and emas[50].iloc[i] < emas[200].iloc[i]:
-                triggered_alerts.append(create_alert('mme_cruz_morte', "MME: Cruz da Morte (50/200)"))
+            mask = (emas[50].shift(1) > emas[200].shift(1)) & (emas[50] < emas[200])
+            process_triggers(mask, 'mme_cruz_morte', "MME: Cruz da Morte (50/200)")
 
-        # Check HiLo alerts
-        if conditions.get('hilo_compra', {}).get('enabled') and hilo_signal_series.iloc[i] == "HiLo Buy":
-            triggered_alerts.append(create_alert('hilo_compra', "HiLo: Sinal de Compra"))
-        if conditions.get('hilo_venda', {}).get('enabled') and hilo_signal_series.iloc[i] == "HiLo Sell":
-            triggered_alerts.append(create_alert('hilo_venda', "HiLo: Sinal de Venda"))
+    if conditions.get('hilo_compra', {}).get('enabled'):
+        process_triggers(hilo_signal_series == "HiLo Buy", 'hilo_compra', "HiLo: Sinal de Compra")
+    if conditions.get('hilo_venda', {}).get('enabled'):
+        process_triggers(hilo_signal_series == "HiLo Sell", 'hilo_venda', "HiLo: Sinal de Venda")
 
-        # Check MME Cross alerts
-        if conditions.get('media_movel_cima', {}).get('enabled'):
-            for period, series in mme_cross_signals.items():
-                if series.iloc[i] == "Cruzamento de Alta":
-                    triggered_alerts.append(create_alert(f'media_movel_cima_{period}', f"Preço cruzou MME {period} para cima"))
-        if conditions.get('media_movel_baixo', {}).get('enabled'):
-            for period, series in mme_cross_signals.items():
-                if series.iloc[i] == "Cruzamento de Baixa":
-                    triggered_alerts.append(create_alert(f'media_movel_baixo_{period}', f"Preço cruzou MME {period} para baixo"))
+    mme_cross_periods = [17, 34, 72, 144]
+    if conditions.get('media_movel_cima', {}).get('enabled'):
+        for period in mme_cross_periods:
+            series = calculate_media_movel_cross(historical_df, period=period, return_series=True)
+            mask = series == "Cruzamento de Alta"
+            # Add period to the df to access it in the helper
+            historical_df['period'] = period
+            process_triggers(mask, 'media_movel_cima_{period}', "Preço cruzou MME {period} para cima")
 
-    # De-duplicate and sort alerts
-    unique_alerts = list({alert['description']: alert for alert in triggered_alerts}.values())
-    sorted_alerts = sorted(unique_alerts, key=lambda x: x['timestamp'])
+    if conditions.get('media_movel_baixo', {}).get('enabled'):
+        for period in mme_cross_periods:
+            series = calculate_media_movel_cross(historical_df, period=period, return_series=True)
+            mask = series == "Cruzamento de Baixa"
+            historical_df['period'] = period
+            process_triggers(mask, 'media_movel_baixo_{period}', "Preço cruzou MME {period} para baixo")
 
-    logging.info(f"Found {len(sorted_alerts)} potential alerts for {symbol}.")
-    return sorted_alerts
+    # --- 4. De-duplicate and sort final alerts ---
+    if not all_alerts:
+        return []
+
+    alerts_df = pd.DataFrame(all_alerts).drop_duplicates(subset=['timestamp', 'description']).sort_values(by='timestamp')
+
+    logging.info(f"Found {len(alerts_df)} potential alerts for {symbol}.")
+    return alerts_df.to_dict('records')
