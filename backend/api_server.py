@@ -713,18 +713,6 @@ async def get_coin_details_chart_html(symbol: str, background_tasks: BackgroundT
         raise HTTPException(status_code=500, detail=f"Erro ao gerar HTML do gráfico: {str(e)}")
 
 
-# --- Serve Static Files ---
-if hasattr(sys, '_MEIPASS'):
-    static_files_path = sys._MEIPASS
-else:
-    static_files_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'dist'))
-
-if os.path.exists(static_files_path):
-    app.mount("/", StaticFiles(directory=static_files_path, html=True), name="static")
-else:
-    logging.warning(f"Static files directory not found at '{static_files_path}'. The frontend will not be served.")
-
-
 @app.post("/api/historical_analysis/chart_html")
 async def get_historical_analysis_chart_html(request: ChartGenerationRequest, background_tasks: BackgroundTasks):
     """Gera um gráfico a partir dos resultados da análise histórica e retorna um HTML interativo."""
@@ -749,6 +737,17 @@ async def get_historical_analysis_chart_html(request: ChartGenerationRequest, ba
             os.remove(html_path)
         logging.error(f"Erro ao gerar HTML da análise histórica para {request.symbol}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Erro ao gerar HTML da análise: {str(e)}")
+
+# --- Serve Static Files ---
+if hasattr(sys, '_MEIPASS'):
+    static_files_path = sys._MEIPASS
+else:
+    static_files_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'dist'))
+
+if os.path.exists(static_files_path):
+    app.mount("/", StaticFiles(directory=static_files_path, html=True), name="static")
+else:
+    logging.warning(f"Static files directory not found at '{static_files_path}'. The frontend will not be served.")
     
 if __name__ == "__main__":
     import uvicorn
