@@ -139,7 +139,7 @@ const HistoricalAnalysisPanel: React.FC<HistoricalAnalysisPanelProps> = ({ isOpe
                     end_date: analysisParams.endDate,
                     alerts: results.map(r => ({
                         timestamp: r.timestamp,
-                        price: r.price,
+                        price: r.snapshot.price,
                         condition: r.condition,
                     })),
                 }),
