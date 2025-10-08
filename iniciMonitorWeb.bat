@@ -14,8 +14,6 @@ start /b cmd /c "call venv\Scripts\activate.bat && .\node_modules\.bin\vite --ho
 REM Ativa o ambiente virtual (para o Uvicorn)
 call venv\Scripts\activate.bat
 
-REM Espera um tempo para o Vite iniciar completamente.
-timeout /t 15 /nobreak > nul
 
 echo Opening browser...
 start http://127.0.0.1:5173
