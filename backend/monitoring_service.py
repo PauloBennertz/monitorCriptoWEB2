@@ -201,6 +201,15 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
     rsi = analysis_data.get('rsi_value', 50)
     macd_value = analysis_data.get('macd_value', 0)
 
+    # Gerencia o estado do "Filter Mode" (Death Cross)
+    death_cross_active = alert_config.get('death_cross_active', False)
+    if analysis_data.get('mme_cross') == "Cruz da Morte":
+        death_cross_active = True
+        alert_config['death_cross_active'] = True  # Persiste o estado
+    elif analysis_data.get('mme_cross') == "Cruz Dourada":
+        death_cross_active = False
+        alert_config['death_cross_active'] = False # Persiste o estado
+
     # Define as condições de alerta
     alert_definitions = {
         'preco_baixo': {'key': 'PRECO_ABAIXO', 'msg': f"Preço Abaixo de ${conditions.get('preco_baixo', {}).get('value', 0):.2f}"},
@@ -215,7 +224,7 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
         'mme_cruz_dourada': {'key': 'CRUZ_DOURADA', 'msg': "MME: Cruz Dourada (50/200)"},
         'hilo_compra': {'key': 'HILO_COMPRA', 'msg': "HiLo: Sinal de Compra"},
         'hilo_venda': {'key': 'HILO_VENDA', 'msg': "HiLo: Sinal de Venda"},
-        'media_movel_cima_72': {'key': 'MEDIA_MOVEL_CIMA_72', 'msg': f"Preço cruzou MME {conditions.get('media_movel_cima_72', {}).get('value', 90)} para Cima + MACD > 0"},
+        'media_movel_cima': {'key': 'MEDIA_MOVEL_CIMA', 'msg': f"Preço cruzou MME {conditions.get('media_movel_cima', {}).get('value', 100)} para Cima + MACD > 0"},
         'media_movel_baixo': {'key': 'MEDIA_MOVEL_BAIXO', 'msg': f"Preço cruzou MME {conditions.get('media_movel_baixo', {}).get('value', 17)} para Baixo"},
     }
 
@@ -224,20 +233,29 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
     if conditions.get('PRECO_ABAIXO', {}).get('enabled') and current_price <= conditions['PRECO_ABAIXO']['value']: active_triggers.append(alert_definitions['preco_baixo'])
     if conditions.get('PRECO_ACIMA', {}).get('enabled') and current_price >= conditions['PRECO_ACIMA']['value']: active_triggers.append(alert_definitions['preco_alto'])
     if conditions.get('rsi_sobrevendido', {}).get('enabled') and rsi <= conditions['rsi_sobrevendido']['value']: active_triggers.append(alert_definitions['rsi_sobrevendido'])
-    if conditions.get('rsi_sobrecomprado', {}).get('enabled') and rsi >= conditions['rsi_sobrecomprado']['value']: active_triggers.append(alert_definitions['rsi_sobrecomprado'])
+
+    if (config := conditions.get('rsi_sobrecomprado', {})) and config.get('enabled'):
+        if rsi >= config.get('value', 75):
+            active_triggers.append(alert_definitions['rsi_sobrecomprado'])
+
     if conditions.get('bollinger_abaixo', {}).get('enabled') and analysis_data.get('bollinger_signal') == "Abaixo da Banda": active_triggers.append(alert_definitions['bollinger_abaixo'])
     if conditions.get('bollinger_acima', {}).get('enabled') and analysis_data.get('bollinger_signal') == "Acima da Banda": active_triggers.append(alert_definitions['bollinger_acima'])
     if conditions.get('macd_cruz_baixa', {}).get('enabled') and analysis_data.get('macd_signal') == "Cruzamento de Baixa": active_triggers.append(alert_definitions['macd_cruz_baixa'])
     if conditions.get('macd_cruz_alta', {}).get('enabled') and analysis_data.get('macd_signal') == "Cruzamento de Alta": active_triggers.append(alert_definitions['macd_cruz_alta'])
     if conditions.get('mme_cruz_morte', {}).get('enabled') and analysis_data.get('mme_cross') == "Cruz da Morte": active_triggers.append(alert_definitions['mme_cruz_morte'])
     if conditions.get('mme_cruz_dourada', {}).get('enabled') and analysis_data.get('mme_cross') == "Cruz Dourada": active_triggers.append(alert_definitions['mme_cruz_dourada'])
-    if conditions.get('hilo_compra', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Buy": active_triggers.append(alert_definitions['hilo_compra'])
-    if conditions.get('hilo_venda', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Sell": active_triggers.append(alert_definitions['hilo_venda'])
 
-    if (config := conditions.get('media_movel_cima_72', {})) and config.get('enabled'):
-        period = config.get('value', 90)
-        if analysis_data.get('media_movel_cross', {}).get(period) == "Cruzamento de Alta" and macd_value > 0:
-            active_triggers.append(alert_definitions['media_movel_cima_72'])
+    # Aplica o "Filter Mode" para suprimir alertas de compra se a Death Cross estiver ativa
+    if not death_cross_active:
+        if conditions.get('hilo_compra', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Buy":
+            active_triggers.append(alert_definitions['hilo_compra'])
+
+        if (config := conditions.get('media_movel_cima', {})) and config.get('enabled'):
+            period = config.get('value', 100)
+            if analysis_data.get('media_movel_cross', {}).get(period) == "Cruzamento de Alta" and macd_value > 0:
+                active_triggers.append(alert_definitions['media_movel_cima'])
+
+    if conditions.get('hilo_venda', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Sell": active_triggers.append(alert_definitions['hilo_venda'])
 
     if (config := conditions.get('media_movel_baixo', {})) and config.get('enabled'):
         period = config.get('value', 17)
@@ -346,7 +364,7 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
         elif emas[50].iloc[-2] > emas[200].iloc[-2] and emas[50].iloc[-1] < emas[200].iloc[-1]:
             analysis_result['mme_cross'] = "Cruz da Morte"
 
-    for period in [17, 34, 72, 90, 144]:
+    for period in [17, 34, 72, 90, 100, 144]:
         media_movel_signal = calculate_media_movel_cross(df, period=period)
         if media_movel_signal != "Nenhum":
             analysis_result['media_movel_cross'][period] = media_movel_signal
