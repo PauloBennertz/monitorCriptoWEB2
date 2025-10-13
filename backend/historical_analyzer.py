@@ -1,3 +1,4 @@
+from datetime import timedelta
 import pandas as pd
 import logging
 from .backtester import fetch_historical_data
@@ -135,4 +136,91 @@ def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert
     result = final_alerts_df[output_columns].to_dict('records')
 
     logging.info(f"Found {len(result)} potential alerts for {symbol}.")
+
+    # Convert result to DataFrame for hit rate calculation
+    if result:
+        alerts_df = pd.DataFrame(result)
+        alerts_df = calculate_hit_rate(alerts_df, symbol)
+        result = alerts_df.to_dict('records')
+
     return result
+
+SIGNAL_TYPE_MAPPING = {
+    'rsi_sobrevendido': 'buy',
+    'bollinger_abaixo': 'buy',
+    'macd_cruz_alta': 'buy',
+    'mme_cruz_dourada': 'buy',
+    'hilo_compra': 'buy',
+    'media_movel_cima': 'buy',
+    'rsi_sobrecomprado': 'sell',
+    'bollinger_acima': 'sell',
+    'macd_cruz_baixa': 'sell',
+    'mme_cruz_morte': 'sell',
+    'hilo_venda': 'sell',
+    'media_movel_baixo': 'sell',
+}
+
+def calculate_hit_rate(alerts_df: pd.DataFrame, symbol: str):
+    """
+    Calculates the hit rate of alerts by analyzing price movements after each alert.
+    Optimized to fetch future data in a single batch.
+    """
+    if alerts_df.empty:
+        return alerts_df
+
+    logging.info(f"Optimized hit rate calculation for {len(alerts_df)} alerts for {symbol}...")
+
+    timeframes_minutes = {
+        '15m': 15, '30m': 30, '1h': 60, '4h': 240, '24h': 1440
+    }
+
+    # Initialize results columns
+    for tf in timeframes_minutes.keys():
+        alerts_df[f'hit_{tf}'] = None
+        alerts_df[f'pct_change_{tf}'] = None
+
+    alerts_df['timestamp'] = pd.to_datetime(alerts_df['timestamp'])
+
+    # --- Optimization: Fetch all required future data in one go ---
+    min_alert_time = alerts_df['timestamp'].min()
+    max_alert_time = alerts_df['timestamp'].max()
+
+    # Define the period for which we need 1-minute data
+    future_start_date = min_alert_time.strftime('%Y-%m-%d')
+    # Need data up to 24 hours after the LAST alert
+    future_end_date = (max_alert_time + timedelta(days=2)).strftime('%Y-%m-%d')
+
+    logging.info(f"Fetching 1-minute data from {future_start_date} to {future_end_date} for analysis.")
+    future_df = fetch_historical_data(symbol, future_start_date, future_end_date, interval='1m')
+
+    if future_df.empty:
+        logging.warning("Could not fetch future data for hit rate analysis. Aborting.")
+        return alerts_df
+    # --- End Optimization ---
+
+    for index, alert in alerts_df.iterrows():
+        alert_time = alert['timestamp']
+        start_price = alert['snapshot']['price']
+        condition = alert['condition']
+
+        signal_type = next((stype for key, stype in SIGNAL_TYPE_MAPPING.items() if condition.startswith(key)), None)
+        if not signal_type:
+            continue
+
+        for tf_name, tf_minutes in timeframes_minutes.items():
+            future_time = alert_time + timedelta(minutes=tf_minutes)
+
+            # Find the closest price point in the pre-fetched future data
+            future_price_series = future_df[future_df.index >= future_time]
+
+            if not future_price_series.empty:
+                future_price = future_price_series.iloc[0]['close']
+                pct_change = ((future_price - start_price) / start_price) * 100 if start_price != 0 else 0
+
+                hit = (signal_type == 'buy' and pct_change > 0) or \
+                      (signal_type == 'sell' and pct_change < 0)
+
+                alerts_df.loc[index, f'hit_{tf_name}'] = hit
+                alerts_df.loc[index, f'pct_change_{tf_name}'] = round(pct_change, 2)
+
+    return alerts_df
