@@ -1,5 +1,385 @@
 [
     {
+        "id": "JTOUSDT-HILO_COMPRA-1760370191591",
+        "symbol": "JTOUSDT",
+        "condition": "Sinal de Compra HiLo",
+        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
+        "timestamp": "2025-10-13T15:43:11.591Z",
+        "snapshot": {
+            "symbol": "JTOUSDT",
+            "name": "Jito",
+            "price": 1.165,
+            "price_change_24h": 4.86,
+            "volume_24h": 6779823.5929,
+            "market_cap": 453957802,
+            "rsi_value": 52.79187817258885,
+            "rsi_signal": "52.79",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "HiLo Buy",
+            "media_movel_cross": {
+                "17": "Cruzamento de Alta"
+            },
+            "lastPrice": 1.169
+        }
+    },
+    {
+        "id": "SOLUSDT-HILO_COMPRA-1760370191588",
+        "symbol": "SOLUSDT",
+        "condition": "Sinal de Compra HiLo",
+        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
+        "timestamp": "2025-10-13T15:43:11.589Z",
+        "snapshot": {
+            "symbol": "SOLUSDT",
+            "name": "Wrapped SOL",
+            "price": 196.44,
+            "price_change_24h": 3.904,
+            "volume_24h": 1185299610.84617,
+            "market_cap": 130826,
+            "rsi_value": 45.50033579583616,
+            "rsi_signal": "45.50",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "HiLo Buy",
+            "media_movel_cross": {
+                "17": "Cruzamento de Alta",
+                "72": "Cruzamento de Alta"
+            },
+            "lastPrice": 196.7
+        }
+    },
+    {
+        "id": "ENAUSDT-MACD_BAIXA-1760370191590",
+        "symbol": "ENAUSDT",
+        "condition": "Cruzamento de Baixa (MACD)",
+        "description": "Sinal de momentum de baixa quando a linha MACD cruza para baixo da linha de sinal.",
+        "timestamp": "2025-10-13T15:43:11.590Z",
+        "snapshot": {
+            "symbol": "ENAUSDT",
+            "name": "Ethena",
+            "price": 0.4279,
+            "price_change_24h": 7.838,
+            "volume_24h": 172959576.981765,
+            "market_cap": 3085121409,
+            "rsi_value": 55.89519650655022,
+            "rsi_signal": "55.90",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Cruzamento de Baixa",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 0.4282
+        }
+    },
+    {
+        "id": "ETHUSDT-HILO_COMPRA-1760370191590",
+        "symbol": "ETHUSDT",
+        "condition": "Sinal de Compra HiLo",
+        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
+        "timestamp": "2025-10-13T15:43:11.590Z",
+        "snapshot": {
+            "symbol": "ETHUSDT",
+            "name": "The Ticker Is ETH",
+            "price": 4119.11,
+            "price_change_24h": 3.001,
+            "volume_24h": 3123633928.521798,
+            "market_cap": 0,
+            "rsi_value": 40.606182256122054,
+            "rsi_signal": "40.61",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "HiLo Buy",
+            "media_movel_cross": {
+                "17": "Cruzamento de Alta"
+            },
+            "lastPrice": 4123.77
+        }
+    },
+    {
+        "id": "ENAUSDT-MACD_BAIXA-1760369123015",
+        "symbol": "ENAUSDT",
+        "condition": "Cruzamento de Baixa (MACD)",
+        "description": "Sinal de momentum de baixa quando a linha MACD cruza para baixo da linha de sinal.",
+        "timestamp": "2025-10-13T15:25:23.015Z",
+        "snapshot": {
+            "symbol": "ENAUSDT",
+            "name": "Ethena",
+            "price": 0.4295,
+            "price_change_24h": 6.049,
+            "volume_24h": 177098123.245215,
+            "market_cap": 3079983787,
+            "rsi_value": 56.42795513373597,
+            "rsi_signal": "56.43",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Cruzamento de Baixa",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {
+                "72": "Cruzamento de Alta"
+            },
+            "lastPrice": 0.4295
+        }
+    },
+    {
+        "id": "JTOUSDT-HILO_COMPRA-1760369123016",
+        "symbol": "JTOUSDT",
+        "condition": "Sinal de Compra HiLo",
+        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
+        "timestamp": "2025-10-13T15:25:23.016Z",
+        "snapshot": {
+            "symbol": "JTOUSDT",
+            "name": "Jito",
+            "price": 1.165,
+            "price_change_24h": 4.018,
+            "volume_24h": 6958079.5258,
+            "market_cap": 452831788,
+            "rsi_value": 51.5625,
+            "rsi_signal": "51.56",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "HiLo Buy",
+            "media_movel_cross": {
+                "17": "Cruzamento de Alta"
+            },
+            "lastPrice": 1.165
+        }
+    },
+    {
+        "id": "ETHUSDT-HILO_COMPRA-1760369123013",
+        "symbol": "ETHUSDT",
+        "condition": "Sinal de Compra HiLo",
+        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
+        "timestamp": "2025-10-13T15:25:23.013Z",
+        "snapshot": {
+            "symbol": "ETHUSDT",
+            "name": "The Ticker Is ETH",
+            "price": 4118.95,
+            "price_change_24h": 1.424,
+            "volume_24h": 3222343926.602624,
+            "market_cap": 0,
+            "rsi_value": 39.74290441644395,
+            "rsi_signal": "39.74",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "HiLo Buy",
+            "media_movel_cross": {
+                "17": "Cruzamento de Alta"
+            },
+            "lastPrice": 4118.95
+        }
+    },
+    {
+        "id": "SOLUSDT-HILO_COMPRA-1760369123013",
+        "symbol": "SOLUSDT",
+        "condition": "Sinal de Compra HiLo",
+        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
+        "timestamp": "2025-10-13T15:25:23.013Z",
+        "snapshot": {
+            "symbol": "SOLUSDT",
+            "name": "Wrapped SOL",
+            "price": 195.63,
+            "price_change_24h": 2.237,
+            "volume_24h": 1214372212.74979,
+            "market_cap": 130776,
+            "rsi_value": 43.17226890756305,
+            "rsi_signal": "43.17",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "HiLo Buy",
+            "media_movel_cross": {
+                "17": "Cruzamento de Alta",
+                "72": "Cruzamento de Alta"
+            },
+            "lastPrice": 195.63
+        }
+    },
+    {
+        "id": "BERAUSDT-RSI_SOBRECOMPRA-1759962514295",
+        "symbol": "BERAUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-08T22:28:34.295Z",
+        "snapshot": {
+            "symbol": "BERAUSDT",
+            "name": "Berachain",
+            "price": 2.794,
+            "price_change_24h": 6.682,
+            "volume_24h": 6730786.372274,
+            "market_cap": 358813997,
+            "rsi_value": 70.50359712230217,
+            "rsi_signal": "70.50",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {}
+        }
+    },
+    {
+        "id": "ENAUSDT-RSI_SOBRECOMPRA-1759962514294",
+        "symbol": "ENAUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-08T22:28:34.294Z",
+        "snapshot": {
+            "symbol": "ENAUSDT",
+            "name": "Ethena",
+            "price": 0.5782,
+            "price_change_24h": 4.237,
+            "volume_24h": 82545610.319774,
+            "market_cap": 4135834983,
+            "rsi_value": 83.30206378986878,
+            "rsi_signal": "83.30",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {}
+        }
+    },
+    {
+        "id": "LINKUSDT-RSI_SOBRECOMPRA-1759962514293",
+        "symbol": "LINKUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-08T22:28:34.293Z",
+        "snapshot": {
+            "symbol": "LINKUSDT",
+            "name": "Osmosis allLINK",
+            "price": 22.61,
+            "price_change_24h": 2.261,
+            "volume_24h": 64934005.3506,
+            "market_cap": 15326363726,
+            "rsi_value": 72.09302325581385,
+            "rsi_signal": "72.09",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {}
+        }
+    },
+    {
+        "id": "SOLUSDT-RSI_SOBRECOMPRA-1759962514293",
+        "symbol": "SOLUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-08T22:28:34.293Z",
+        "snapshot": {
+            "symbol": "SOLUSDT",
+            "name": "Wrapped SOL",
+            "price": 229.18,
+            "price_change_24h": 2.606,
+            "volume_24h": 707806550.50848,
+            "market_cap": 149923,
+            "rsi_value": 71.6981132075471,
+            "rsi_signal": "71.70",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {}
+        }
+    },
+    {
+        "id": "ENAUSDT-RSI_SOBRECOMPRA-1759962021645",
+        "symbol": "ENAUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-08T22:20:21.645Z",
+        "snapshot": {
+            "symbol": "ENAUSDT",
+            "name": "Ethena",
+            "price": 0.5779,
+            "price_change_24h": 4.089,
+            "volume_24h": 82506159.258105,
+            "market_cap": 4133960541,
+            "rsi_value": 83.23917137476471,
+            "rsi_signal": "83.24",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 0.5779
+        }
+    },
+    {
+        "id": "BERAUSDT-RSI_SOBRECOMPRA-1759962021645",
+        "symbol": "BERAUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-08T22:20:21.645Z",
+        "snapshot": {
+            "symbol": "BERAUSDT",
+            "name": "Berachain",
+            "price": 2.794,
+            "price_change_24h": 6.398,
+            "volume_24h": 6740963.303352,
+            "market_cap": 358041747,
+            "rsi_value": 71.0247349823322,
+            "rsi_signal": "71.02",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 2.794
+        }
+    },
+    {
+        "id": "LINKUSDT-RSI_SOBRECOMPRA-1759962021644",
+        "symbol": "LINKUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-08T22:20:21.644Z",
+        "snapshot": {
+            "symbol": "LINKUSDT",
+            "name": "Osmosis allLINK",
+            "price": 22.59,
+            "price_change_24h": 2.263,
+            "volume_24h": 65027515.3117,
+            "market_cap": 15306653650,
+            "rsi_value": 71.87499999999987,
+            "rsi_signal": "71.87",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 22.59
+        }
+    },
+    {
+        "id": "SOLUSDT-RSI_SOBRECOMPRA-1759962021644",
+        "symbol": "SOLUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-08T22:20:21.644Z",
+        "snapshot": {
+            "symbol": "SOLUSDT",
+            "name": "Wrapped SOL",
+            "price": 228.98,
+            "price_change_24h": 2.402,
+            "volume_24h": 705149123.1409,
+            "market_cap": 150270,
+            "rsi_value": 71.33757961783431,
+            "rsi_signal": "71.34",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 228.98
+        }
+    },
+    {
         "id": "LINKUSDT-RSI_SOBRECOMPRA-1759943538968",
         "symbol": "LINKUSDT",
         "condition": "RSI em Sobrecompra",
@@ -22942,383 +23322,6 @@
                 "72": "Cruzamento de Alta"
             },
             "lastPrice": 267.43
-        }
-    },
-    {
-        "id": "HYPERUSDT-HILO_COMPRA-1759078659451",
-        "symbol": "HYPERUSDT",
-        "condition": "Sinal de Compra HiLo",
-        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
-        "timestamp": "2025-09-28T16:57:39.451Z",
-        "snapshot": {
-            "symbol": "HYPERUSDT",
-            "name": "Hyperlane",
-            "price": 0.2604,
-            "price_change_24h": -0.762,
-            "volume_24h": 2129053.16389,
-            "market_cap": 0,
-            "rsi_value": 58.42696629213484,
-            "rsi_signal": "58.43",
-            "bollinger_signal": "Nenhum",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "HiLo Buy",
-            "media_movel_cross": {
-                "34": "Cruzamento de Alta"
-            },
-            "lastPrice": 0.2617
-        }
-    },
-    {
-        "id": "PENDLEUSDT-RSI_SOBRECOMPRA-1759078489826",
-        "symbol": "PENDLEUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T16:54:49.826Z",
-        "snapshot": {
-            "symbol": "PENDLEUSDT",
-            "name": "Pendle",
-            "price": 4.651,
-            "price_change_24h": 0.846,
-            "volume_24h": 5251492.4752,
-            "market_cap": 785745227,
-            "rsi_value": 72.16981132075472,
-            "rsi_signal": "72.17",
-            "bollinger_signal": "Acima da Banda",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 4.645
-        }
-    },
-    {
-        "id": "BTCUSDT-RSI_SOBRECOMPRA-1759078489825",
-        "symbol": "BTCUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T16:54:49.825Z",
-        "snapshot": {
-            "symbol": "BTCUSDT",
-            "name": "Osmosis allBTC",
-            "price": 110209.86,
-            "price_change_24h": 0.76,
-            "volume_24h": 545419013.6511998,
-            "market_cap": 51832,
-            "rsi_value": 78.00818593987671,
-            "rsi_signal": "78.01",
-            "bollinger_signal": "Acima da Banda",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 110168.09
-        }
-    },
-    {
-        "id": "LINKUSDT-RSI_SOBRECOMPRA-1759077940717",
-        "symbol": "LINKUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T16:45:40.717Z",
-        "snapshot": {
-            "symbol": "LINKUSDT",
-            "name": "Osmosis allLINK",
-            "price": 21.17,
-            "price_change_24h": 1.437,
-            "volume_24h": 25214555.2136,
-            "market_cap": 14349606797,
-            "rsi_value": 71.42857142857143,
-            "rsi_signal": "71.43",
-            "bollinger_signal": "Acima da Banda",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 21.19
-        }
-    },
-    {
-        "id": "AAVEUSDT-HILO_COMPRA-1759077767292",
-        "symbol": "AAVEUSDT",
-        "condition": "Sinal de Compra HiLo",
-        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
-        "timestamp": "2025-09-28T16:42:47.292Z",
-        "snapshot": {
-            "symbol": "AAVEUSDT",
-            "name": "Aave",
-            "price": 267.21,
-            "price_change_24h": 0.037,
-            "volume_24h": 12411272.90726,
-            "market_cap": 4072944842,
-            "rsi_value": 55.5217060167555,
-            "rsi_signal": "55.52",
-            "bollinger_signal": "Nenhum",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "HiLo Buy",
-            "media_movel_cross": {},
-            "lastPrice": 266.78
-        }
-    },
-    {
-        "id": "HYPERUSDT-HILO_COMPRA-1759077759447",
-        "symbol": "HYPERUSDT",
-        "condition": "Sinal de Compra HiLo",
-        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
-        "timestamp": "2025-09-28T16:42:39.447Z",
-        "snapshot": {
-            "symbol": "HYPERUSDT",
-            "name": "Hyperlane",
-            "price": 0.2591,
-            "price_change_24h": -1.483,
-            "volume_24h": 2098213.85806,
-            "market_cap": 0,
-            "rsi_value": 57.954545454545425,
-            "rsi_signal": "57.95",
-            "bollinger_signal": "Nenhum",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "HiLo Buy",
-            "media_movel_cross": {
-                "34": "Cruzamento de Alta"
-            },
-            "lastPrice": 0.2601
-        }
-    },
-    {
-        "id": "BTCUSDT-RSI_SOBRECOMPRA-1759077579468",
-        "symbol": "BTCUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T16:39:39.468Z",
-        "snapshot": {
-            "symbol": "BTCUSDT",
-            "name": "Osmosis allBTC",
-            "price": 110051.14,
-            "price_change_24h": 0.591,
-            "volume_24h": 542937838.4951996,
-            "market_cap": 51832,
-            "rsi_value": 75.10439715840093,
-            "rsi_signal": "75.10",
-            "bollinger_signal": "Acima da Banda",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 110104.99
-        }
-    },
-    {
-        "id": "LINKUSDT-RSI_SOBRECOMPRA-1759077039514",
-        "symbol": "LINKUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T16:30:39.514Z",
-        "snapshot": {
-            "symbol": "LINKUSDT",
-            "name": "Osmosis allLINK",
-            "price": 21.14,
-            "price_change_24h": 1.1,
-            "volume_24h": 24741069.4184,
-            "market_cap": 14397843678,
-            "rsi_value": 72.64957264957258,
-            "rsi_signal": "72.65",
-            "bollinger_signal": "Acima da Banda",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 21.25
-        }
-    },
-    {
-        "id": "PENDLEUSDT-RSI_SOBRECOMPRA-1759076679446",
-        "symbol": "PENDLEUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T16:24:39.446Z",
-        "snapshot": {
-            "symbol": "PENDLEUSDT",
-            "name": "Pendle",
-            "price": 4.639,
-            "price_change_24h": 0.238,
-            "volume_24h": 5016603.2444,
-            "market_cap": 787564459,
-            "rsi_value": 70.05076142131972,
-            "rsi_signal": "70.05",
-            "bollinger_signal": "Nenhum",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 4.637
-        }
-    },
-    {
-        "id": "HYPERUSDT-HILO_COMPRA-1759076687653",
-        "symbol": "HYPERUSDT",
-        "condition": "Sinal de Compra HiLo",
-        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
-        "timestamp": "2025-09-28T16:24:47.653Z",
-        "snapshot": {
-            "symbol": "HYPERUSDT",
-            "name": "Hyperlane",
-            "price": 0.2612,
-            "price_change_24h": -1.583,
-            "volume_24h": 1964105.87405,
-            "market_cap": 0,
-            "rsi_value": 59.63636363636359,
-            "rsi_signal": "59.64",
-            "bollinger_signal": "Nenhum",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "HiLo Buy",
-            "media_movel_cross": {
-                "34": "Cruzamento de Alta",
-                "72": "Cruzamento de Alta"
-            },
-            "lastPrice": 0.2589
-        }
-    },
-    {
-        "id": "BTCUSDT-RSI_SOBRECOMPRA-1759076679445",
-        "symbol": "BTCUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T16:24:39.445Z",
-        "snapshot": {
-            "symbol": "BTCUSDT",
-            "name": "Osmosis allBTC",
-            "price": 110117.54,
-            "price_change_24h": 0.678,
-            "volume_24h": 535991633.452268,
-            "market_cap": 51832,
-            "rsi_value": 75.53222799960744,
-            "rsi_signal": "75.53",
-            "bollinger_signal": "Acima da Banda",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 110074.74
-        }
-    },
-    {
-        "id": "AAVEUSDT-HILO_COMPRA-1759076679446",
-        "symbol": "AAVEUSDT",
-        "condition": "Sinal de Compra HiLo",
-        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
-        "timestamp": "2025-09-28T16:24:39.446Z",
-        "snapshot": {
-            "symbol": "AAVEUSDT",
-            "name": "Aave",
-            "price": 267.26,
-            "price_change_24h": 0.082,
-            "volume_24h": 12285510.74544,
-            "market_cap": 4080152608,
-            "rsi_value": 55.04234026173983,
-            "rsi_signal": "55.04",
-            "bollinger_signal": "Nenhum",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "HiLo Buy",
-            "media_movel_cross": {},
-            "lastPrice": 267.21
-        }
-    },
-    {
-        "id": "LINKUSDT-RSI_SOBRECOMPRA-1759075967643",
-        "symbol": "LINKUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T16:12:47.643Z",
-        "snapshot": {
-            "symbol": "LINKUSDT",
-            "name": "Osmosis allLINK",
-            "price": 21.14,
-            "price_change_24h": 1.197,
-            "volume_24h": 22022962.7906,
-            "market_cap": 14315315658,
-            "rsi_value": 70.3703703703703,
-            "rsi_signal": "70.37",
-            "bollinger_signal": "Acima da Banda",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 21.13
-        }
-    },
-    {
-        "id": "PENDLEUSDT-RSI_SOBRECOMPRA-1759075607542",
-        "symbol": "PENDLEUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T16:06:47.542Z",
-        "snapshot": {
-            "symbol": "PENDLEUSDT",
-            "name": "Pendle",
-            "price": 4.645,
-            "price_change_24h": 0.129,
-            "volume_24h": 4920034.2995,
-            "market_cap": 783832343,
-            "rsi_value": 71.21951219512188,
-            "rsi_signal": "71.22",
-            "bollinger_signal": "Acima da Banda",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 4.63
-        }
-    },
-    {
-        "id": "AAVEUSDT-HILO_COMPRA-1759075607541",
-        "symbol": "AAVEUSDT",
-        "condition": "Sinal de Compra HiLo",
-        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
-        "timestamp": "2025-09-28T16:06:47.541Z",
-        "snapshot": {
-            "symbol": "AAVEUSDT",
-            "name": "Aave",
-            "price": 267.45,
-            "price_change_24h": -0.09,
-            "volume_24h": 11830565.25334,
-            "market_cap": 4060066270,
-            "rsi_value": 56.12321562734787,
-            "rsi_signal": "56.12",
-            "bollinger_signal": "Nenhum",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "HiLo Buy",
-            "media_movel_cross": {
-                "72": "Cruzamento de Alta"
-            },
-            "lastPrice": 266.99
-        }
-    },
-    {
-        "id": "BTCUSDT-RSI_SOBRECOMPRA-1759075607541",
-        "symbol": "BTCUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T16:06:47.541Z",
-        "snapshot": {
-            "symbol": "BTCUSDT",
-            "name": "Osmosis allBTC",
-            "price": 110212,
-            "price_change_24h": 0.762,
-            "volume_24h": 515065614.4065299,
-            "market_cap": 51832,
-            "rsi_value": 78.04271428676239,
-            "rsi_signal": "78.04",
-            "bollinger_signal": "Acima da Banda",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 110121.72
         }
     }
 ]
