@@ -24,7 +24,7 @@ def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert
     historical_df = fetch_historical_data(symbol, start_date, end_date, interval='1h')
     if historical_df.empty:
         logging.warning(f"No historical data found for {symbol} in the given date range.")
-        return []
+        return [], pd.DataFrame()
 
     conditions = alert_config.get('conditions', {})
     alert_dfs = [] # List to hold DataFrames of alerts for each condition
@@ -120,7 +120,7 @@ def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert
 
     # --- 4. Combine, format, and de-duplicate all alerts ---
     if not alert_dfs:
-        return []
+        return [], historical_df
 
     final_alerts_df = pd.concat(alert_dfs).sort_index()
     final_alerts_df.reset_index(inplace=True) # make timestamp a column
@@ -143,7 +143,7 @@ def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert
         alerts_df = calculate_hit_rate(alerts_df, symbol)
         result = alerts_df.to_dict('records')
 
-    return result
+    return result, historical_df
 
 SIGNAL_TYPE_MAPPING = {
     'rsi_sobrevendido': 'buy',
