@@ -47,15 +47,21 @@ def calculate_macd(df, fast=12, slow=26, signal=9, return_series=False):
     """
     Calcula o sinal de cruzamento do MACD (Convergência/Divergência de Médias Móveis).
     Se return_series=True, retorna uma Pandas Series com os sinais para todo o histórico.
+    Para monitoramento ao vivo (return_series=False), retorna uma tupla contendo:
+    (sinal_string, valor_macd, valor_linha_sinal, valor_histograma)
     """
     if df is None or len(df) < slow + signal:
-        return pd.Series("Nenhum", index=df.index) if return_series else "N/A"
+        if return_series:
+            return pd.Series("Nenhum", index=df.index)
+        else:
+            return "N/A", 0, 0, 0
         
     exp1 = df['close'].ewm(span=fast, adjust=False).mean()
     exp2 = df['close'].ewm(span=slow, adjust=False).mean()
     macd = exp1 - exp2
     signal_line = macd.ewm(span=signal, adjust=False).mean()
-    
+    histogram = macd - signal_line
+
     # LÓGICA CORRIGIDA PARA HISTÓRICO
     if return_series:
         signals = pd.Series("Nenhum", index=df.index)
@@ -66,11 +72,20 @@ def calculate_macd(df, fast=12, slow=26, signal=9, return_series=False):
         signals.loc[low_cross] = "Cruzamento de Baixa"
         return signals
 
-    # LÓGICA ORIGINAL PARA MONITORAMENTO AO VIVO (PRESERVADA)
-    if len(macd) < 2 or len(signal_line) < 2: return "Nenhum"
-    if macd.iloc[-2] < signal_line.iloc[-2] and macd.iloc[-1] > signal_line.iloc[-1]: return "Cruzamento de Alta"
-    if macd.iloc[-2] > signal_line.iloc[-2] and macd.iloc[-1] < signal_line.iloc[-1]: return "Cruzamento de Baixa"
-    return "Nenhum"
+    # LÓGICA PARA MONITORAMENTO AO VIVO
+    signal_str = "Nenhum"
+    if len(macd) >= 2 and len(signal_line) >= 2:
+        if macd.iloc[-2] < signal_line.iloc[-2] and macd.iloc[-1] > signal_line.iloc[-1]:
+            signal_str = "Cruzamento de Alta"
+        elif macd.iloc[-2] > signal_line.iloc[-2] and macd.iloc[-1] < signal_line.iloc[-1]:
+            signal_str = "Cruzamento de Baixa"
+
+    # Retorna os valores mais recentes
+    latest_macd = macd.iloc[-1] if not macd.empty else 0
+    latest_signal_line = signal_line.iloc[-1] if not signal_line.empty else 0
+    latest_histogram = histogram.iloc[-1] if not histogram.empty else 0
+
+    return signal_str, latest_macd, latest_signal_line, latest_histogram
 
 def calculate_emas(df, periods=[50, 200]):
     """Calcula as Médias Móveis Exponenciais (EMAs) para uma lista de períodos."""

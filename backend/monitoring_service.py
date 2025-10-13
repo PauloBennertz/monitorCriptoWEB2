@@ -199,13 +199,14 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
     alert_cooldown_minutes = alert_config.get('alert_cooldown_minutes', 60)
     current_price = analysis_data.get('price', 0)
     rsi = analysis_data.get('rsi_value', 50)
+    macd_value = analysis_data.get('macd_value', 0)
 
     # Define as condições de alerta
     alert_definitions = {
         'preco_baixo': {'key': 'PRECO_ABAIXO', 'msg': f"Preço Abaixo de ${conditions.get('preco_baixo', {}).get('value', 0):.2f}"},
         'preco_alto': {'key': 'PRECO_ACIMA', 'msg': f"Preço Acima de ${conditions.get('preco_alto', {}).get('value', 0):.2f}"},
         'rsi_sobrevendido': {'key': 'RSI_SOBREVENDA', 'msg': f"RSI em Sobrevenda (<= {conditions.get('rsi_sobrevendido', {}).get('value', 30):.1f})"},
-        'rsi_sobrecomprado': {'key': 'RSI_SOBRECOMPRA', 'msg': f"RSI em Sobrecompra (>= {conditions.get('rsi_sobrecomprado', {}).get('value', 70):.1f})"},
+        'rsi_sobrecomprado': {'key': 'RSI_SOBRECOMPRA', 'msg': f"RSI em Sobrecompra (>= {conditions.get('rsi_sobrecomprado', {}).get('value', 75):.1f})"},
         'bollinger_abaixo': {'key': 'PRECO_ABAIXO_BANDA_INFERIOR', 'msg': "Preço Abaixo da Banda de Bollinger"},
         'bollinger_acima': {'key': 'PRECO_ACIMA_BANDA_SUPERIOR', 'msg': "Preço Acima da Banda de Bollinger"},
         'macd_cruz_baixa': {'key': 'CRUZAMENTO_MACD_BAIXA', 'msg': "MACD: Cruzamento de Baixa"},
@@ -214,7 +215,7 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
         'mme_cruz_dourada': {'key': 'CRUZ_DOURADA', 'msg': "MME: Cruz Dourada (50/200)"},
         'hilo_compra': {'key': 'HILO_COMPRA', 'msg': "HiLo: Sinal de Compra"},
         'hilo_venda': {'key': 'HILO_VENDA', 'msg': "HiLo: Sinal de Venda"},
-        'media_movel_cima': {'key': 'MEDIA_MOVEL_CIMA', 'msg': f"Preço cruzou MME {conditions.get('media_movel_cima', {}).get('value', 17)} para Cima"},
+        'media_movel_cima_72': {'key': 'MEDIA_MOVEL_CIMA_72', 'msg': f"Preço cruzou MME {conditions.get('media_movel_cima_72', {}).get('value', 90)} para Cima + MACD > 0"},
         'media_movel_baixo': {'key': 'MEDIA_MOVEL_BAIXO', 'msg': f"Preço cruzou MME {conditions.get('media_movel_baixo', {}).get('value', 17)} para Baixo"},
     }
 
@@ -233,10 +234,10 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
     if conditions.get('hilo_compra', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Buy": active_triggers.append(alert_definitions['hilo_compra'])
     if conditions.get('hilo_venda', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Sell": active_triggers.append(alert_definitions['hilo_venda'])
 
-    if (config := conditions.get('media_movel_cima', {})) and config.get('enabled'):
-        period = config.get('value', 17)
-        if analysis_data.get('media_movel_cross', {}).get(period) == "Cruzamento de Alta":
-            active_triggers.append(alert_definitions['media_movel_cima'])
+    if (config := conditions.get('media_movel_cima_72', {})) and config.get('enabled'):
+        period = config.get('value', 90)
+        if analysis_data.get('media_movel_cross', {}).get(period) == "Cruzamento de Alta" and macd_value > 0:
+            active_triggers.append(alert_definitions['media_movel_cima_72'])
 
     if (config := conditions.get('media_movel_baixo', {})) and config.get('enabled'):
         period = config.get('value', 17)
@@ -296,6 +297,9 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
         'rsi_signal': "N/A",
         'bollinger_signal': "Nenhum",
         'macd_signal': "Nenhum",
+        'macd_value': 0.0,
+        'macd_signal_line': 0.0,
+        'macd_histogram': 0.0,
         'mme_cross': "Nenhum",
         'hilo_signal': "Nenhum",
         'media_movel_cross': {}
@@ -312,7 +316,7 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
 
     rsi_series, _, _ = calculate_rsi(df)
     upper_band_series, lower_band_series, _ = calculate_bollinger_bands(df)
-    macd_cross = calculate_macd(df)
+    macd_signal, macd_value, macd_signal_line, macd_histogram = calculate_macd(df)
     _, _, hilo_signal = calculate_hilo_signals(df)
     emas = calculate_emas(df, periods=[50, 200])
 
@@ -331,7 +335,10 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
         elif analysis_result['price'] < lower_band:
             analysis_result['bollinger_signal'] = "Abaixo da Banda"
 
-    analysis_result['macd_signal'] = macd_cross
+    analysis_result['macd_signal'] = macd_signal
+    analysis_result['macd_value'] = macd_value
+    analysis_result['macd_signal_line'] = macd_signal_line
+    analysis_result['macd_histogram'] = macd_histogram
 
     if 50 in emas and 200 in emas and len(emas[50]) > 1 and len(emas[200]) > 1:
         if emas[50].iloc[-2] < emas[200].iloc[-2] and emas[50].iloc[-1] > emas[200].iloc[-1]:
@@ -339,7 +346,7 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
         elif emas[50].iloc[-2] > emas[200].iloc[-2] and emas[50].iloc[-1] < emas[200].iloc[-1]:
             analysis_result['mme_cross'] = "Cruz da Morte"
 
-    for period in [17, 34, 72, 144]:
+    for period in [17, 34, 72, 90, 144]:
         media_movel_signal = calculate_media_movel_cross(df, period=period)
         if media_movel_signal != "Nenhum":
             analysis_result['media_movel_cross'][period] = media_movel_signal
