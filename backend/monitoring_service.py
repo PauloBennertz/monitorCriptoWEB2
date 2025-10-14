@@ -241,8 +241,8 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
     if conditions.get('bollinger_abaixo', {}).get('enabled') and analysis_data.get('bollinger_signal') == "Abaixo da Banda": active_triggers.append(alert_definitions['bollinger_abaixo'])
     if conditions.get('bollinger_acima', {}).get('enabled') and analysis_data.get('bollinger_signal') == "Acima da Banda": active_triggers.append(alert_definitions['bollinger_acima'])
     if conditions.get('macd_cruz_baixa', {}).get('enabled') and analysis_data.get('macd_signal') == "Cruzamento de Baixa": active_triggers.append(alert_definitions['macd_cruz_baixa'])
-    if conditions.get('macd_cruz_alta', {}).get('enabled') and analysis_data.get('macd_signal') == "Cruzamento de Alta": active_triggers.append(alert_definitions['macd_cruz_alta'])
-    if conditions.get('mme_cruz_morte', {}).get('enabled') and analysis_data.get('mme_cross') == "Cruz da Morte": active_triggers.append(alert_definitions['mme_cruz_morte'])
+    if conditions.get('macd_cruz_alta', {}).get('enabled') and analysis_data.get('macd_signal') == "Cruzamento de Alta" and rsi < 30: active_triggers.append(alert_definitions['macd_cruz_alta'])
+    if conditions.get('mme_cruz_morte', {}).get('enabled') and analysis_data.get('mme_cross') == "Cruz da Morte" and current_price < analysis_data.get('mme_200', float('inf')): active_triggers.append(alert_definitions['mme_cruz_morte'])
     if conditions.get('mme_cruz_dourada', {}).get('enabled') and analysis_data.get('mme_cross') == "Cruz Dourada": active_triggers.append(alert_definitions['mme_cruz_dourada'])
 
     # Aplica o "Filter Mode" para suprimir alertas de compra se a Death Cross estiver ativa
@@ -319,6 +319,7 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
         'macd_signal_line': 0.0,
         'macd_histogram': 0.0,
         'mme_cross': "Nenhum",
+        'mme_200': 0.0,
         'hilo_signal': "Nenhum",
         'media_movel_cross': {}
     }
@@ -357,6 +358,9 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
     analysis_result['macd_value'] = macd_value
     analysis_result['macd_signal_line'] = macd_signal_line
     analysis_result['macd_histogram'] = macd_histogram
+
+    if 200 in emas and not emas[200].empty and pd.notna(emas[200].iloc[-1]):
+        analysis_result['mme_200'] = emas[200].iloc[-1]
 
     if 50 in emas and 200 in emas and len(emas[50]) > 1 and len(emas[200]) > 1:
         if emas[50].iloc[-2] < emas[200].iloc[-2] and emas[50].iloc[-1] > emas[200].iloc[-1]:
