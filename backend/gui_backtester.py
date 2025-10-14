@@ -11,6 +11,7 @@ from datetime import datetime
 
 import json
 from .historical_analyzer import analyze_historical_alerts
+from .cache_manager import generate_cache_key, save_to_cache, load_from_cache
 
 # Import the backtesting and charting logic
 try:
@@ -56,6 +57,24 @@ class BacktesterGUI:
         self.end_date_entry = DateEntry(input_frame, dateformat="%Y-%m-%d", firstweekday=6, bootstyle=DEFAULT)
         self.end_date_entry.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
 
+        # --- Timeframes Frame ---
+        timeframes_frame = ttk.Labelframe(main_frame, text="Períodos de Análise (Hit Rate)", padding=10)
+        timeframes_frame.pack(fill=tk.X, pady=5)
+
+        self.timeframe_vars = {}
+        timeframes = {
+            "5m": 5, "15m": 15, "30m": 30, "45m": 45,
+            "1h": 60, "2h": 120, "6h": 360, "24h": 1440
+        }
+
+        col = 0
+        for name, minutes in timeframes.items():
+            var = tk.BooleanVar(value=(name in ['15m', '1h', '24h'])) # Default selection
+            cb = ttk.Checkbutton(timeframes_frame, text=name, variable=var, bootstyle="primary")
+            cb.grid(row=0, column=col, padx=5, pady=2, sticky="w")
+            self.timeframe_vars[name] = {'var': var, 'minutes': minutes}
+            col += 1
+
         # --- Action Frame ---
         action_frame = ttk.Frame(main_frame, padding=(0, 10))
         action_frame.pack(fill=tk.X, pady=10)
@@ -85,13 +104,35 @@ class BacktesterGUI:
         output_frame = ttk.Labelframe(main_frame, text="Resultados", padding=10)
         output_frame.pack(fill=tk.BOTH, expand=True)
 
-        # --- Treeview for structured results ---
-        timeframes = ['15m', '30m', '1h', '4h', '24h']
+        # --- Treeview for structured results (placeholder) ---
+        self.results_tree = ttk.Treeview(output_frame, show="headings", height=10)
+
+        # Add a scrollbar
+        scrollbar = ttk.Scrollbar(output_frame, orient=tk.VERTICAL, command=self.results_tree.yview)
+        self.results_tree.configure(yscroll=scrollbar.set)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.results_tree.pack(fill=tk.BOTH, expand=True)
+
+        # --- Summary Frame (placeholder) ---
+        self.summary_frame = ttk.Labelframe(main_frame, text="Resumo da Taxa de Acerto", padding=10)
+        self.summary_frame.pack(fill=tk.X, pady=(10, 5))
+        self.summary_labels = {}
+
+        self.queue = queue.Queue()
+        self.root.after(100, self.process_queue)
+
+    def setup_results_display(self, timeframes):
+        """ Dynamically configures the Treeview and summary labels based on selected timeframes. """
+        # --- Clear previous summary widgets ---
+        for widget in self.summary_frame.winfo_children():
+            widget.destroy()
+        self.summary_labels.clear()
+
+        # --- Configure Treeview ---
         base_columns = ["timestamp", "symbol", "condition", "price"]
         hit_rate_columns = [f"{prefix}_{tf}" for tf in timeframes for prefix in ("hit", "pct")]
         columns = base_columns + hit_rate_columns
-
-        self.results_tree = ttk.Treeview(output_frame, columns=columns, show="headings", height=10)
+        self.results_tree.config(columns=columns)
 
         # Define headings
         self.results_tree.heading("timestamp", text="Timestamp")
@@ -111,25 +152,11 @@ class BacktesterGUI:
             self.results_tree.column(f"hit_{tf}", width=70, anchor=CENTER)
             self.results_tree.column(f"pct_{tf}", width=70, anchor=E)
 
-        # Add a scrollbar
-        scrollbar = ttk.Scrollbar(output_frame, orient=tk.VERTICAL, command=self.results_tree.yview)
-        self.results_tree.configure(yscroll=scrollbar.set)
-
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.results_tree.pack(fill=tk.BOTH, expand=True)
-
-        # --- Summary Frame ---
-        summary_frame = ttk.Labelframe(main_frame, text="Resumo da Taxa de Acerto", padding=10)
-        summary_frame.pack(fill=tk.X, pady=(10, 5))
-        self.summary_labels = {}
-        timeframes = ['15m', '30m', '1h', '4h', '24h']
+        # --- Configure Summary Labels ---
         for i, tf in enumerate(timeframes):
-            label = ttk.Label(summary_frame, text=f"Período {tf}: N/A")
+            label = ttk.Label(self.summary_frame, text=f"Período {tf}: N/A")
             label.grid(row=i, column=0, padx=5, pady=2, sticky="w")
             self.summary_labels[tf] = label
-
-        self.queue = queue.Queue()
-        self.root.after(100, self.process_queue)
 
     def process_queue(self):
         try:
@@ -165,7 +192,7 @@ class BacktesterGUI:
             ]
 
             # --- Hit Rate Info ---
-            timeframes = ['15m', '30m', '1h', '4h', '24h']
+            timeframes = list(self.summary_labels.keys()) # Get dynamically set timeframes
             hit_rate_values = []
             for tf in timeframes:
                 hit = alert_data.get(f'hit_{tf}')
@@ -212,22 +239,29 @@ class BacktesterGUI:
         self.chart_button.config(state="disabled")
         self.status_label.config(text="Analisando...")
 
+        # Get selected timeframes
+        selected_timeframes = {name: data['minutes'] for name, data in self.timeframe_vars.items() if data['var'].get()}
+        if not selected_timeframes:
+            messagebox.showerror("Seleção Inválida", "Por favor, selecione pelo menos um período de análise.")
+            self.gui_task_done() # Re-enable buttons
+            self.run_button.config(state="normal")
+            return
+
+        # Setup display for the new run
+        self.setup_results_display(list(selected_timeframes.keys()))
+
         # Clear previous results from the treeview
         for i in self.results_tree.get_children():
             self.results_tree.delete(i)
 
-        # Reset summary labels
-        for tf, label in self.summary_labels.items():
-            label.config(text=f"{tf}: N/A")
-
         thread = threading.Thread(
             target=self.run_backtest_logic,
-            args=(symbol, start_date, end_date),
+            args=(symbol, start_date, end_date, selected_timeframes),
             daemon=True
         )
         thread.start()
 
-    def run_backtest_logic(self, symbol, start_date, end_date):
+    def run_backtest_logic(self, symbol, start_date, end_date, timeframes_config):
         try:
             with open('backend/config.json', 'r') as f:
                 config = json.load(f)
@@ -237,10 +271,22 @@ class BacktesterGUI:
                 self.queue.put({"type": "status", "msg": f"AVISO: Nenhuma configuração de alerta para {symbol}."})
         except Exception as e:
             self.queue.put({"type": "error", "msg": f"ERRO ao ler config.json: {e}"})
-            self.gui_task_done()
+            self.queue.put({"type": "task_done"})
             return
 
-        alerts, df = analyze_historical_alerts(symbol, start_date, end_date, alert_config)
+        # --- Cache Logic ---
+        cache_key = generate_cache_key(symbol, start_date, end_date, alert_config, timeframes_config)
+        cached_results = load_from_cache(cache_key)
+
+        if cached_results:
+            alerts = cached_results.get("alerts")
+            # We still fetch historical data for the chart, not from cache.
+            _, df = analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config={})
+        else:
+            alerts, df = analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config)
+            if alerts:
+                save_to_cache(cache_key, {"alerts": alerts}) # Cache new results
+
         self.backtest_df = df # Store historical data for the chart
 
         if not alerts:
@@ -249,6 +295,7 @@ class BacktesterGUI:
             formatted_signals = []
             for alert in alerts:
                 if self.stop_event.is_set():
+                    self.queue.put({"type": "status", "msg": "Análise interrompida pelo usuário."})
                     break
                 self.queue.put({"type": "alert", "data": alert})
                 # Re-format for the chart generator
@@ -300,7 +347,7 @@ class BacktesterGUI:
                 label.config(text=f"Período {tf}: Falha ao buscar dados detalhados.")
             return
 
-        timeframes = ['15m', '30m', '1h', '4h', '24h']
+        timeframes = list(self.summary_labels.keys()) # Get dynamically set timeframes
         for tf in timeframes:
             hit_key = f'hit_{tf}'
             hits = 0
