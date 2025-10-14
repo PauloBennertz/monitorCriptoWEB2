@@ -186,6 +186,8 @@ class BacktesterGUI:
             self.status_label.config(text=message.get("msg"))
         elif msg_type == "error":
             messagebox.showerror("Erro na Análise", message.get("msg"))
+        elif msg_type == "task_done":
+            self.gui_task_done()
 
     def start_backtest_thread(self):
         symbol = self.symbol_entry.get().strip().upper()
@@ -257,7 +259,8 @@ class BacktesterGUI:
                 })
             self.backtest_signals = formatted_signals
 
-        self.gui_task_done()
+        # Signal that the task is finished
+        self.queue.put({"type": "task_done"})
 
     def toggle_pause(self):
         if self.is_paused:
@@ -289,6 +292,12 @@ class BacktesterGUI:
 
     def update_summary_display(self):
         if not self.results_data:
+            return
+
+        # Check if hit rate calculation was successful
+        if 'hit_rate_calculated' in self.results_data[0] and not self.results_data[0]['hit_rate_calculated']:
+            for tf, label in self.summary_labels.items():
+                label.config(text=f"Período {tf}: Falha ao buscar dados detalhados.")
             return
 
         timeframes = ['15m', '30m', '1h', '4h', '24h']
