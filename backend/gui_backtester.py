@@ -124,8 +124,8 @@ class BacktesterGUI:
         self.summary_labels = {}
         timeframes = ['15m', '30m', '1h', '4h', '24h']
         for i, tf in enumerate(timeframes):
-            label = ttk.Label(summary_frame, text=f"{tf}: N/A")
-            label.grid(row=0, column=i, padx=10, pady=2, sticky="w")
+            label = ttk.Label(summary_frame, text=f"Período {tf}: N/A")
+            label.grid(row=i, column=0, padx=5, pady=2, sticky="w")
             self.summary_labels[tf] = label
 
         self.queue = queue.Queue()
@@ -306,9 +306,9 @@ class BacktesterGUI:
             total = hits + misses
             if total > 0:
                 hit_rate = (hits / total) * 100
-                summary_text = f"{tf}: {hits}/{misses} ({hit_rate:.1f}%)"
+                summary_text = f"Período {tf} - Acertos: {hits} / Erros: {misses} (Taxa de Acerto: {hit_rate:.1f}%)"
             else:
-                summary_text = f"{tf}: 0/0"
+                summary_text = f"Período {tf}: Sem dados"
 
             self.summary_labels[tf].config(text=summary_text)
 
