@@ -189,8 +189,11 @@ const SettingsModal = ({
                                                 type="number"
                                                 className="text-input price-input"
                                                 placeholder="Valor do Preço"
-                                                value={config.value || ''}
-                                                onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, value: parseFloat(e.target.value) || 0 })}
+                                                value={(config.value ?? '').toString()} // Convert to string
+                                                onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { 
+                                                    ...config, 
+                                                    value: (parseFloat(e.target.value) || 0).toString()
+                                                })}
                                                 disabled={!config.enabled}
                                             />
                                         )}
@@ -198,7 +201,7 @@ const SettingsModal = ({
                                             <select
                                                 className="text-input price-input"
                                                 value={config.value || alertDef.periods[0]}
-                                                onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, value: parseInt(e.target.value, 10) })}
+                                                onChange={(e) => onConfigChange(selectedCrypto.symbol, alertType, { ...config, value: parseInt(e.target.value, 10).toString() })}
                                                 disabled={!config.enabled}
                                             >
                                                 {alertDef.periods.map(p => <option key={p} value={p}>MME {p}</option>)}
@@ -265,7 +268,7 @@ const SettingsModal = ({
                         <div className="crypto-selection-list">
                             {filteredAllCoins.length > 0 ? (
                                 filteredAllCoins.map(crypto => (
-                                    <div key={crypto.id} className="crypto-selection-item add-item">
+                                    <div key={crypto.symbol} className="crypto-selection-item add-item">
                                         <span>{crypto.name} <span className="crypto-symbol-light">({crypto.symbol.toUpperCase()})</span></span>
                                         <button
                                             className="button button-add"

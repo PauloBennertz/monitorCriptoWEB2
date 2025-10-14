@@ -9,7 +9,7 @@ import os
 from .indicators import calculate_rsi, calculate_bollinger_bands, calculate_macd, calculate_emas, calculate_hilo_signals, calculate_media_movel_cross
 from .notification_service import send_telegram_alert
 from pycoingecko import CoinGeckoAPI
-from .app_state import load_coin_mapping_cache, save_coin_mapping_cache
+from .app_state import load_coin_list_cache, save_coin_list_cache
 from .notification_service import send_telegram_alert
 
 cg_client = CoinGeckoAPI()
@@ -59,17 +59,15 @@ def get_ticker_data():
         logging.error(f"Erro ao buscar dados de 24h (ticker): {e}")
         return {}
 
-def get_market_caps_coingecko(symbols_to_monitor, coingecko_mapping):
+def get_market_caps_coingecko(symbols_to_monitor, all_coins):
     """Busca o valor de mercado (market cap) para uma lista de moedas via CoinGecko."""
     logging.info(f"Buscando market caps para os seguintes símbolos: {symbols_to_monitor}")
     market_caps = {}
     coin_ids_to_fetch = []
     symbol_to_coin_id = {}
 
-    try:
-        all_coins = cg_client.get_coins_list()
-    except Exception as e:
-        logging.error(f"Falha ao buscar a lista de moedas da CoinGecko: {e}")
+    if not all_coins:
+        logging.error("A lista de moedas da CoinGecko não está disponível.")
         return {}
 
     for binance_symbol in symbols_to_monitor:
@@ -104,28 +102,25 @@ def get_market_caps_coingecko(symbols_to_monitor, coingecko_mapping):
         logging.error(f"Erro ao buscar market caps da CoinGecko: {e}")
         return {}
 
-def get_coingecko_global_mapping():
+def get_cached_coin_list():
     """
-    Busca a lista de moedas da CoinGecko para mapear Símbolo -> Nome.
-    Utiliza um cache local que é atualizado a cada 24 horas.
+    Busca a lista de moedas da CoinGecko, utilizando um cache local que é atualizado a cada 24 horas.
     """
-    cached_mapping = load_coin_mapping_cache()
-    if cached_mapping is not None:
-        return cached_mapping
+    cached_list = load_coin_list_cache()
+    if cached_list is not None:
+        return cached_list
 
-    logging.info("Buscando novo mapeamento de nomes da CoinGecko (cache expirado ou inexistente)...")
+    logging.info("Buscando nova lista de moedas da CoinGecko (cache expirado ou inexistente)...")
     robust_services.rate_limiter.wait_if_needed()
     try:
         coins_list = cg_client.get_coins_list()
-        mapping = {coin['symbol'].upper(): coin['name'] for coin in coins_list}
+        save_coin_list_cache(coins_list) # Salva a lista completa no cache
 
-        save_coin_mapping_cache(mapping) # Salva o novo mapeamento no cache
-
-        logging.info("Mapeamento de nomes CoinGecko carregado e cache atualizado.")
-        return mapping
+        logging.info("Lista de moedas da CoinGecko carregada e cache atualizado.")
+        return coins_list
     except Exception as e:
-        logging.error(f"Não foi possível buscar mapeamento da CoinGecko: {e}")
-        return {}
+        logging.error(f"Não foi possível buscar a lista de moedas da CoinGecko: {e}")
+        return []
 
 def fetch_all_binance_symbols_startup(existing_config):
     """Busca todos os símbolos USDT da Binance na inicialização."""
@@ -139,8 +134,20 @@ def fetch_all_binance_symbols_startup(existing_config):
         return symbols
     except Exception as e:
         logging.error(f"Não foi possível buscar a lista de moedas da Binance: {e}")
-        logging.warning("Retornando moedas da configuração existente como fallback.")
-        return [c['symbol'] for c in existing_config.get('cryptos_to_monitor', [])]
+
+        # WORKAROUND: Fallback to a hardcoded list for sandbox/offline testing.
+        hardcoded_symbols = [
+            'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'ADAUSDT', 'SHIBUSDT', 'AVAXUSDT', 'LINKUSDT',
+            'DOTUSDT', 'TRXUSDT', 'MATICUSDT', 'ICPUSDT', 'BCHUSDT', 'LTCUSDT', 'NEARUSDT', 'UNIUSDT', 'FILUSDT', 'ETCUSDT',
+            'ATOMUSDT', 'XMRUSDT', 'XLMUSDT', 'HBARUSDT', 'APTUSDT', 'CROUSDT', 'VETUSDT', 'LDOUSDT',
+            'IMXUSDT', 'GRTUSDT', 'RNDRUSDT', 'OPUSDT', 'EGLDUSDT', 'QNTUSDT', 'AAVEUSDT', 'ALGOUSDT', 'STXUSDT', 'MANAUSDT',
+            'SANDUSDT', 'AXSUSDT', 'FTMUSDT', 'THETAUSDT', 'EOSUSDT', 'XTZUSDT', 'ZECUSDT', 'IOTAUSDT', 'NEOUSDT', 'CHZUSDT'
+        ]
+
+        config_symbols = [c['symbol'] for c in existing_config.get('cryptos_to_monitor', [])]
+        combined_symbols = sorted(list(set(hardcoded_symbols + config_symbols)))
+        logging.warning(f"WORKAROUND: Retornando uma lista combinada de {len(combined_symbols)} moedas (hardcoded + config) como fallback.")
+        return combined_symbols
 
 def _get_sound_for_trigger(trigger_key, sound_config):
     """Determina o som apropriado para um gatilho de alerta com base na sua chave programática."""
@@ -192,13 +199,23 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
     alert_cooldown_minutes = alert_config.get('alert_cooldown_minutes', 60)
     current_price = analysis_data.get('price', 0)
     rsi = analysis_data.get('rsi_value', 50)
+    macd_value = analysis_data.get('macd_value', 0)
+
+    # Gerencia o estado do "Filter Mode" (Death Cross)
+    death_cross_active = alert_config.get('death_cross_active', False)
+    if analysis_data.get('mme_cross') == "Cruz da Morte":
+        death_cross_active = True
+        alert_config['death_cross_active'] = True  # Persiste o estado
+    elif analysis_data.get('mme_cross') == "Cruz Dourada":
+        death_cross_active = False
+        alert_config['death_cross_active'] = False # Persiste o estado
 
     # Define as condições de alerta
     alert_definitions = {
         'preco_baixo': {'key': 'PRECO_ABAIXO', 'msg': f"Preço Abaixo de ${conditions.get('preco_baixo', {}).get('value', 0):.2f}"},
         'preco_alto': {'key': 'PRECO_ACIMA', 'msg': f"Preço Acima de ${conditions.get('preco_alto', {}).get('value', 0):.2f}"},
         'rsi_sobrevendido': {'key': 'RSI_SOBREVENDA', 'msg': f"RSI em Sobrevenda (<= {conditions.get('rsi_sobrevendido', {}).get('value', 30):.1f})"},
-        'rsi_sobrecomprado': {'key': 'RSI_SOBRECOMPRA', 'msg': f"RSI em Sobrecompra (>= {conditions.get('rsi_sobrecomprado', {}).get('value', 70):.1f})"},
+        'rsi_sobrecomprado': {'key': 'RSI_SOBRECOMPRA', 'msg': f"RSI em Sobrecompra (>= {conditions.get('rsi_sobrecomprado', {}).get('value', 75):.1f})"},
         'bollinger_abaixo': {'key': 'PRECO_ABAIXO_BANDA_INFERIOR', 'msg': "Preço Abaixo da Banda de Bollinger"},
         'bollinger_acima': {'key': 'PRECO_ACIMA_BANDA_SUPERIOR', 'msg': "Preço Acima da Banda de Bollinger"},
         'macd_cruz_baixa': {'key': 'CRUZAMENTO_MACD_BAIXA', 'msg': "MACD: Cruzamento de Baixa"},
@@ -207,7 +224,7 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
         'mme_cruz_dourada': {'key': 'CRUZ_DOURADA', 'msg': "MME: Cruz Dourada (50/200)"},
         'hilo_compra': {'key': 'HILO_COMPRA', 'msg': "HiLo: Sinal de Compra"},
         'hilo_venda': {'key': 'HILO_VENDA', 'msg': "HiLo: Sinal de Venda"},
-        'media_movel_cima': {'key': 'MEDIA_MOVEL_CIMA', 'msg': f"Preço cruzou MME {conditions.get('media_movel_cima', {}).get('value', 17)} para Cima"},
+        'media_movel_cima': {'key': 'MEDIA_MOVEL_CIMA', 'msg': f"Preço cruzou MME {conditions.get('media_movel_cima', {}).get('value', 200)} para Cima + MACD > 0"},
         'media_movel_baixo': {'key': 'MEDIA_MOVEL_BAIXO', 'msg': f"Preço cruzou MME {conditions.get('media_movel_baixo', {}).get('value', 17)} para Baixo"},
     }
 
@@ -216,20 +233,29 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
     if conditions.get('PRECO_ABAIXO', {}).get('enabled') and current_price <= conditions['PRECO_ABAIXO']['value']: active_triggers.append(alert_definitions['preco_baixo'])
     if conditions.get('PRECO_ACIMA', {}).get('enabled') and current_price >= conditions['PRECO_ACIMA']['value']: active_triggers.append(alert_definitions['preco_alto'])
     if conditions.get('rsi_sobrevendido', {}).get('enabled') and rsi <= conditions['rsi_sobrevendido']['value']: active_triggers.append(alert_definitions['rsi_sobrevendido'])
-    if conditions.get('rsi_sobrecomprado', {}).get('enabled') and rsi >= conditions['rsi_sobrecomprado']['value']: active_triggers.append(alert_definitions['rsi_sobrecomprado'])
+
+    if (config := conditions.get('rsi_sobrecomprado', {})) and config.get('enabled'):
+        if rsi >= config.get('value', 75):
+            active_triggers.append(alert_definitions['rsi_sobrecomprado'])
+
     if conditions.get('bollinger_abaixo', {}).get('enabled') and analysis_data.get('bollinger_signal') == "Abaixo da Banda": active_triggers.append(alert_definitions['bollinger_abaixo'])
     if conditions.get('bollinger_acima', {}).get('enabled') and analysis_data.get('bollinger_signal') == "Acima da Banda": active_triggers.append(alert_definitions['bollinger_acima'])
     if conditions.get('macd_cruz_baixa', {}).get('enabled') and analysis_data.get('macd_signal') == "Cruzamento de Baixa": active_triggers.append(alert_definitions['macd_cruz_baixa'])
     if conditions.get('macd_cruz_alta', {}).get('enabled') and analysis_data.get('macd_signal') == "Cruzamento de Alta": active_triggers.append(alert_definitions['macd_cruz_alta'])
     if conditions.get('mme_cruz_morte', {}).get('enabled') and analysis_data.get('mme_cross') == "Cruz da Morte": active_triggers.append(alert_definitions['mme_cruz_morte'])
     if conditions.get('mme_cruz_dourada', {}).get('enabled') and analysis_data.get('mme_cross') == "Cruz Dourada": active_triggers.append(alert_definitions['mme_cruz_dourada'])
-    if conditions.get('hilo_compra', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Buy": active_triggers.append(alert_definitions['hilo_compra'])
-    if conditions.get('hilo_venda', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Sell": active_triggers.append(alert_definitions['hilo_venda'])
 
-    if (config := conditions.get('media_movel_cima', {})) and config.get('enabled'):
-        period = config.get('value', 17)
-        if analysis_data.get('media_movel_cross', {}).get(period) == "Cruzamento de Alta":
-            active_triggers.append(alert_definitions['media_movel_cima'])
+    # Aplica o "Filter Mode" para suprimir alertas de compra se a Death Cross estiver ativa
+    if not death_cross_active:
+        if conditions.get('hilo_compra', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Buy":
+            active_triggers.append(alert_definitions['hilo_compra'])
+
+        if (config := conditions.get('media_movel_cima', {})) and config.get('enabled'):
+            period = config.get('value', 200)
+            if analysis_data.get('media_movel_cross', {}).get(period) == "Cruzamento de Alta" and macd_value > 0:
+                active_triggers.append(alert_definitions['media_movel_cima'])
+
+    if conditions.get('hilo_venda', {}).get('enabled') and analysis_data.get('hilo_signal') == "HiLo Sell": active_triggers.append(alert_definitions['hilo_venda'])
 
     if (config := conditions.get('media_movel_baixo', {})) and config.get('enabled'):
         period = config.get('value', 17)
@@ -289,6 +315,9 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
         'rsi_signal': "N/A",
         'bollinger_signal': "Nenhum",
         'macd_signal': "Nenhum",
+        'macd_value': 0.0,
+        'macd_signal_line': 0.0,
+        'macd_histogram': 0.0,
         'mme_cross': "Nenhum",
         'hilo_signal': "Nenhum",
         'media_movel_cross': {}
@@ -305,7 +334,7 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
 
     rsi_series, _, _ = calculate_rsi(df)
     upper_band_series, lower_band_series, _ = calculate_bollinger_bands(df)
-    macd_cross = calculate_macd(df)
+    macd_signal, macd_value, macd_signal_line, macd_histogram = calculate_macd(df)
     _, _, hilo_signal = calculate_hilo_signals(df)
     emas = calculate_emas(df, periods=[50, 200])
 
@@ -324,7 +353,10 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
         elif analysis_result['price'] < lower_band:
             analysis_result['bollinger_signal'] = "Abaixo da Banda"
 
-    analysis_result['macd_signal'] = macd_cross
+    analysis_result['macd_signal'] = macd_signal
+    analysis_result['macd_value'] = macd_value
+    analysis_result['macd_signal_line'] = macd_signal_line
+    analysis_result['macd_histogram'] = macd_histogram
 
     if 50 in emas and 200 in emas and len(emas[50]) > 1 and len(emas[200]) > 1:
         if emas[50].iloc[-2] < emas[200].iloc[-2] and emas[50].iloc[-1] > emas[200].iloc[-1]:
@@ -332,7 +364,7 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
         elif emas[50].iloc[-2] > emas[200].iloc[-2] and emas[50].iloc[-1] < emas[200].iloc[-1]:
             analysis_result['mme_cross'] = "Cruz da Morte"
 
-    for period in [17, 34, 72, 144]:
+    for period in [17, 34, 72, 90, 100, 144, 200]:
         media_movel_signal = calculate_media_movel_cross(df, period=period)
         if media_movel_signal != "Nenhum":
             analysis_result['media_movel_cross'][period] = media_movel_signal

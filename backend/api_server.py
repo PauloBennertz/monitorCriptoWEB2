@@ -4,7 +4,7 @@ import json
 import subprocess
 import sys
 from threading import Lock
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -14,6 +14,11 @@ import pandas as pd
 import numpy as np
 import requests
 import time
+from fastapi.responses import FileResponse
+import tempfile
+
+# Importando as duas funções do nosso gerador de gráfico
+from backend.chart_generator import generate_chart_image, generate_interactive_chart_html
 
 # This ensures that the 'backend' package can be found by Python
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -25,14 +30,21 @@ from backend.monitoring_service import (
     get_market_caps_coingecko,
     _analyze_symbol,
     fetch_all_binance_symbols_startup,
-    get_coingecko_global_mapping,
+    get_cached_coin_list,
     get_btc_dominance
 )
 from backend import app_state
 from backend import coin_manager
 from backend.backtester import Backtester, fetch_historical_data
+from backend.historical_analyzer import analyze_historical_alerts
 from backend.indicators import calculate_sma
 from backend.notification_service import send_telegram_alert
+
+class ChartGenerationRequest(BaseModel):
+    symbol: str
+    start_date: str
+    end_date: str
+    alerts: List[Dict[str, Any]]
 
 # --- Basic Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -44,11 +56,27 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# --- Global cache for coin data ---
+all_coins = []
+coingecko_mapping = {}
+
+@app.on_event("startup")
+async def startup_event():
+    """
+    Load the coin list and create the mapping at startup.
+    This data is cached and will be refreshed periodically.
+    """
+    global all_coins, coingecko_mapping
+    logging.info("Application startup: Loading initial coin data...")
+    all_coins = get_cached_coin_list()
+    if all_coins:
+        coingecko_mapping = {coin['symbol'].upper(): coin['name'] for coin in all_coins}
+        logging.info(f"Loaded {len(all_coins)} coins and created mapping.")
+    else:
+        logging.error("Failed to load coin list at startup. Some functionalities might be limited.")
+
 # --- CORS (Cross-Origin Resource Sharing) Configuration ---
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -66,8 +94,14 @@ def get_base_path():
 
 BASE_PATH = get_base_path()
 
-# --- Backtesting Components ---
+# --- File Paths and Locks ---
+CONFIG_FILE_PATH = os.path.join(BASE_PATH, "config.json")
+ALERT_HISTORY_FILE_PATH = os.path.join(BASE_PATH, "alert_history.json")
+HISTORY_LOCK = Lock()
+CONFIG_LOCK = Lock()
 
+
+# --- Backtesting Components ---
 from backend.backtester import MovingAverageCrossoverStrategy
 
 class BacktestRequest(BaseModel):
@@ -94,21 +128,115 @@ async def run_backtest_endpoint(request: BacktestRequest):
         if chart_result is None:
             raise HTTPException(status_code=500, detail="Backtest run failed and did not produce a chart.")
 
-        # The result can be a JSON string (success) or a dict (error from chart_generator)
         if isinstance(chart_result, dict) and 'error' in chart_result:
             logging.error(f"Chart generation failed: {chart_result.get('message')}")
             raise HTTPException(status_code=503, detail=chart_result.get('message', 'Chart generation service is unavailable.'))
 
-        # On success, chart_result is a JSON string. Parse and return it.
         return json.loads(chart_result)
 
     except HTTPException:
-        raise # Re-raise HTTPExceptions to preserve their status code and detail
+        raise
     except Exception as e:
         logging.error(f"Error during backtest execution: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An internal server error occurred: {str(e)}")
 
-# --- Existing API Endpoints ---
+
+# --- Historical Alert Analysis Endpoint ---
+class HistoricalAlertsRequest(BaseModel):
+    symbol: str
+    start_date: str
+    end_date: str
+    alert_config: Dict[str, Any]
+
+@app.post("/api/historical_alerts")
+async def get_historical_alerts(request: HistoricalAlertsRequest):
+    """
+    Runs a historical analysis to find what alerts would have been triggered for a given
+    symbol, date range, and alert configuration.
+    """
+    try:
+        logging.info(f"Received historical alert analysis request for {request.symbol}")
+
+        triggered_alerts = analyze_historical_alerts(
+            symbol=request.symbol,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            alert_config=request.alert_config
+        )
+
+        return {"alerts": triggered_alerts}
+
+    except Exception as e:
+        logging.error(f"Error during historical alert analysis: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred during analysis: {str(e)}")
+
+
+def convert_nan_to_none(obj):
+    """
+    Recursively converts float('nan') to None in a dictionary or list,
+    as NaN is not a valid JSON value.
+    """
+    if isinstance(obj, dict):
+        return {k: convert_nan_to_none(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_nan_to_none(i) for i in obj]
+    elif isinstance(obj, float) and np.isnan(obj):
+        return None
+    return obj
+
+
+@app.get("/api/historical_klines")
+async def historical_klines_endpoint(
+    symbol: str = Query(..., title="Crypto Symbol (e.g., BTCUSDT)"),
+    start_date: str = Query(..., title="Start Date (YYYY-MM-DD)"),
+    end_date: str = Query(..., title="End Date (YYYY-MM-DD)"),
+    interval: str = Query("1h", title="Kline Interval (e.g., 1h, 1d)")
+):
+    """
+    Busca dados históricos de K-lines e os retorna no formato numérico (timestamp em ms)
+    otimizado para bibliotecas de gráficos de alta performance como Lightweight Charts.
+    """
+    try:
+        df = fetch_historical_data(symbol, start_date, end_date, interval=interval)
+
+        if df.empty:
+            return []
+
+        df['open_time'] = (df.index.astype(int) / 10**6).astype(int)
+        
+        df_final = df.reset_index(drop=True)[['open_time', 'open', 'high', 'low', 'close', 'volume']]
+        
+        return convert_nan_to_none(df_final.to_dict('records'))
+
+    except Exception as e:
+        logging.error(f"Erro ao buscar dados históricos K-lines para o gráfico: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar dados históricos K-lines: {e}")
+
+
+@app.get("/api/historical_data")
+async def get_historical_data_endpoint(
+    symbol: str = Query(...),
+    start_date: str = Query(...),
+    end_date: str = Query(...)
+):
+    """
+    Fetches raw historical k-line data for a given symbol and date range.
+    """
+    try:
+        historical_data = fetch_historical_data(symbol, start_date, end_date)
+        if historical_data.empty:
+            raise HTTPException(status_code=404, detail="No historical data found for the given parameters.")
+
+        historical_data.reset_index(inplace=True)
+        historical_data['timestamp'] = historical_data['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+        return historical_data.to_dict(orient='records')
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error fetching historical data for {symbol}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred while fetching historical data: {str(e)}")
+
 
 @app.get("/api/global_data")
 async def get_global_data():
@@ -166,8 +294,12 @@ async def get_crypto_data(symbols: List[str] = Query(..., description="A list of
         ticker_data = get_ticker_data()
         if not ticker_data:
             raise HTTPException(status_code=503, detail="Could not fetch ticker data from Binance.")
-        coingecko_mapping = get_coingecko_global_mapping()
-        market_caps = get_market_caps_coingecko(symbols, coingecko_mapping)
+
+        if not all_coins:
+            logging.warning("Coin list is not available. Market cap and coin names may be missing.")
+
+        market_caps = get_market_caps_coingecko(symbols, all_coins)
+
         results = []
         for symbol in symbols:
             market_cap = market_caps.get(symbol)
@@ -178,11 +310,6 @@ async def get_crypto_data(symbols: List[str] = Query(..., description="A list of
         logging.error(f"An error occurred while fetching crypto data: {e}")
         raise HTTPException(status_code=500, detail=f"An internal error occurred: {str(e)}")
 
-# --- Configuration and Alert History Endpoints ---
-CONFIG_FILE_PATH = os.path.join(BASE_PATH, "config.json")
-ALERT_HISTORY_FILE_PATH = os.path.join(BASE_PATH, "alert_history.json")
-HISTORY_LOCK = Lock()
-CONFIG_LOCK = Lock()
 
 @app.get("/api/alert_configs")
 async def get_alert_configs():
@@ -192,12 +319,10 @@ async def get_alert_configs():
     try:
         if not os.path.exists(CONFIG_FILE_PATH):
             logging.warning("config.json not found.")
-            # It's better to return a default/empty config than to crash the frontend
             return {"cryptos_to_monitor": [], "market_analysis_config": {}}
 
         with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
             try:
-                # Handle empty file case
                 content = f.read()
                 if not content.strip():
                     logging.warning("config.json is empty.")
@@ -218,7 +343,6 @@ async def save_alert_configs(config_data: Dict[str, Any]):
     Saves the entire monitoring and UI configuration.
     """
     try:
-        # Basic validation
         if 'cryptos_to_monitor' not in config_data or 'market_analysis_config' not in config_data:
             raise HTTPException(status_code=400, detail="Invalid configuration structure.")
 
@@ -228,7 +352,7 @@ async def save_alert_configs(config_data: Dict[str, Any]):
         logging.info("Successfully saved configuration to config.json")
         return {"message": "Configuration saved successfully."}
     except HTTPException:
-        raise # Re-raise HTTPException to keep its status code and detail
+        raise
     except Exception as e:
         logging.error(f"Error saving configuration file: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An internal server error occurred while saving config: {str(e)}")
@@ -243,7 +367,6 @@ async def add_monitored_coin(request: CoinAddRequest):
     """
     with CONFIG_LOCK:
         try:
-            # 1. Read the existing config
             config = {"cryptos_to_monitor": [], "market_analysis_config": {}}
             if os.path.exists(CONFIG_FILE_PATH):
                 with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
@@ -251,13 +374,11 @@ async def add_monitored_coin(request: CoinAddRequest):
                     if content:
                         config = json.loads(content)
 
-            # 2. Check if the coin is already monitored
             monitored_symbols = [c['symbol'] for c in config['cryptos_to_monitor']]
             if request.symbol in monitored_symbols:
                 logging.warning(f"Attempted to add existing coin {request.symbol}. No action taken.")
                 return {"message": f"Coin {request.symbol} is already monitored."}
 
-            # 3. Add the new coin with a default alert configuration
             new_coin_config = {
                 "symbol": request.symbol,
                 "alert_config": {
@@ -274,7 +395,6 @@ async def add_monitored_coin(request: CoinAddRequest):
             }
             config['cryptos_to_monitor'].append(new_coin_config)
 
-            # 4. Write the updated config back to the file
             with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=4)
 
@@ -292,14 +412,12 @@ async def remove_monitored_coin(symbol: str):
     """
     with CONFIG_LOCK:
         try:
-            # 1. Read the existing config
             if not os.path.exists(CONFIG_FILE_PATH):
                 raise HTTPException(status_code=404, detail="Configuration file not found.")
 
             with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
                 config = json.load(f)
 
-            # 2. Find and remove the coin
             initial_count = len(config['cryptos_to_monitor'])
             config['cryptos_to_monitor'] = [
                 c for c in config['cryptos_to_monitor'] if c.get('symbol') != symbol
@@ -309,7 +427,6 @@ async def remove_monitored_coin(symbol: str):
                 logging.warning(f"Attempted to remove non-existent coin {symbol}.")
                 raise HTTPException(status_code=404, detail=f"Coin {symbol} not found in monitored list.")
 
-            # 3. Write the updated config back
             with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=4)
 
@@ -444,7 +561,6 @@ async def test_telegram_endpoint():
     Envia uma mensagem de teste para o Telegram usando as credenciais configuradas.
     """
     try:
-        # Carregar a configuração para obter as credenciais do Telegram
         with CONFIG_LOCK:
             if not os.path.exists(CONFIG_FILE_PATH):
                 raise HTTPException(status_code=404, detail="Arquivo de configuração não encontrado.")
@@ -464,13 +580,12 @@ async def test_telegram_endpoint():
 
         test_message = "✅ Mensagem de teste do Crypto Monitor Pro!\n\nSua configuração do Telegram parece estar funcionando corretamente."
 
-        # A função send_telegram_alert agora relança a exceção, permitindo a captura aqui.
         send_telegram_alert(bot_token, chat_id, test_message)
 
         return {"message": "Mensagem de teste enviada com sucesso!"}
 
     except HTTPException:
-        raise # Re-lança para manter o status e detalhe originais
+        raise
 
     except requests.exceptions.RequestException as e:
         error_detail = f"Erro de rede ao contatar o Telegram: {e}"
@@ -490,32 +605,22 @@ async def test_telegram_endpoint():
         raise HTTPException(status_code=500, detail=f"Ocorreu um erro inesperado: {str(e)}")
 
 
-from backend.indicators import calculate_rsi, calculate_bollinger_bands, calculate_emas, calculate_hilo_signals
-
-def series_to_json_list(series: pd.Series) -> list:
-    """Converts a pandas Series to a list, replacing NaN with None for JSON compatibility."""
-    if series is None or series.empty:
-        return []
-    return series.where(pd.notna(series), None).tolist()
-
 @app.get("/api/coin_details/{symbol}")
 async def get_coin_details(symbol: str):
     """
-    Provides detailed information for a specific coin, including recent alerts and historical data for a chart.
+    Fornece APENAS os alertas recentes de uma moeda específica para o modal.
     """
     try:
-        # 1. Fetch recent alerts for the symbol from the last 7 days
         end_date = datetime.now(timezone.utc)
         start_date_alerts = end_date - timedelta(days=7)
-
         recent_alerts = []
+
         if os.path.exists(ALERT_HISTORY_FILE_PATH):
             with HISTORY_LOCK:
                 with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
                     try:
                         history = json.load(f)
                         if isinstance(history, list):
-                            # Filter alerts for the given symbol and within the date range
                             symbol_alerts = [
                                 alert for alert in history
                                 if alert.get('symbol') == symbol and
@@ -525,79 +630,123 @@ async def get_coin_details(symbol: str):
                     except (json.JSONDecodeError, IndexError, TypeError):
                         pass
 
-        # 2. Fetch historical data for the last 30 days to have enough data for indicators
-        start_date_data = end_date - timedelta(days=30)
-        end_date_str = end_date.strftime("%Y-%m-%d")
-        start_date_data_str = start_date_data.strftime("%Y-%m-%d")
-
-        historical_data_df = fetch_historical_data(symbol, start_date_data_str, end_date_str, interval='1h')
-
-        if historical_data_df.empty:
-            return {"alerts": recent_alerts, "chartData": None, "indicatorsData": {}}
-
-        # 3. Calculate Indicators
-        rsi, _, _ = calculate_rsi(historical_data_df)
-        upper_band, lower_band, sma_20 = calculate_bollinger_bands(historical_data_df)
-        emas = calculate_emas(historical_data_df, periods=[9, 21, 50, 200])
-
-        # We only need the last 7 days of data for the chart itself
-        historical_data_df_chart = historical_data_df[historical_data_df.index >= start_date_alerts]
-
-        # 4. Format data for Plotly
-        chart_data = {
-            'x': historical_data_df_chart.index.strftime('%Y-%m-%d %H:%M:%S').tolist(),
-            'open': series_to_json_list(historical_data_df_chart['open']),
-            'high': series_to_json_list(historical_data_df_chart['high']),
-            'low': series_to_json_list(historical_data_df_chart['low']),
-            'close': series_to_json_list(historical_data_df_chart['close']),
-            'type': 'candlestick',
-            'name': symbol
-        }
-
-        indicators_data = {
-            'rsi': {'x': rsi.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': series_to_json_list(rsi), 'name': 'RSI'},
-            'bollinger_upper': {'x': upper_band.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': series_to_json_list(upper_band), 'name': 'BB Upper'},
-            'bollinger_lower': {'x': lower_band.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': series_to_json_list(lower_band), 'name': 'BB Lower'},
-            'sma_20': {'x': sma_20.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': series_to_json_list(sma_20), 'name': 'SMA 20'},
-        }
-        for period, ema_series in emas.items():
-            indicators_data[f'ema_{period}'] = {'x': ema_series.index.strftime('%Y-%m-%d %H:%M:%S').tolist(), 'y': series_to_json_list(ema_series), 'name': f'EMA {period}'}
-
-        # 5. Prepare alerts for annotations
-        annotations = []
-        for alert in recent_alerts:
-            # Find the closest data point in time to place the annotation
-            alert_time = pd.to_datetime(alert['timestamp']).tz_convert('UTC')
-            if not historical_data_df_chart.empty:
-                closest_time_index = historical_data_df_chart.index.get_indexer([alert_time], method='nearest')[0]
-                # Check if a valid index was found
-                if closest_time_index != -1:
-                    closest_time = historical_data_df_chart.index[closest_time_index]
-                    price_at_alert = historical_data_df_chart.loc[closest_time]['high']
-
-                    # Replace NaN with None for JSON compatibility
-                    y_price = price_at_alert if pd.notna(price_at_alert) else None
-
-                    annotations.append({
-                        'x': closest_time.strftime('%Y-%m-%d %H:%M:%S'),
-                        'y': y_price,
-                        'text': alert['condition'], # Using 'condition' as it's more concise
-                        'showarrow': True,
-                        'arrowhead': 1,
-                        'ax': 0,
-                        'ay': -40 # Frontend can dynamically adjust this
-                    })
-
-        return {
-            "alerts": recent_alerts, # Keep sending raw alerts for display in a list
-            "chartData": chart_data,
-            "indicatorsData": indicators_data,
-            "annotations": annotations
-        }
+        return {"alerts": recent_alerts}
 
     except Exception as e:
-        logging.error(f"Error fetching details for {symbol}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"An internal server error occurred while fetching details for {symbol}: {str(e)}")
+        logging.error(f"Error fetching alert details for {symbol}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred while fetching alert details for {symbol}: {str(e)}")
+
+
+async def get_chart_data(symbol: str):
+    """
+    Busca dados históricos e alertas para um símbolo, usado pelos endpoints de download.
+    """
+    end_date = datetime.now(timezone.utc)
+    start_date_data = end_date - timedelta(days=30)
+    
+    df = fetch_historical_data(symbol, start_date_data.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"), interval='1h')
+    if df.empty:
+        raise HTTPException(status_code=404, detail="Nenhum dado histórico encontrado para gerar o gráfico.")
+
+    history = []
+    if os.path.exists(ALERT_HISTORY_FILE_PATH):
+        with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+            try:
+                history = json.load(f)
+            except json.JSONDecodeError:
+                history = []
+
+    start_date_alerts = end_date - timedelta(days=7)
+    recent_alerts = [
+        alert for alert in history
+        if isinstance(alert, dict) and alert.get('symbol') == symbol and
+        pd.to_datetime(alert.get('timestamp')).tz_convert('UTC') >= start_date_alerts
+    ]
+    
+    chart_alerts = [{'timestamp': pd.to_datetime(a['timestamp']), 'price': a['snapshot']['price'], 'message': a['condition']} for a in recent_alerts]
+    
+    return df, chart_alerts
+
+@app.get("/api/coin_details/{symbol}/chart_image")
+async def get_coin_details_chart_image(symbol: str, background_tasks: BackgroundTasks):
+    """
+    Gera um gráfico e o retorna como uma IMAGEM PNG de altíssima resolução para download.
+    """
+    image_path = None
+    try:
+        df, chart_alerts = await get_chart_data(symbol)
+        
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+            image_path = tmpfile.name
+        
+        generate_chart_image(df, chart_alerts, output_path=image_path, symbol=symbol)
+        background_tasks.add_task(os.remove, image_path)
+
+        return FileResponse(image_path, media_type='image/png', filename=f"{symbol}_chart_{datetime.now().strftime('%Y-%m-%d')}.png")
+    except Exception as e:
+        if image_path and os.path.exists(image_path):
+            os.remove(image_path)
+        logging.error(f"Erro ao gerar imagem do gráfico para {symbol}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar imagem do gráfico: {str(e)}")
+
+
+@app.get("/api/coin_details/{symbol}/chart_html")
+async def get_coin_details_chart_html(symbol: str, background_tasks: BackgroundTasks):
+    """
+    Gera um gráfico interativo e o retorna como um ARQUIVO HTML para download.
+    """
+    html_path = None
+    try:
+        df, chart_alerts = await get_chart_data(symbol)
+
+        with tempfile.NamedTemporaryFile(suffix=".html", delete=False) as tmpfile:
+            html_path = tmpfile.name
+        
+        generate_interactive_chart_html(df, chart_alerts, output_path=html_path, symbol=symbol)
+        background_tasks.add_task(os.remove, html_path)
+        
+        return FileResponse(html_path, media_type='text/html', filename=f"{symbol}_interactive_chart_{datetime.now().strftime('%Y-%m-%d')}.html")
+    except Exception as e:
+        if html_path and os.path.exists(html_path):
+            os.remove(html_path)
+        logging.error(f"Erro ao gerar HTML do gráfico para {symbol}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar HTML do gráfico: {str(e)}")
+
+
+@app.post("/api/historical_analysis/chart_html")
+async def get_historical_analysis_chart_html(request: ChartGenerationRequest, background_tasks: BackgroundTasks):
+    """Gera um gráfico a partir dos resultados da análise histórica e retorna um HTML interativo."""
+    html_path = None
+    try:
+        df = fetch_historical_data(request.symbol, request.start_date, request.end_date, interval='1h')
+        if df.empty:
+            raise HTTPException(status_code=404, detail="Nenhum dado histórico encontrado para o período.")
+
+        # Make the alert processing more robust to handle different data structures
+        chart_alerts = []
+        for alert in request.alerts:
+            # Intelligently find the price, whether it's at the top level or nested
+            price = alert.get('price') or alert.get('snapshot', {}).get('price')
+            if price is not None:
+                chart_alerts.append({
+                    'timestamp': pd.to_datetime(alert['timestamp']),
+                    'price': price,
+                    'message': alert.get('condition') or alert.get('description', 'Alerta')
+                })
+
+        with tempfile.NamedTemporaryFile(suffix=".html", delete=False) as tmpfile:
+            html_path = tmpfile.name
+        
+        generate_interactive_chart_html(df, chart_alerts, output_path=html_path, symbol=request.symbol)
+        background_tasks.add_task(os.remove, html_path)
+        
+        return FileResponse(html_path, media_type='text/html', filename=f"{request.symbol}_analysis_interactive_chart.html")
+        
+    except Exception as e:
+        if html_path and os.path.exists(html_path):
+            os.remove(html_path)
+        logging.error(f"Erro ao gerar HTML da análise histórica para {request.symbol}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar HTML da análise: {str(e)}")
 
 # --- Serve Static Files ---
 if hasattr(sys, '_MEIPASS'):
@@ -609,7 +758,7 @@ if os.path.exists(static_files_path):
     app.mount("/", StaticFiles(directory=static_files_path, html=True), name="static")
 else:
     logging.warning(f"Static files directory not found at '{static_files_path}'. The frontend will not be served.")
-
+    
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

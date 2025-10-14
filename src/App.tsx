@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import CryptoCard from './components/CryptoCard';
 import SettingsModal from './components/SettingsModal';
 import AlertsPanel from './components/AlertsPanel';
 import AlertHistoryPanel from './components/AlertHistoryPanel';
 import BacktesterPanel from './components/BacktesterPanel';
+import HistoricalAnalysisPanel from './components/HistoricalAnalysisPanel'; // Import the new panel
 import CryptoDetailModal from './components/CryptoDetailModal';
+import ChartFullScreen from './components/ChartFullScreen';
 import AlertTicker from './components/AlertTicker'; // Import the new component
 import './components/AlertTicker.css'; // Import the new stylesheet
 import { CryptoData, Alert, MutedAlert, AlertConfigs, AlertConfig, BasicCoin, API_BASE_URL, ALERT_DEFINITIONS, DEFAULT_ALERT_CONFIG, MarketAnalysisConfig } from './types';
@@ -24,6 +27,7 @@ const App = () => {
     const [isAlertsPanelOpen, setAlertsPanelOpen] = useState(false);
     const [isHistoryPanelOpen, setHistoryPanelOpen] = useState(false);
     const [isBacktesterPanelOpen, setBacktesterPanelOpen] = useState(false);
+    const [isHistoricalAnalysisPanelOpen, setHistoricalAnalysisPanelOpen] = useState(false);
     const [alertConfigs, setAlertConfigs] = useState<AlertConfigs>({});
     const [displayLimit, setDisplayLimit] = useState(20);
     const [gridLayoutColumns, setGridLayoutColumns] = useState(5);
@@ -542,111 +546,123 @@ const App = () => {
     }, [alerts]);
 
     return (
-        <div className="app-container">
-            <AlertTicker alerts={recentAlerts} />
-            <header className="app-header">
-                <div className="header-top">
-                    <h1 className="header-title">Crypto Monitor Pro</h1>
-                     <div className="header-actions">
-                        <button className="manage-button" onClick={() => setHistoryPanelOpen(true)}>
-                            Histórico
-                        </button>
-                        <div className="alerts-button-container">
-                             <button className="manage-button" onClick={() => setAlertsPanelOpen(true)}>
-                                Notificações
-                             </button>
-                             {alerts.length > 0 && <span className="alert-badge">{alerts.length}</span>}
-                        </div>
-                        <button className="manage-button" onClick={() => setSettingsModalOpen(true)}>
-                            Gerenciar Alertas
-                        </button>
-                    </div>
-                </div>
-                <div className="header-status-bar">
-                    <div className="status-item"><span className="label">Moedas:</span><span className="value">{cryptoData.length}</span></div>
-                    <div className="status-item"><span className="label">Dominância BTC:</span><span className="value btc-dominance">{btcDominance ? `${btcDominance.toFixed(1)}%` : 'N/A'}</span></div>
-                    <div className="status-item"><span className="label">Status API:</span><span className={error ? 'api-error' : 'api-ok'}>{error ? 'ERRO' : 'OK'}</span></div>
-                    <div className="status-item"><span className="label">Última Atualização:</span><span className="value">{lastUpdated ? lastUpdated.toLocaleTimeString('pt-BR') : 'Carregando...'}</span></div>
-                    <div className="status-item"><span className="label">Próxima em:</span><span className="value">{formatTime(secondsToNextUpdate)}</span></div>
-                </div>
-            </header>
-            <main className="main-content">
-                {isLoading ? (
-                    <div className="loading-container">Carregando dados do mercado...</div>
-                ) : error ? (
-                    <div className="error-container">{error}</div>
-                ) : (
-                    <>
-                        <div className="content-header">
-                            <h2 className="content-title">Visão Geral do Mercado</h2>
-                            <div className="content-actions">
-                                 <div className="sort-container">
-                                    <label htmlFor="sort-select">Ordenar por:</label>
-                                    <select
-                                        id="sort-select"
-                                        value={sortKey}
-                                        onChange={(e) => setSortKey(e.target.value as keyof CryptoData | 'symbol')}
-                                    >
-                                        <option value="market_cap">Capitalização de Mercado</option>
-                                        <option value="price">Preço</option>
-                                        <option value="price_change_24h">Variação 24h</option>
-                                        <option value="volume_24h">Volume 24h</option>
-                                        <option value="symbol">Nome</option>
-                                        <option value="active_alerts">Alertas Ativos</option>
-                                    </select>
+        <Routes>
+            <Route path="/" element={
+                <div className="app-container">
+                    <AlertTicker alerts={recentAlerts} />
+                    <header className="app-header">
+                        <div className="header-top">
+                            <h1 className="header-title">Crypto Monitor Pro12</h1>
+                             <div className="header-actions">
+                                <button className="manage-button" onClick={() => setHistoryPanelOpen(true)}>
+                                    Histórico
+                                </button>
+                                <button className="manage-button" onClick={() => setHistoricalAnalysisPanelOpen(true)}>
+                                    Análise Histórica
+                                </button>
+                                <div className="alerts-button-container">
+                                     <button className="manage-button" onClick={() => setAlertsPanelOpen(true)}>
+                                        Notificações
+                                     </button>
+                                     {alerts.length > 0 && <span className="alert-badge">{alerts.length}</span>}
                                 </div>
+                                <button className="manage-button" onClick={() => setSettingsModalOpen(true)}>
+                                    Gerenciar Alertas
+                                </button>
                             </div>
                         </div>
-                        <div
-                            className="crypto-grid"
-                            style={{ '--grid-columns': gridLayoutColumns } as React.CSSProperties}
-                        >
-                            {sortedData.map(crypto => (
-                                <CryptoCard
-                                    key={crypto.symbol}
-                                    data={crypto}
-                                    isBlinkVisible={isBlinkVisible}
-                                    onClick={handleCardClick}
-                                />
-                            ))}
+                        <div className="header-status-bar">
+                            <div className="status-item"><span className="label">Moedas:</span><span className="value">{cryptoData.length}</span></div>
+                            <div className="status-item"><span className="label">Dominância BTC:</span><span className="value btc-dominance">{btcDominance ? `${btcDominance.toFixed(1)}%` : 'N/A'}</span></div>
+                            <div className="status-item"><span className="label">Status API:</span><span className={error ? 'api-error' : 'api-ok'}>{error ? 'ERRO' : 'OK'}</span></div>
+                            <div className="status-item"><span className="label">Última Atualização:</span><span className="value">{lastUpdated ? lastUpdated.toLocaleTimeString('pt-BR') : 'Carregando...'}</span></div>
+                            <div className="status-item"><span className="label">Próxima em:</span><span className="value">{formatTime(secondsToNextUpdate)}</span></div>
                         </div>
-                    </>
-                )}
-            </main>
-            <SettingsModal
-                isOpen={isSettingsModalOpen}
-                onClose={() => setSettingsModalOpen(false)}
-                alertConfigs={alertConfigs}
-                onConfigChange={handleConfigChange}
-                allCoins={allCoins}
-                monitoredCoins={cryptoData}
-                onUpdateCoin={handleUpdateMonitoredCoin}
-                displayLimit={displayLimit}
-                onDisplayLimitChange={handleDisplayLimitChange}
-                gridLayoutColumns={gridLayoutColumns}
-                onGridLayoutChange={handleGridLayoutChange}
-            />
-            <AlertsPanel
-                isOpen={isAlertsPanelOpen}
-                onClose={() => setAlertsPanelOpen(false)}
-                alerts={alerts}
-                onClearAlerts={() => setAlerts([])}
-            />
-            <AlertHistoryPanel
-                isOpen={isHistoryPanelOpen}
-                onClose={() => setHistoryPanelOpen(false)}
-            />
-            <BacktesterPanel
-                isOpen={isBacktesterPanelOpen}
-                onClose={() => setBacktesterPanelOpen(false)}
-            />
-            {selectedCoin && (
-                <CryptoDetailModal
-                    coin={selectedCoin}
-                    onClose={handleCloseModal}
-                />
-            )}
-        </div>
+                    </header>
+                    <main className="main-content">
+                        {isLoading ? (
+                            <div className="loading-container">Carregando dados do mercado...</div>
+                        ) : error ? (
+                            <div className="error-container">{error}</div>
+                        ) : (
+                            <>
+                                <div className="content-header">
+                                    <h2 className="content-title">Visão Geral do Mercado</h2>
+                                    <div className="content-actions">
+                                         <div className="sort-container">
+                                            <label htmlFor="sort-select">Ordenar por:</label>
+                                            <select
+                                                id="sort-select"
+                                                value={sortKey}
+                                                onChange={(e) => setSortKey(e.target.value as keyof CryptoData | 'symbol')}
+                                            >
+                                                <option value="market_cap">Capitalização de Mercado</option>
+                                                <option value="price">Preço</option>
+                                                <option value="price_change_24h">Variação 24h</option>
+                                                <option value="volume_24h">Volume 24h</option>
+                                                <option value="symbol">Nome</option>
+                                                <option value="active_alerts">Alertas Ativos</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    className="crypto-grid"
+                                    style={{ '--grid-columns': gridLayoutColumns } as React.CSSProperties}
+                                >
+                                    {sortedData.map(crypto => (
+                                        <CryptoCard
+                                            key={crypto.symbol}
+                                            data={crypto}
+                                            isBlinkVisible={isBlinkVisible}
+                                            onClick={handleCardClick}
+                                        />
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </main>
+                    <SettingsModal
+                        isOpen={isSettingsModalOpen}
+                        onClose={() => setSettingsModalOpen(false)}
+                        alertConfigs={alertConfigs}
+                        onConfigChange={handleConfigChange}
+                        allCoins={allCoins}
+                        monitoredCoins={cryptoData}
+                        onUpdateCoin={handleUpdateMonitoredCoin}
+                        displayLimit={displayLimit}
+                        onDisplayLimitChange={handleDisplayLimitChange}
+                        gridLayoutColumns={gridLayoutColumns}
+                        onGridLayoutChange={handleGridLayoutChange}
+                    />
+                    <AlertsPanel
+                        isOpen={isAlertsPanelOpen}
+                        onClose={() => setAlertsPanelOpen(false)}
+                        alerts={alerts}
+                        onClearAlerts={() => setAlerts([])}
+                    />
+                    <AlertHistoryPanel
+                        isOpen={isHistoryPanelOpen}
+                        onClose={() => setHistoryPanelOpen(false)}
+                    />
+                    <BacktesterPanel
+                        isOpen={isBacktesterPanelOpen}
+                        onClose={() => setBacktesterPanelOpen(false)}
+                    />
+                    <HistoricalAnalysisPanel
+                        isOpen={isHistoricalAnalysisPanelOpen}
+                        onClose={() => setHistoricalAnalysisPanelOpen(false)}
+                    />
+                    {selectedCoin && (
+                        <CryptoDetailModal
+                            coin={selectedCoin}
+                            onClose={handleCloseModal}
+                        />
+                    )}
+                </div>
+            } />
+            <Route path="/chart/:coinSymbol" element={<ChartFullScreen />} />
+        </Routes>
     );
 };
 

@@ -1,11 +1,22 @@
-ttkbootstrap
-Pillow
+# --- Framework Web ---
+fastapi
+uvicorn
+
+# --- Manipulação de Dados e Cálculos ---
 pandas
 numpy
+openpyxl # Usado pelo pandas para ler/escrever ficheiros Excel
+
+# --- Requisições de Rede e APIs ---
 requests
+httpx
 pycoingecko
-pyinstaller
-uvicorn
-fastapi
-openpyxl
+
+# --- Geração de Gráficos ---
 plotly
+kaleido # ESSENCIAL: Permite exportar os gráficos do Plotly como imagens de alta qualidade
+
+# --- Ferramentas de Interface Gráfica e Empacotamento (Manter se usar outras partes do projeto) ---
+ttkbootstrap
+Pillow
+pyinstaller
