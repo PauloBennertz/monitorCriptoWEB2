@@ -291,6 +291,12 @@ class BacktesterGUI:
         if not self.results_data:
             return
 
+        # Check if hit rate calculation was successful
+        if 'hit_rate_calculated' in self.results_data[0] and not self.results_data[0]['hit_rate_calculated']:
+            for tf, label in self.summary_labels.items():
+                label.config(text=f"Período {tf}: Falha ao buscar dados detalhados.")
+            return
+
         timeframes = ['15m', '30m', '1h', '4h', '24h']
         for tf in timeframes:
             hit_key = f'hit_{tf}'

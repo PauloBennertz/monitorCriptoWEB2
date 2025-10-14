@@ -185,17 +185,18 @@ def calculate_hit_rate(alerts_df: pd.DataFrame, symbol: str):
     min_alert_time = alerts_df['timestamp'].min()
     max_alert_time = alerts_df['timestamp'].max()
 
-    # Define the period for which we need 1-minute data
     future_start_date = min_alert_time.strftime('%Y-%m-%d')
-    # Need data up to 24 hours after the LAST alert
     future_end_date = (max_alert_time + timedelta(days=2)).strftime('%Y-%m-%d')
 
     logging.info(f"Fetching 1-minute data from {future_start_date} to {future_end_date} for analysis.")
     future_df = fetch_historical_data(symbol, future_start_date, future_end_date, interval='1m')
 
     if future_df.empty:
-        logging.warning("Could not fetch future data for hit rate analysis. Aborting.")
+        logging.warning("Could not fetch future data for hit rate analysis. Aborting and returning.")
+        alerts_df['hit_rate_calculated'] = False
         return alerts_df
+
+    alerts_df['hit_rate_calculated'] = True
     # --- End Optimization ---
 
     for index, alert in alerts_df.iterrows():
