@@ -14,7 +14,7 @@ from .indicators import (
 logging.basicConfig(level=logging.INFO)
 
 
-def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert_config: dict):
+def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert_config: dict, timeframes_config: dict = None):
     """
     Analyzes historical data for a symbol to find when alert conditions would have been met,
     using a highly efficient and vectorized pandas approach.
@@ -140,7 +140,11 @@ def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert
     # Convert result to DataFrame for hit rate calculation
     if result:
         alerts_df = pd.DataFrame(result)
-        alerts_df = calculate_hit_rate(alerts_df, symbol)
+        if timeframes_config is None:
+            timeframes_config = {
+                '15m': 15, '30m': 30, '1h': 60, '4h': 240, '24h': 1440
+            }
+        alerts_df = calculate_hit_rate(alerts_df, symbol, timeframes_config)
         result = alerts_df.to_dict('records')
 
     return result, historical_df
@@ -160,7 +164,7 @@ SIGNAL_TYPE_MAPPING = {
     'media_movel_baixo': 'sell',
 }
 
-def calculate_hit_rate(alerts_df: pd.DataFrame, symbol: str):
+def calculate_hit_rate(alerts_df: pd.DataFrame, symbol: str, timeframes_config: dict):
     """
     Calculates the hit rate of alerts by analyzing price movements after each alert.
     Optimized to fetch future data in a single batch.
@@ -170,9 +174,7 @@ def calculate_hit_rate(alerts_df: pd.DataFrame, symbol: str):
 
     logging.info(f"Optimized hit rate calculation for {len(alerts_df)} alerts for {symbol}...")
 
-    timeframes_minutes = {
-        '15m': 15, '30m': 30, '1h': 60, '4h': 240, '24h': 1440
-    }
+    timeframes_minutes = timeframes_config
 
     # Initialize results columns
     for tf in timeframes_minutes.keys():
