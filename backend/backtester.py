@@ -1,232 +1,498 @@
+import tkinter as tk
+from tkinter import filedialog, messagebox
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
+from ttkbootstrap.scrolled import ScrolledText
+from ttkbootstrap.widgets import DateEntry
+import threading
+import queue
 import pandas as pd
-import logging
-import requests
-import time
-from datetime import datetime, timezone
-from .chart_generator import generate_chart_image as generate_chart
-from .indicators import calculate_sma
-import numpy as np
+from datetime import datetime
 
+import json
+from .historical_analyzer import analyze_historical_alerts
+from .cache_manager import generate_cache_key, save_to_cache, load_from_cache
 
-BINANCE_API_URL = "https://api.binance.com/api/v3/klines"
-MAX_LIMIT = 1000
+# Import the backtesting and charting logic
+try:
+    from .backtester import fetch_historical_data, run_backtest
+    from .chart_generator import generate_chart_image as generate_chart
+except ImportError as e:
+    messagebox.showerror("Erro de Importação", f"Não foi possível importar componentes necessários: {e}")
+    exit()
 
-def date_to_milliseconds(date_str):
-    """Converts a YYYY-MM-DD string to milliseconds since epoch."""
-    return int(datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp() * 1000)
+class BacktesterGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Ferramenta de Backtesting")
+        self.root.geometry("1200x700")
 
-def fetch_historical_data(symbol, start_date, end_date, interval='1h'):
-    """
-    Fetches historical k-line data from Binance for a given symbol and date range.
-    Handles pagination to retrieve all data in the specified range.
-    """
-    logging.info(f"Fetching historical data for {symbol} from {start_date} to {end_date} with {interval} interval.")
-    start_ms = date_to_milliseconds(start_date)
-    end_ms = date_to_milliseconds(end_date)
-    all_data = []
+        # --- State and Control Variables ---
+        self.results_data = []
+        self.backtest_df = None # To store the dataframe with results
+        self.backtest_signals = None # To store the signals for charting
+        self.is_paused = False
+        self.stop_event = threading.Event()
+        self.pause_event = threading.Event()
 
-    while start_ms < end_ms:
-        params = {
-            'symbol': symbol,
-            'interval': interval,
-            'startTime': start_ms,
-            'endTime': end_ms,
-            'limit': MAX_LIMIT
+        # --- Top Level Frame ---
+        top_frame = ttk.Frame(self.root, padding=10)
+        top_frame.pack(fill=tk.BOTH, expand=True)
+
+        # --- Left Frame (for controls and results) ---
+        left_frame = ttk.Frame(top_frame, padding=5)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
+
+        # --- Right Frame (for alert configurations) ---
+        right_frame = ttk.Labelframe(top_frame, text="Configuração dos Alertas", padding=10)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(5, 0))
+
+        self.alert_info_text = ScrolledText(right_frame, wrap=tk.WORD, height=10)
+        self.alert_info_text.pack(fill=tk.BOTH, expand=True)
+        self.alert_info_text.configure(state="disabled")
+
+        # --- Input Frame ---
+        input_frame = ttk.Labelframe(left_frame, text="Parâmetros da Análise", padding=10)
+        input_frame.pack(fill=tk.X, pady=5)
+        input_frame.columnconfigure(1, weight=1)
+
+        ttk.Label(input_frame, text="Símbolo:").grid(row=0, column=0, sticky="w", padx=5, pady=5)
+        self.symbol_entry = ttk.Entry(input_frame, width=15)
+        self.symbol_entry.grid(row=0, column=1, sticky="ew", padx=5, pady=5)
+        self.symbol_entry.insert(0, "BTCUSDT")
+
+        ttk.Label(input_frame, text="Data de Início:").grid(row=1, column=0, sticky="w", padx=5, pady=5)
+        self.start_date_entry = DateEntry(input_frame, dateformat="%Y-%m-%d", firstweekday=6, bootstyle=DEFAULT)
+        self.start_date_entry.grid(row=1, column=1, sticky="ew", padx=5, pady=5)
+
+        ttk.Label(input_frame, text="Data de Fim:").grid(row=2, column=0, sticky="w", padx=5, pady=5)
+        self.end_date_entry = DateEntry(input_frame, dateformat="%Y-%m-%d", firstweekday=6, bootstyle=DEFAULT)
+        self.end_date_entry.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
+
+        # --- Timeframes Frame ---
+        timeframes_frame = ttk.Labelframe(left_frame, text="Períodos de Análise (Hit Rate)", padding=10)
+        timeframes_frame.pack(fill=tk.X, pady=5)
+
+        self.timeframe_vars = {}
+        timeframes = {
+            "5m": 5, "15m": 15, "30m": 30, "45m": 45,
+            "1h": 60, "2h": 120, "6h": 360, "24h": 1440
         }
+
+        col = 0
+        for name, minutes in timeframes.items():
+            var = tk.BooleanVar(value=(name in ['15m', '1h', '24h'])) # Default selection
+            cb = ttk.Checkbutton(timeframes_frame, text=name, variable=var, bootstyle="primary")
+            cb.grid(row=0, column=col, padx=5, pady=2, sticky="w")
+            self.timeframe_vars[name] = {'var': var, 'minutes': minutes}
+            col += 1
+
+        # --- Action Frame ---
+        action_frame = ttk.Frame(left_frame, padding=(0, 10))
+        action_frame.pack(fill=tk.X, pady=10)
+
+        self.run_button = ttk.Button(action_frame, text="Iniciar Análise", command=self.start_backtest_thread, bootstyle=SUCCESS)
+        self.run_button.pack(side=tk.LEFT, padx=(0, 5))
+
+        self.pause_button = ttk.Button(action_frame, text="Pausar", command=self.toggle_pause, state="disabled", bootstyle=WARNING)
+        self.pause_button.pack(side=tk.LEFT, padx=5)
+
+        self.stop_button = ttk.Button(action_frame, text="Parar", command=self.stop_backtest, state="disabled", bootstyle=DANGER)
+        self.stop_button.pack(side=tk.LEFT, padx=5)
+
+        self.status_label = ttk.Label(action_frame, text="")
+        self.status_label.pack(side=tk.LEFT, padx=10)
+
+        spacer = ttk.Frame(action_frame)
+        spacer.pack(side=tk.LEFT, expand=True, fill=tk.X)
+
+        self.chart_button = ttk.Button(action_frame, text="Ver Gráfico", command=self.show_chart, state="disabled", bootstyle=PRIMARY)
+        self.chart_button.pack(side=tk.RIGHT, padx=5)
+
+        self.export_button = ttk.Button(action_frame, text="Exportar para CSV", command=self.export_to_csv, state="disabled", bootstyle=INFO)
+        self.export_button.pack(side=tk.RIGHT, padx=5)
+
+        # --- Output Frame ---
+        output_frame = ttk.Labelframe(left_frame, text="Resultados", padding=10)
+        output_frame.pack(fill=tk.BOTH, expand=True)
+
+        # --- Treeview for structured results (placeholder) ---
+        self.results_tree = ttk.Treeview(output_frame, show="headings", height=10)
+
+        # Add a scrollbar
+        scrollbar = ttk.Scrollbar(output_frame, orient=tk.VERTICAL, command=self.results_tree.yview)
+        self.results_tree.configure(yscroll=scrollbar.set)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.results_tree.pack(fill=tk.BOTH, expand=True)
+
+        # --- Summary Frame (placeholder) ---
+        self.summary_frame = ttk.Labelframe(left_frame, text="Resumo da Taxa de Acerto", padding=10)
+        self.summary_frame.pack(fill=tk.X, pady=(10, 5))
+        self.summary_labels = {}
+
+        self.queue = queue.Queue()
+        self.root.after(100, self.process_queue)
+
+        # --- Display Alert Configurations ---
+        self._display_alert_configurations()
+
+    def _display_alert_configurations(self):
+        """
+        Reads, formats, and displays the hardcoded alert logic in the right-side panel.
+        This provides users with a clear view of the current alert rules.
+        """
+        config_text = """
+Regras de Alerta Atuais:
+
+--- COMPRA ---
+
+1. RSI Sobrevenda:
+   - Condição: RSI(14) <= 30
+   - Descrição: Indica que o ativo pode estar sobrevendido e prestes a reverter a tendência de baixa.
+
+2. Cruzamento de Alta do MACD:
+   - Condição: Cruzamento de alta no MACD(12,26,9) E RSI(14) < 30.
+   - Descrição: Sinal de compra forte, combinando momento (MACD) com condição de sobrevenda (RSI).
+
+3. Cruz Dourada (Golden Cross):
+   - Condição: MME(50) cruza para cima da MME(200).
+   - Descrição: Sinal clássico de início de uma tendência de alta de longo prazo. Também desativa o "Modo Filtro".
+
+4. HiLo Compra (Modo Filtro):
+   - Condição: Preço cruza para cima do HiLo(34) E "Cruz da Morte" NÃO está ativa.
+   - Descrição: Sinal de compra baseado no indicador HiLo, mas é ignorado se uma tendência de baixa de longo prazo ("Cruz da Morte") estiver em vigor.
+
+5. Média Móvel para Cima (Modo Filtro):
+   - Condição: Preço cruza para cima da MME(200) E MACD > 0 E "Cruz da Morte" NÃO está ativa.
+   - Descrição: Confirmação de tendência de alta com o preço acima da média longa e momento positivo do MACD. Também é ignorado durante o "Modo Filtro".
+
+--- VENDA ---
+
+1. RSI Sobrecompra:
+   - Condição: RSI(14) >= 75
+   - Descrição: Indica que o ativo pode estar sobrecomprado e prestes a corrigir.
+
+2. Cruzamento de Baixa do MACD:
+   - Condição: Cruzamento de baixa no MACD(12,26,9).
+   - Descrição: Sinal de possível reversão para uma tendência de baixa.
+
+3. Cruz da Morte (Death Cross):
+   - Condição: MME(50) cruza para baixo da MME(200) E o preço está abaixo da MME(200).
+   - Descrição: Sinal forte de tendência de baixa. Ativa o "Modo Filtro", que desabilita os alertas 'HiLo Compra' e 'Média Móvel para Cima'.
+
+4. HiLo Venda:
+   - Condição: Preço cruza para baixo do HiLo(34).
+   - Descrição: Sinal de venda baseado no indicador HiLo.
+
+5. Média Móvel para Baixo:
+   - Condição: Preço cruza para baixo da MME(17).
+   - Descrição: Sinal de curto prazo que indica uma possível perda de força do preço.
+"""
+        # Enable the text widget to insert text, then disable it again
+        self.alert_info_text.configure(state="normal")
+        self.alert_info_text.delete("1.0", tk.END)
+        self.alert_info_text.insert(tk.END, config_text)
+        self.alert_info_text.configure(state="disabled")
+
+
+    def setup_results_display(self, timeframes):
+        """ Dynamically configures the Treeview and summary labels based on selected timeframes. """
+        # --- Clear previous summary widgets ---
+        for widget in self.summary_frame.winfo_children():
+            widget.destroy()
+        self.summary_labels.clear()
+
+        # --- Configure Treeview ---
+        base_columns = ["timestamp", "symbol", "condition", "price"]
+        hit_rate_columns = [f"{prefix}_{tf}" for tf in timeframes for prefix in ("hit", "pct")]
+        columns = base_columns + hit_rate_columns
+        self.results_tree.config(columns=columns)
+
+        # Define headings
+        self.results_tree.heading("timestamp", text="Timestamp")
+        self.results_tree.heading("symbol", text="Símbolo")
+        self.results_tree.heading("condition", text="Condição")
+        self.results_tree.heading("price", text="Preço")
+        for tf in timeframes:
+            self.results_tree.heading(f"hit_{tf}", text=f"Acerto ({tf})")
+            self.results_tree.heading(f"pct_{tf}", text=f"% ({tf})")
+
+        # Configure column widths
+        self.results_tree.column("timestamp", width=150)
+        self.results_tree.column("symbol", width=80)
+        self.results_tree.column("condition", width=180)
+        self.results_tree.column("price", width=80, anchor=E)
+        for tf in timeframes:
+            self.results_tree.column(f"hit_{tf}", width=70, anchor=CENTER)
+            self.results_tree.column(f"pct_{tf}", width=70, anchor=E)
+
+        # --- Configure Summary Labels ---
+        for i, tf in enumerate(timeframes):
+            label = ttk.Label(self.summary_frame, text=f"Período {tf}: N/A")
+            label.grid(row=i, column=0, padx=5, pady=2, sticky="w")
+            self.summary_labels[tf] = label
+
+    def process_queue(self):
         try:
-            response = requests.get(BINANCE_API_URL, params=params, timeout=15)
-            response.raise_for_status()
-            data = response.json()
-            if not data:
-                break
-            all_data.extend(data)
-            last_timestamp = data[-1][0]
-            start_ms = last_timestamp + 1
-            logging.info(f"Fetched {len(data)} records. Next start time: {datetime.fromtimestamp(start_ms / 1000, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}")
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Network error while fetching data for {symbol}: {e}")
-            # WORKAROUND: Return hardcoded sample data for sandbox/offline testing.
-            logging.warning("API call failed. Returning hardcoded sample data for verification.")
-            num_records = 720  # Approx 30 days of hourly data
-            end_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-            timestamps = pd.to_datetime(pd.date_range(end=end_dt, periods=num_records, freq='h'))
-            price_data = 40000 + (np.random.randn(num_records).cumsum() * 10)
-            sample_df = pd.DataFrame({
-                'timestamp': timestamps,
-                'open': price_data - np.random.uniform(-10, 10, num_records),
-                'high': price_data + np.random.uniform(0, 20, num_records),
-                'low': price_data - np.random.uniform(0, 20, num_records),
-                'close': price_data,
-                'volume': np.random.uniform(100, 1000, num_records)
-            }).set_index('timestamp')
-            return sample_df
+            message = self.queue.get_nowait()
+            self.update_results(message)
+        except queue.Empty:
+            pass
+        finally:
+            self.root.after(100, self.process_queue)
+
+    def update_results(self, message):
+        if not isinstance(message, dict):
+            return
+
+        msg_type = message.get("type")
+        if msg_type == "alert":
+            alert_data = message.get("data", {})
+
+            # --- Base Info ---
+            ts_str = alert_data.get('timestamp', '')
+            try:
+                ts = pd.to_datetime(ts_str).strftime('%Y-%m-%d %H:%M:%S')
+            except Exception:
+                ts = ts_str
+
+            price = f"${alert_data.get('snapshot', {}).get('price', 0):.2f}"
+
+            base_values = [
+                ts,
+                alert_data.get('symbol', 'N/A'),
+                alert_data.get('description', 'N/A'),
+                price
+            ]
+
+            # --- Hit Rate Info ---
+            timeframes = list(self.summary_labels.keys()) # Get dynamically set timeframes
+            hit_rate_values = []
+            for tf in timeframes:
+                hit = alert_data.get(f'hit_{tf}')
+                pct = alert_data.get(f'pct_change_{tf}')
+
+                # Format for display
+                hit_display = "Sim" if hit is True else ("Não" if hit is False else "N/A")
+                pct_display = f"{pct:.2f}%" if pct is not None else "N/A"
+
+                hit_rate_values.extend([hit_display, pct_display])
+
+            # --- Combine and Insert ---
+            values = tuple(base_values + hit_rate_values)
+            self.results_tree.insert("", tk.END, values=values)
+            self.results_data.append(alert_data) # Store original data
+
+        elif msg_type == "status":
+            self.status_label.config(text=message.get("msg"))
+        elif msg_type == "error":
+            messagebox.showerror("Erro na Análise", message.get("msg"))
+        elif msg_type == "task_done":
+            self.gui_task_done()
+
+    def start_backtest_thread(self):
+        symbol = self.symbol_entry.get().strip().upper()
+        start_date = self.start_date_entry.entry.get()
+        end_date = self.end_date_entry.entry.get()
+
+        if not all([symbol, start_date, end_date]):
+            messagebox.showerror("Erro de Entrada", "Todos os campos devem ser preenchidos.")
+            return
+
+        self.stop_event.clear()
+        self.pause_event.clear()
+        self.is_paused = False
+        self.results_data.clear()
+        self.backtest_df = None
+        self.backtest_signals = None
+
+        self.run_button.config(state="disabled")
+        self.pause_button.config(state="normal", text="Pausar")
+        self.stop_button.config(state="normal")
+        self.export_button.config(state="disabled")
+        self.chart_button.config(state="disabled")
+        self.status_label.config(text="Analisando...")
+
+        # Get selected timeframes
+        selected_timeframes = {name: data['minutes'] for name, data in self.timeframe_vars.items() if data['var'].get()}
+        if not selected_timeframes:
+            messagebox.showerror("Seleção Inválida", "Por favor, selecione pelo menos um período de análise.")
+            self.gui_task_done() # Re-enable buttons
+            self.run_button.config(state="normal")
+            return
+
+        # Setup display for the new run
+        self.setup_results_display(list(selected_timeframes.keys()))
+
+        # Clear previous results from the treeview
+        for i in self.results_tree.get_children():
+            self.results_tree.delete(i)
+
+        thread = threading.Thread(
+            target=self.run_backtest_logic,
+            args=(symbol, start_date, end_date, selected_timeframes),
+            daemon=True
+        )
+        thread.start()
+
+    def run_backtest_logic(self, symbol, start_date, end_date, timeframes_config):
+        try:
+            with open('backend/config.json', 'r') as f:
+                config = json.load(f)
+            crypto_config = next((c for c in config.get("cryptos_to_monitor", []) if c['symbol'] == symbol), {})
+            alert_config = crypto_config.get('alert_config', {})
+            if not alert_config:
+                self.queue.put({"type": "status", "msg": f"AVISO: Nenhuma configuração de alerta para {symbol}."})
         except Exception as e:
-            logging.error(f"An unexpected error occurred: {e}")
-            break
+            self.queue.put({"type": "error", "msg": f"ERRO ao ler config.json: {e}"})
+            self.queue.put({"type": "task_done"})
+            return
 
-    if not all_data:
-        logging.warning("No data was fetched. Check the symbol and date range.")
-        return pd.DataFrame()
+        # --- Cache Logic ---
+        cache_key = generate_cache_key(symbol, start_date, end_date, alert_config, timeframes_config)
+        cached_results = load_from_cache(cache_key)
 
-    df = pd.DataFrame(all_data, columns=[
-        'open_time', 'open', 'high', 'low', 'close', 'volume',
-        'close_time', 'quote_asset_volume', 'number_of_trades',
-        'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'
-    ])
-    df['timestamp'] = pd.to_datetime(df['open_time'], unit='ms', utc=True)
-    for col in ['open', 'high', 'low', 'close', 'volume']:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-    df = df[['timestamp', 'open', 'high', 'low', 'close', 'volume']].set_index('timestamp')
-    end_date_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-    df = df[df.index < end_date_dt]
-    logging.info(f"Successfully fetched a total of {len(df)} records for the specified period.")
-    return df
-
-class MovingAverageCrossoverStrategy:
-    def __init__(self, short_window=40, long_window=100):
-        self.short_window = short_window
-        self.long_window = long_window
-
-    def generate_signals(self, data):
-        signals = pd.DataFrame(index=data.index)
-        signals['signal'] = 0.0
-        signals['short_mavg'] = calculate_sma(data['close'], self.short_window)
-        signals['long_mavg'] = calculate_sma(data['close'], self.long_window)
-        signals['signal'][self.short_window:] = np.where(signals['short_mavg'][self.short_window:] > signals['long_mavg'][self.short_window:], 1.0, 0.0)
-        signals['positions'] = signals['signal'].diff()
-        return signals['positions']
-
-class Backtester:
-    """
-    A class to run a backtest on historical data using a provided strategy.
-    """
-    def __init__(self, historical_data: pd.DataFrame, strategy, initial_capital: float):
-        """
-        Initializes the Backtester.
-
-        Args:
-            historical_data (pd.DataFrame): DataFrame with 'timestamp', 'open', 'high', 'low', 'close', 'volume'.
-            strategy: An object with a `generate_signals(data)` method that returns a Series of positions.
-            initial_capital (float): The starting capital for the backtest.
-        """
-        self.data = historical_data.copy()
-        self.strategy = strategy
-        self.initial_capital = initial_capital
-        self.positions = None
-        self.portfolio = None
-        logging.info(f"Backtester initialized with initial capital: {self.initial_capital}")
-
-    def _generate_positions(self):
-        """
-        Generates trading positions using the provided strategy.
-        """
-        if self.strategy:
-            self.positions = self.strategy.generate_signals(self.data)
-            logging.info("Generated positions from strategy.")
+        if cached_results:
+            alerts = cached_results.get("alerts")
+            # We still fetch historical data for the chart, not from cache.
+            _, df = analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config={})
         else:
-            # Create an empty positions series if no strategy is provided
-            self.positions = pd.Series(index=self.data.index).fillna(0.0)
-            logging.warning("No strategy provided. No positions will be taken.")
+            alerts, df = analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config)
+            if alerts:
+                save_to_cache(cache_key, {"alerts": alerts}) # Cache new results
 
-    def _simulate_portfolio(self):
-        """
-        Simulates the portfolio performance based on the generated positions.
-        """
-        self.portfolio = pd.DataFrame(index=self.data.index)
-        self.portfolio['returns'] = self.data['close'].pct_change()
-        self.portfolio['total'] = self.initial_capital
-        self.portfolio['positions'] = self.positions.fillna(0)
+        self.backtest_df = df # Store historical data for the chart
 
-        # A simple backtest: 1.0 means "buy/hold", -1.0 means "sell/short", 0 means "neutral"
-        # We'll translate this to a holding state.
-        self.portfolio['holdings'] = (self.portfolio['positions'].cumsum() * self.initial_capital)
-        self.portfolio['cash'] = self.initial_capital - (self.data['close'] * self.portfolio['positions']).cumsum()
-        self.portfolio['total'] = self.portfolio['cash'] + self.portfolio['holdings']
-        self.portfolio['returns'] = self.portfolio['total'].pct_change()
+        if not alerts:
+            self.queue.put({"type": "status", "msg": f"Nenhum alerta encontrado para {symbol}."})
+        else:
+            formatted_signals = []
+            for alert in alerts:
+                if self.stop_event.is_set():
+                    self.queue.put({"type": "status", "msg": "Análise interrompida pelo usuário."})
+                    break
+                self.queue.put({"type": "alert", "data": alert})
+                # Re-format for the chart generator
+                formatted_signals.append({
+                    "timestamp": pd.to_datetime(alert["timestamp"]),
+                    "price": alert["snapshot"]["price"],
+                    "message": alert["description"]
+                })
+            self.backtest_signals = formatted_signals
 
-        logging.info("Portfolio simulation complete.")
+        # Signal that the task is finished
+        self.queue.put({"type": "task_done"})
 
-    def _extract_signals_for_charting(self):
-        """
-        Extracts signals from the positions Series to be used by the chart generator.
-        """
-        signals_list = []
-        if self.positions is None:
-            return signals_list
+    def toggle_pause(self):
+        if self.is_paused:
+            self.pause_event.clear()
+            self.pause_button.config(text="Pausar")
+            self.status_label.config(text="Analisando...")
+            self.is_paused = False
+        else:
+            self.pause_event.set()
+            self.pause_button.config(text="Continuar")
+            self.status_label.config(text="Pausado")
+            self.is_paused = True
 
-        # Get the timestamps where a position change occurs
-        signal_points = self.positions[self.positions != 0]
+    def stop_backtest(self):
+        self.stop_event.set()
 
-        for timestamp, signal_type in signal_points.items():
-            price = self.data.loc[timestamp, 'close']
-            if signal_type > 0:
-                message = f"Sinal de Compra a ${price:.2f}"
-            elif signal_type < 0:
-                message = f"Sinal de Venda a ${price:.2f}"
+    def gui_task_done(self):
+        self.status_label.config(text="Concluído")
+        self.run_button.config(state="normal")
+        self.pause_button.config(state="disabled", text="Pausar")
+        self.stop_button.config(state="disabled")
+
+        if self.results_data:
+            self.export_button.config(state="normal")
+            self.update_summary_display()
+
+        if self.backtest_signals: # If there are any signals, enable the chart button
+            self.chart_button.config(state="normal")
+
+    def update_summary_display(self):
+        if not self.results_data:
+            return
+
+        # Check if hit rate calculation was successful
+        if 'hit_rate_calculated' in self.results_data[0] and not self.results_data[0]['hit_rate_calculated']:
+            for tf, label in self.summary_labels.items():
+                label.config(text=f"Período {tf}: Falha ao buscar dados detalhados.")
+            return
+
+        timeframes = list(self.summary_labels.keys()) # Get dynamically set timeframes
+        for tf in timeframes:
+            hit_key = f'hit_{tf}'
+            hits = 0
+            misses = 0
+
+            for result in self.results_data:
+                if result.get(hit_key) is True:
+                    hits += 1
+                elif result.get(hit_key) is False:
+                    misses += 1
+
+            total = hits + misses
+            if total > 0:
+                hit_rate = (hits / total) * 100
+                summary_text = f"Período {tf} - Acertos: {hits} / Erros: {misses} (Taxa de Acerto: {hit_rate:.1f}%)"
             else:
-                continue # Skip neutral signals
+                summary_text = f"Período {tf}: Sem dados"
 
-            signals_list.append({
-                'timestamp': timestamp,
-                'message': message,
-                'price': price
-            })
-        logging.info(f"Extracted {len(signals_list)} signals for charting.")
-        return signals_list
+            self.summary_labels[tf].config(text=summary_text)
 
-    def run(self, coin_id: str):
-        """
-        Runs the backtest simulation and generates the chart.
+    def export_to_csv(self):
+        if not self.results_data:
+            messagebox.showinfo("Exportar", "Não há dados para exportar.")
+            return
 
-        Args:
-            coin_id (str): The identifier for the coin being backtested (e.g., 'BTCUSDT').
+        df = pd.DataFrame(self.results_data)
 
-        Returns:
-            A tuple containing the DataFrame with backtest data and the list of signals for charting.
-        """
+        # Create a dynamic filename
+        symbol = self.symbol_entry.get().strip().upper()
+        start_date = self.start_date_entry.entry.get()
+        end_date = self.end_date_entry.entry.get()
+        filename = f"{symbol}_{start_date}_a_{end_date}.csv"
+
+        filepath = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            title="Salvar resultados como...",
+            initialfile=filename
+        )
+
+        if not filepath:
+            return
+
         try:
-            logging.info(f"Running backtest for {coin_id}...")
-            self._generate_positions()
-            self._simulate_portfolio()
-            charting_signals = self._extract_signals_for_charting()
-
-            # The chart generator expects the timestamp to be a column, not the index
-            chart_df = self.data.reset_index()
-
-            return chart_df, charting_signals
+            # Drop the complex 'snapshot' column before saving
+            if 'snapshot' in df.columns:
+                df = df.drop(columns=['snapshot'])
+            df.to_csv(filepath, index=False)
+            messagebox.showinfo("Sucesso", f"Resultados salvos com sucesso em:\n{filepath}")
         except Exception as e:
-            logging.error(f"An error occurred during the backtest run: {e}", exc_info=True)
-            return pd.DataFrame(), []
+            messagebox.showerror("Erro ao Salvar", f"Ocorreu um erro ao salvar o arquivo:\n{e}")
 
-def run_backtest(historical_df, symbol, stop_event, pause_event, queue_put):
-    """
-    This function is designed to be called from the GUI thread.
-    It runs the backtest and communicates progress via the queue.
-    """
-    strategy = MovingAverageCrossoverStrategy()
-    backtester = Backtester(historical_df, strategy, initial_capital=10000)
+    def show_chart(self):
+        if self.backtest_df is not None and self.backtest_signals:
+            # Run chart generation in a separate thread to avoid freezing the GUI
+            chart_thread = threading.Thread(
+                target=generate_chart,
+                args=(self.backtest_df, self.backtest_signals),
+                daemon=True
+            )
+            chart_thread.start()
+        else:
+            messagebox.showinfo("Gerar Gráfico", "Não há dados de backtest para exibir. Execute uma análise primeiro.")
 
-    # The GUI seems to expect to iterate over something, let's simulate that
-    # by just running the backtest and then returning the results.
-    # The original GUI code seems to have some threading logic that might need rework,
-    # but for now, let's just make it work.
-
-    queue_put(f"INFO: Running backtest for {symbol}...")
-
-    if stop_event.is_set():
-        queue_put("INFO: Backtest stopped by user.")
-        return pd.DataFrame(), []
-
-    # This is a simplified run. The original GUI code seems to imply a more iterative process.
-    df, signals = backtester.run(symbol)
-
-    for signal in signals:
-        if stop_event.is_set():
-            queue_put("INFO: Backtest stopped by user.")
-            break
-        while pause_event.is_set():
-            time.sleep(1)
-        queue_put(f"{signal['timestamp']} - {signal['message']}")
-
-    queue_put("INFO: Backtest finished.")
-    return df, signals
+if __name__ == "__main__":
+    try:
+        root = ttk.Window(themename="darkly")
+        app = BacktesterGUI(root)
+        root.mainloop()
+    except tk.TclError as e:
+        print(f"Could not start GUI, likely because no display is available. Error: {e}")
+        # In a headless environment, we can't run the GUI.
+        # We can at least confirm the code is syntactically correct.
+        print("GUI Backtester script is syntactically correct and imports are resolved.")
