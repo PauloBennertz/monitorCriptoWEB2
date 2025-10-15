@@ -1,5 +1,109 @@
 [
     {
+        "id": "PUMPUSDT-RSI_SOBRECOMPRA-1760481989275",
+        "symbol": "PUMPUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-14T22:46:29.275Z",
+        "snapshot": {
+            "symbol": "PUMPUSDT",
+            "name": "Respect The Pump",
+            "price": 0.004091,
+            "price_change_24h": -5.301,
+            "volume_24h": 102355048.195082,
+            "market_cap": 0,
+            "rsi_value": 79.01861252115054,
+            "rsi_signal": "79.02",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "macd_value": 4.815371717559538e-06,
+            "macd_signal_line": -2.4313922752512173e-05,
+            "macd_histogram": 2.912929447007171e-05,
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 0.004106
+        }
+    },
+    {
+        "id": "XPLUSDT-RSI_SOBRECOMPRA-1760481989274",
+        "symbol": "XPLUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-14T22:46:29.274Z",
+        "snapshot": {
+            "symbol": "XPLUSDT",
+            "name": "Pulse",
+            "price": 0.4547,
+            "price_change_24h": 0.287,
+            "volume_24h": 247059509.86717,
+            "market_cap": 818862644,
+            "rsi_value": 88.37638376383768,
+            "rsi_signal": "88.38",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "macd_value": 0.0020511894352453486,
+            "macd_signal_line": -0.001302617791489034,
+            "macd_histogram": 0.0033538072267343825,
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 0.4542
+        }
+    },
+    {
+        "id": "PUMPUSDT-RSI_SOBRECOMPRA-1760481083653",
+        "symbol": "PUMPUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-14T22:31:23.653Z",
+        "snapshot": {
+            "symbol": "PUMPUSDT",
+            "name": "Respect The Pump",
+            "price": 0.004104,
+            "price_change_24h": -4.492,
+            "volume_24h": 102382976.877633,
+            "market_cap": 0,
+            "rsi_value": 80.93587521663775,
+            "rsi_signal": "80.94",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "macd_value": 5.93218083436934e-06,
+            "macd_signal_line": -2.4090560929150213e-05,
+            "macd_histogram": 3.0022741763519553e-05,
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 0.004104
+        }
+    },
+    {
+        "id": "XPLUSDT-RSI_SOBRECOMPRA-1760481083652",
+        "symbol": "XPLUSDT",
+        "condition": "RSI em Sobrecompra",
+        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
+        "timestamp": "2025-10-14T22:31:23.653Z",
+        "snapshot": {
+            "symbol": "XPLUSDT",
+            "name": "Pulse",
+            "price": 0.4567,
+            "price_change_24h": 1.04,
+            "volume_24h": 247390421.48069,
+            "market_cap": 826619840,
+            "rsi_value": 88.86925795053008,
+            "rsi_signal": "88.87",
+            "bollinger_signal": "Nenhum",
+            "macd_signal": "Nenhum",
+            "macd_value": 0.0022426424266983602,
+            "macd_signal_line": -0.0012643271931984318,
+            "macd_histogram": 0.0035069696198967923,
+            "mme_cross": "Nenhum",
+            "hilo_signal": "Nenhum",
+            "media_movel_cross": {},
+            "lastPrice": 0.4567
+        }
+    },
+    {
         "id": "JTOUSDT-HILO_COMPRA-1760370191591",
         "symbol": "JTOUSDT",
         "condition": "Sinal de Compra HiLo",
@@ -23226,102 +23330,6 @@
                 "72": "Cruzamento de Alta"
             },
             "lastPrice": 0.2624
-        }
-    },
-    {
-        "id": "BTCUSDT-RSI_SOBRECOMPRA-1759079559443",
-        "symbol": "BTCUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T17:12:39.443Z",
-        "snapshot": {
-            "symbol": "BTCUSDT",
-            "name": "Osmosis allBTC",
-            "price": 110303.35,
-            "price_change_24h": 0.853,
-            "volume_24h": 556556300.1746013,
-            "market_cap": 51832,
-            "rsi_value": 80.96973464906496,
-            "rsi_signal": "80.97",
-            "bollinger_signal": "Acima da Banda",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 110372.51
-        }
-    },
-    {
-        "id": "ARBUSDT-HILO_COMPRA-1759079208145",
-        "symbol": "ARBUSDT",
-        "condition": "Sinal de Compra HiLo",
-        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
-        "timestamp": "2025-09-28T17:06:48.145Z",
-        "snapshot": {
-            "symbol": "ARBUSDT",
-            "name": "Osmosis allARB",
-            "price": 0.4211,
-            "price_change_24h": 0.024,
-            "volume_24h": 12508222.00311,
-            "market_cap": 468190,
-            "rsi_value": 55.50239234449767,
-            "rsi_signal": "55.50",
-            "bollinger_signal": "Nenhum",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "HiLo Buy",
-            "media_movel_cross": {
-                "72": "Cruzamento de Alta"
-            },
-            "lastPrice": 0.4197
-        }
-    },
-    {
-        "id": "LINKUSDT-RSI_SOBRECOMPRA-1759078847494",
-        "symbol": "LINKUSDT",
-        "condition": "RSI em Sobrecompra",
-        "description": "Alerta quando o RSI entra em territ\u00f3rio de sobrecompra (acima de 70).",
-        "timestamp": "2025-09-28T17:00:47.494Z",
-        "snapshot": {
-            "symbol": "LINKUSDT",
-            "name": "Osmosis allLINK",
-            "price": 21.22,
-            "price_change_24h": 1.775,
-            "volume_24h": 25566285.5959,
-            "market_cap": 14329450068,
-            "rsi_value": 72.41379310344826,
-            "rsi_signal": "72.41",
-            "bollinger_signal": "Acima da Banda",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "Nenhum",
-            "media_movel_cross": {},
-            "lastPrice": 21.19
-        }
-    },
-    {
-        "id": "AAVEUSDT-HILO_COMPRA-1759078839439",
-        "symbol": "AAVEUSDT",
-        "condition": "Sinal de Compra HiLo",
-        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
-        "timestamp": "2025-09-28T17:00:39.439Z",
-        "snapshot": {
-            "symbol": "AAVEUSDT",
-            "name": "Aave",
-            "price": 267.6,
-            "price_change_24h": 0.349,
-            "volume_24h": 12554806.66586,
-            "market_cap": 4076423662,
-            "rsi_value": 56.09022556390981,
-            "rsi_signal": "56.09",
-            "bollinger_signal": "Nenhum",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "HiLo Buy",
-            "media_movel_cross": {
-                "72": "Cruzamento de Alta"
-            },
-            "lastPrice": 267.43
         }
     }
 ]

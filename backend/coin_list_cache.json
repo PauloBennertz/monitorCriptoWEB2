@@ -1,5 +1,5 @@
 {
-    "timestamp": 1760369066.6159604,
+    "timestamp": 1760481058.7925494,
     "coin_list": [
         {
             "id": "_",
@@ -450,6 +450,11 @@
             "id": "4-next-unicorn",
             "symbol": "nxtu",
             "name": "4 Next Unicorn"
+        },
+        {
+            "id": "4nonswap",
+            "symbol": "4non",
+            "name": "4nonSwap"
         },
         {
             "id": "4tb-coin",
@@ -1800,6 +1805,11 @@
             "id": "adi-token",
             "symbol": "adi",
             "name": "ADI Token"
+        },
+        {
+            "id": "adix",
+            "symbol": "adix",
+            "name": "Adix"
         },
         {
             "id": "adobe-ondo-tokenized-stock",
@@ -4877,11 +4887,6 @@
             "name": "Anvil"
         },
         {
-            "id": "anydex",
-            "symbol": "adx",
-            "name": "AnyDex"
-        },
-        {
             "id": "any-inu",
             "symbol": "ai",
             "name": "Any Inu"
@@ -7555,11 +7560,6 @@
             "id": "baby-4",
             "symbol": "baby4",
             "name": "Baby 4"
-        },
-        {
-            "id": "baby-arbitrum",
-            "symbol": "barb",
-            "name": "Baby Arbitrum"
         },
         {
             "id": "baby-aster",
@@ -12707,6 +12707,11 @@
             "name": "BNBEE"
         },
         {
+            "id": "bnbet",
+            "symbol": "bnbet",
+            "name": "BNBet"
+        },
+        {
             "id": "bnb-frog-inu",
             "symbol": "bnbfrog",
             "name": "BNB Frog Inu"
@@ -15257,6 +15262,11 @@
             "name": "BULL"
         },
         {
+            "id": "bull-4",
+            "symbol": "bull",
+            "name": "BULL"
+        },
+        {
             "id": "bulla",
             "symbol": "bulla",
             "name": "BULLA"
@@ -15575,11 +15585,6 @@
             "id": "burnt-fun",
             "symbol": "burnt",
             "name": "burnt.fun"
-        },
-        {
-            "id": "burnvault-cash",
-            "symbol": "burn",
-            "name": "BurnVault Cash"
         },
         {
             "id": "burp",
@@ -17715,11 +17720,6 @@
             "id": "charm-ai",
             "symbol": "charm",
             "name": "Charm AI"
-        },
-        {
-            "id": "chartreux-cat",
-            "symbol": "chart",
-            "name": "Chartreux Cat"
         },
         {
             "id": "chasm-ai",
@@ -23742,6 +23742,11 @@
             "name": "DegenPad"
         },
         {
+            "id": "degen-perp-dex",
+            "symbol": "pdgn",
+            "name": "Degen Perp Dex"
+        },
+        {
             "id": "degenping",
             "symbol": "degenping",
             "name": "degenping"
@@ -24660,6 +24665,11 @@
             "id": "digicask-token",
             "symbol": "dcask",
             "name": "DigiCask Token"
+        },
+        {
+            "id": "digichain-agent",
+            "symbol": "digi1",
+            "name": "Digichain Agent"
         },
         {
             "id": "digicoin",
@@ -29977,6 +29987,11 @@
             "name": "Euphoria"
         },
         {
+            "id": "eureka-bridged-pax-gold-terra",
+            "symbol": "paxg.atom",
+            "name": "Eureka Bridged PAX Gold (Terra)"
+        },
+        {
             "id": "eureka-bridged-wbtc-terra",
             "symbol": "wbtc",
             "name": "Eureka Bridged WBTC (Terra)"
@@ -31622,6 +31637,11 @@
             "name": "Fire"
         },
         {
+            "id": "fire-token-3",
+            "symbol": "fire",
+            "name": "Fire Token"
+        },
+        {
             "id": "fireverse",
             "symbol": "fir",
             "name": "Fireverse"
@@ -31745,6 +31765,11 @@
             "id": "fishy",
             "symbol": "$fishy",
             "name": "$FISHY"
+        },
+        {
+            "id": "fist",
+            "symbol": "fist",
+            "name": "FIST"
         },
         {
             "id": "fistbump",
@@ -32225,6 +32250,11 @@
             "id": "flowerai",
             "symbol": "flower",
             "name": "FlowerAI"
+        },
+        {
+            "id": "flower-flower",
+            "symbol": "\u82b1\u82b1",
+            "name": "\u82b1\u82b1 (flower flower)"
         },
         {
             "id": "flow-lending",
@@ -36802,11 +36832,6 @@
             "name": "Grape"
         },
         {
-            "id": "grape-finance",
-            "symbol": "grape",
-            "name": "Grape Finance"
-        },
-        {
             "id": "graphai",
             "symbol": "gai",
             "name": "GraphAI"
@@ -37799,7 +37824,7 @@
         {
             "id": "hakimi",
             "symbol": "\u54c8\u57fa\u7c73",
-            "name": "\u54c8\u57fa\u7c73 (Hakimi)"
+            "name": "\u54c8\u57fa\u7c73 (Hajimi)"
         },
         {
             "id": "hakka-finance",
@@ -47442,6 +47467,11 @@
             "name": "LGCY Network"
         },
         {
+            "id": "lianpu",
+            "symbol": "\u8138\u8c31",
+            "name": "\u8138\u8c31"
+        },
+        {
             "id": "liberland-lld",
             "symbol": "lld",
             "name": "Liberland LLD"
@@ -50835,11 +50865,6 @@
             "id": "marumarunft",
             "symbol": "maru",
             "name": "marumaruNFT"
-        },
-        {
-            "id": "maru-taro",
-            "symbol": "taro",
-            "name": "Maru Taro"
         },
         {
             "id": "marutaro-2",
@@ -55239,7 +55264,7 @@
         {
             "id": "morpheusai",
             "symbol": "mor",
-            "name": "MorpheusAI"
+            "name": "Morpheus AI"
         },
         {
             "id": "morpheus-labs",
@@ -56790,6 +56815,11 @@
             "id": "neko-2",
             "symbol": "neko",
             "name": "Neko"
+        },
+        {
+            "id": "neko-3",
+            "symbol": "neko",
+            "name": "NEKO"
         },
         {
             "id": "nekocoin-2",
@@ -58935,6 +58965,11 @@
             "id": "nusd",
             "symbol": "susd",
             "name": "Synthetix sUSD"
+        },
+        {
+            "id": "nusd-2",
+            "symbol": "nusd",
+            "name": "NUSD"
         },
         {
             "id": "nut",
@@ -65627,11 +65662,6 @@
             "name": "Povel Durev"
         },
         {
-            "id": "power-2",
-            "symbol": "power",
-            "name": "POWER"
-        },
-        {
             "id": "powerball",
             "symbol": "ball",
             "name": "POWERBALL"
@@ -65880,6 +65910,11 @@
             "id": "prime-2",
             "symbol": "prime",
             "name": "DeltaPrime"
+        },
+        {
+            "id": "prime-3",
+            "symbol": "$prime",
+            "name": "PRIME"
         },
         {
             "id": "primeace",
@@ -74962,6 +74997,11 @@
             "name": "SNPIT TOKEN"
         },
         {
+            "id": "snusd",
+            "symbol": "snusd",
+            "name": "sNUSD"
+        },
+        {
             "id": "snx-yvault",
             "symbol": "yvsnx",
             "name": "SNX yVault"
@@ -76955,11 +76995,6 @@
             "id": "sponge-f08b2fe4-9d9c-47c3-b5a0-84c2ac3bbbff",
             "symbol": "$sponge",
             "name": "Sponge (OLD)"
-        },
-        {
-            "id": "spoofify",
-            "symbol": "spoof",
-            "name": "Spoofify"
         },
         {
             "id": "spookyshiba-2",
@@ -83802,6 +83837,11 @@
             "name": "Toyota (Ondo Tokenized Stock)"
         },
         {
+            "id": "toyow-token",
+            "symbol": "ttn",
+            "name": "Toyow Token"
+        },
+        {
             "id": "tpro",
             "symbol": "tpro",
             "name": "TPRO Network"
@@ -87745,6 +87785,11 @@
             "id": "vibe-coding-meta",
             "symbol": "vibecoder",
             "name": "Vibe Coding Meta"
+        },
+        {
+            "id": "vibecoin",
+            "symbol": "vibecoin",
+            "name": "Vibecoin"
         },
         {
             "id": "viberate",
@@ -93319,7 +93364,7 @@
         {
             "id": "xiuxian",
             "symbol": "\u4fee\u4ed9",
-            "name": "\u4fee\u4ed9 (Xi\u016bxi\u0101n)"
+            "name": "\u4fee\u4ed9 (XiuXian)"
         },
         {
             "id": "xiv-the-awakening",
@@ -94080,11 +94125,6 @@
             "id": "yearntogether-2",
             "symbol": "yearn",
             "name": "YearnTogether"
-        },
-        {
-            "id": "yearn-yprisma",
-            "symbol": "yprisma",
-            "name": "Yearn yPRISMA"
         },
         {
             "id": "yee-2",
@@ -95130,6 +95170,11 @@
             "id": "zencore-ai",
             "symbol": "zcore",
             "name": "Zencore AI"
+        },
+        {
+            "id": "zendawg",
+            "symbol": "zen",
+            "name": "ZENDAWG"
         },
         {
             "id": "zenex",
