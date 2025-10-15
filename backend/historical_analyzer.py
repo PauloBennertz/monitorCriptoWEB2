@@ -1,7 +1,7 @@
 from datetime import timedelta
 import pandas as pd
 import logging
-from .backtester import fetch_historical_data
+from .data_fetcher import fetch_historical_data
 from .indicators import (
     calculate_rsi,
     calculate_bollinger_bands,
