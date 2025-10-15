@@ -7,6 +7,7 @@ from ttkbootstrap.widgets import DateEntry
 import threading
 import queue
 import pandas as pd
+<<<<<<< HEAD
 from datetime import datetime
 
 import json
@@ -356,6 +357,55 @@ Regras de Alerta Atuais:
             alerts = cached_results.get("alerts")
             # We still fetch historical data for the chart, not from cache.
             _, df = analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config={})
+=======
+import logging
+import time
+from .chart_generator import generate_chart_image as generate_chart
+from .indicators import calculate_sma
+import numpy as np
+
+class MovingAverageCrossoverStrategy:
+    def __init__(self, short_window=40, long_window=100):
+        self.short_window = short_window
+        self.long_window = long_window
+
+    def generate_signals(self, data):
+        signals = pd.DataFrame(index=data.index)
+        signals['signal'] = 0.0
+        signals['short_mavg'] = calculate_sma(data['close'], self.short_window)
+        signals['long_mavg'] = calculate_sma(data['close'], self.long_window)
+        signals['signal'][self.short_window:] = np.where(signals['short_mavg'][self.short_window:] > signals['long_mavg'][self.short_window:], 1.0, 0.0)
+        signals['positions'] = signals['signal'].diff()
+        return signals['positions']
+
+class Backtester:
+    """
+    A class to run a backtest on historical data using a provided strategy.
+    """
+    def __init__(self, historical_data: pd.DataFrame, strategy, initial_capital: float):
+        """
+        Initializes the Backtester.
+
+        Args:
+            historical_data (pd.DataFrame): DataFrame with 'timestamp', 'open', 'high', 'low', 'close', 'volume'.
+            strategy: An object with a `generate_signals(data)` method that returns a Series of positions.
+            initial_capital (float): The starting capital for the backtest.
+        """
+        self.data = historical_data.copy()
+        self.strategy = strategy
+        self.initial_capital = initial_capital
+        self.positions = None
+        self.portfolio = None
+        logging.info(f"Backtester initialized with initial capital: {self.initial_capital}")
+
+    def _generate_positions(self):
+        """
+        Generates trading positions using the provided strategy.
+        """
+        if self.strategy:
+            self.positions = self.strategy.generate_signals(self.data)
+            logging.info("Generated positions from strategy.")
+>>>>>>> 07a7745ec6af9e42591c69372a75ac86a84481f4
         else:
             alerts, df = analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config)
             if alerts:
