@@ -47,8 +47,9 @@ class BacktesterGUI:
         right_frame = ttk.Labelframe(top_frame, text="Configuração dos Alertas", padding=10)
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(5, 0))
 
-        self.alert_info_text = ScrolledText(right_frame, wrap=tk.WORD, state="disabled", height=10)
+        self.alert_info_text = ScrolledText(right_frame, wrap=tk.WORD, height=10)
         self.alert_info_text.pack(fill=tk.BOTH, expand=True)
+        self.alert_info_text.configure(state="disabled")
 
         # --- Input Frame ---
         input_frame = ttk.Labelframe(left_frame, text="Parâmetros da Análise", padding=10)
@@ -188,10 +189,10 @@ Regras de Alerta Atuais:
    - Descrição: Sinal de curto prazo que indica uma possível perda de força do preço.
 """
         # Enable the text widget to insert text, then disable it again
-        self.alert_info_text.config(state="normal")
+        self.alert_info_text.configure(state="normal")
         self.alert_info_text.delete("1.0", tk.END)
         self.alert_info_text.insert(tk.END, config_text)
-        self.alert_info_text.config(state="disabled")
+        self.alert_info_text.configure(state="disabled")
 
 
     def setup_results_display(self, timeframes):
