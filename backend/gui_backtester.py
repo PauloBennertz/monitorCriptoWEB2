@@ -25,7 +25,7 @@ class BacktesterGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Ferramenta de Backtesting")
-        self.root.geometry("800x600")
+        self.root.geometry("1200x700")
 
         # --- State and Control Variables ---
         self.results_data = []
@@ -35,12 +35,23 @@ class BacktesterGUI:
         self.stop_event = threading.Event()
         self.pause_event = threading.Event()
 
-        # --- Main Frame ---
-        main_frame = ttk.Frame(self.root, padding=15)
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        # --- Top Level Frame ---
+        top_frame = ttk.Frame(self.root, padding=10)
+        top_frame.pack(fill=tk.BOTH, expand=True)
+
+        # --- Left Frame (for controls and results) ---
+        left_frame = ttk.Frame(top_frame, padding=5)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
+
+        # --- Right Frame (for alert configurations) ---
+        right_frame = ttk.Labelframe(top_frame, text="Configuração dos Alertas", padding=10)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(5, 0))
+
+        self.alert_info_text = ScrolledText(right_frame, wrap=tk.WORD, state="disabled", height=10)
+        self.alert_info_text.pack(fill=tk.BOTH, expand=True)
 
         # --- Input Frame ---
-        input_frame = ttk.Labelframe(main_frame, text="Parâmetros da Análise", padding=10)
+        input_frame = ttk.Labelframe(left_frame, text="Parâmetros da Análise", padding=10)
         input_frame.pack(fill=tk.X, pady=5)
         input_frame.columnconfigure(1, weight=1)
 
@@ -58,7 +69,7 @@ class BacktesterGUI:
         self.end_date_entry.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
 
         # --- Timeframes Frame ---
-        timeframes_frame = ttk.Labelframe(main_frame, text="Períodos de Análise (Hit Rate)", padding=10)
+        timeframes_frame = ttk.Labelframe(left_frame, text="Períodos de Análise (Hit Rate)", padding=10)
         timeframes_frame.pack(fill=tk.X, pady=5)
 
         self.timeframe_vars = {}
@@ -76,7 +87,7 @@ class BacktesterGUI:
             col += 1
 
         # --- Action Frame ---
-        action_frame = ttk.Frame(main_frame, padding=(0, 10))
+        action_frame = ttk.Frame(left_frame, padding=(0, 10))
         action_frame.pack(fill=tk.X, pady=10)
 
         self.run_button = ttk.Button(action_frame, text="Iniciar Análise", command=self.start_backtest_thread, bootstyle=SUCCESS)
@@ -101,7 +112,7 @@ class BacktesterGUI:
         self.export_button.pack(side=tk.RIGHT, padx=5)
 
         # --- Output Frame ---
-        output_frame = ttk.Labelframe(main_frame, text="Resultados", padding=10)
+        output_frame = ttk.Labelframe(left_frame, text="Resultados", padding=10)
         output_frame.pack(fill=tk.BOTH, expand=True)
 
         # --- Treeview for structured results (placeholder) ---
@@ -114,12 +125,74 @@ class BacktesterGUI:
         self.results_tree.pack(fill=tk.BOTH, expand=True)
 
         # --- Summary Frame (placeholder) ---
-        self.summary_frame = ttk.Labelframe(main_frame, text="Resumo da Taxa de Acerto", padding=10)
+        self.summary_frame = ttk.Labelframe(left_frame, text="Resumo da Taxa de Acerto", padding=10)
         self.summary_frame.pack(fill=tk.X, pady=(10, 5))
         self.summary_labels = {}
 
         self.queue = queue.Queue()
         self.root.after(100, self.process_queue)
+
+        # --- Display Alert Configurations ---
+        self._display_alert_configurations()
+
+    def _display_alert_configurations(self):
+        """
+        Reads, formats, and displays the hardcoded alert logic in the right-side panel.
+        This provides users with a clear view of the current alert rules.
+        """
+        config_text = """
+Regras de Alerta Atuais:
+
+--- COMPRA ---
+
+1. RSI Sobrevenda:
+   - Condição: RSI(14) <= 30
+   - Descrição: Indica que o ativo pode estar sobrevendido e prestes a reverter a tendência de baixa.
+
+2. Cruzamento de Alta do MACD:
+   - Condição: Cruzamento de alta no MACD(12,26,9) E RSI(14) < 30.
+   - Descrição: Sinal de compra forte, combinando momento (MACD) com condição de sobrevenda (RSI).
+
+3. Cruz Dourada (Golden Cross):
+   - Condição: MME(50) cruza para cima da MME(200).
+   - Descrição: Sinal clássico de início de uma tendência de alta de longo prazo. Também desativa o "Modo Filtro".
+
+4. HiLo Compra (Modo Filtro):
+   - Condição: Preço cruza para cima do HiLo(34) E "Cruz da Morte" NÃO está ativa.
+   - Descrição: Sinal de compra baseado no indicador HiLo, mas é ignorado se uma tendência de baixa de longo prazo ("Cruz da Morte") estiver em vigor.
+
+5. Média Móvel para Cima (Modo Filtro):
+   - Condição: Preço cruza para cima da MME(200) E MACD > 0 E "Cruz da Morte" NÃO está ativa.
+   - Descrição: Confirmação de tendência de alta com o preço acima da média longa e momento positivo do MACD. Também é ignorado durante o "Modo Filtro".
+
+--- VENDA ---
+
+1. RSI Sobrecompra:
+   - Condição: RSI(14) >= 75
+   - Descrição: Indica que o ativo pode estar sobrecomprado e prestes a corrigir.
+
+2. Cruzamento de Baixa do MACD:
+   - Condição: Cruzamento de baixa no MACD(12,26,9).
+   - Descrição: Sinal de possível reversão para uma tendência de baixa.
+
+3. Cruz da Morte (Death Cross):
+   - Condição: MME(50) cruza para baixo da MME(200) E o preço está abaixo da MME(200).
+   - Descrição: Sinal forte de tendência de baixa. Ativa o "Modo Filtro", que desabilita os alertas 'HiLo Compra' e 'Média Móvel para Cima'.
+
+4. HiLo Venda:
+   - Condição: Preço cruza para baixo do HiLo(34).
+   - Descrição: Sinal de venda baseado no indicador HiLo.
+
+5. Média Móvel para Baixo:
+   - Condição: Preço cruza para baixo da MME(17).
+   - Descrição: Sinal de curto prazo que indica uma possível perda de força do preço.
+"""
+        # Enable the text widget to insert text, then disable it again
+        self.alert_info_text.config(state="normal")
+        self.alert_info_text.delete("1.0", tk.END)
+        self.alert_info_text.insert(tk.END, config_text)
+        self.alert_info_text.config(state="disabled")
+
 
     def setup_results_display(self, timeframes):
         """ Dynamically configures the Treeview and summary labels based on selected timeframes. """
