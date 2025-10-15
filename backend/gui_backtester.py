@@ -15,7 +15,8 @@ from .cache_manager import generate_cache_key, save_to_cache, load_from_cache
 
 # Import the backtesting and charting logic
 try:
-    from .backtester import fetch_historical_data, run_backtest
+    from .data_fetcher import fetch_historical_data
+    from .backtester import run_backtest
     from .chart_generator import generate_chart_image as generate_chart
 except ImportError as e:
     messagebox.showerror("Erro de Importação", f"Não foi possível importar componentes necessários: {e}")
