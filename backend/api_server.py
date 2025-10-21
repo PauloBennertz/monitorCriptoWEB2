@@ -35,7 +35,8 @@ from backend.monitoring_service import (
 )
 from backend import app_state
 from backend import coin_manager
-from backend.backtester import Backtester, fetch_historical_data
+from backend.backtester import Backtester
+from backend.data_fetcher import fetch_historical_data
 from backend.historical_analyzer import analyze_historical_alerts
 from backend.indicators import calculate_sma
 from backend.notification_service import send_telegram_alert
