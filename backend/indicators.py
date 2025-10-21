@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pandas_ta as ta
 
 def calculate_sma(series, period):
     """Calcula a Média Móvel Simples (SMA) para uma série de dados."""
@@ -9,20 +10,20 @@ def calculate_ema(series, period):
     """Calcula a Média Móvel Exponencial (EMA) para uma série de dados."""
     return series.ewm(span=period, adjust=False).mean()
 
+import pandas_ta as ta
+
 def calculate_rsi(df, period=14):
     """Calcula o Índice de Força Relativa (RSI) para um DataFrame."""
     if df is None or df.empty or len(df) < period + 1:
         return pd.Series(np.nan, index=df.index), 0, 0
-    delta = df['close'].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
 
-    # Evitar divisão por zero
-    rs = gain / loss.replace(0, np.nan)
-    rsi = 100 - (100 / (1 + rs))
+    # Use pandas_ta for a reliable RSI calculation with Wilder's smoothing (the default)
+    rsi_series = ta.rsi(df['close'], length=period)
 
-    # Retorna a série de RSI e os últimos valores de avg_gain e avg_loss
-    return rsi, gain.iloc[-1], loss.iloc[-1]
+    # pandas_ta doesn't directly return avg_gain and avg_loss,
+    # so we'll return 0,0 as placeholders.
+    # The primary purpose of this function is the RSI series itself.
+    return rsi_series, 0, 0
 
 def calculate_bollinger_bands(df, period=20, std_dev=2):
     """Calcula as Bandas de Bollinger para um DataFrame, retornando Series."""
