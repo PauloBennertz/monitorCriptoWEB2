@@ -14,7 +14,9 @@ class MovingAverageCrossoverStrategy:
         signals['signal'] = 0.0
         signals['short_mavg'] = calculate_sma(data['close'], self.short_window)
         signals['long_mavg'] = calculate_sma(data['close'], self.long_window)
-        signals['signal'][self.short_window:] = np.where(signals['short_mavg'][self.short_window:] > signals['long_mavg'][self.short_window:], 1.0, 0.0)
+        signals.loc[signals.index[self.long_window:], 'signal'] = np.where(
+            signals['short_mavg'][self.long_window:] > signals['long_mavg'][self.long_window:], 1.0, 0.0
+        )
         signals['positions'] = signals['signal'].diff()
         return signals['positions']
 
