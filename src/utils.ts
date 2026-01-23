@@ -1,3 +1,5 @@
+import { CryptoData } from './types';
+
 export const formatCurrency = (value: number) => {
     const options = {
         style: 'currency',
@@ -8,20 +10,38 @@ export const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', options).format(value);
 };
 
-import { CryptoData } from './types';
-
 export const formatLargeNumber = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 2 }).format(value);
 };
 
 export const countActiveIndicators = (data: CryptoData): number => {
-    const indicators = [
+    let count = 0;
+
+    // 1. Indicadores baseados em Texto (Sinais de Cruzamento e Estratégias)
+    const textIndicators = [
         data.bollinger_signal,
         data.macd_signal,
         data.mme_cross,
         data.hilo_signal,
     ];
-    return indicators.filter(signal => signal !== 'Nenhum').length;
+
+    textIndicators.forEach(signal => {
+        if (signal && signal !== 'Nenhum' && signal !== 'N/A') {
+            count++;
+        }
+    });
+
+    // 2. Indicadores de Alta Precisão (Booleanos vindos do Backend)
+    // Contamos se o preço estiver acima da HMA e acima do VWAP
+    if (data.hma_active) count++;
+    if (data.vwap_active) count++;
+
+    // 3. Opcional: Contagem para RSI (Extremos de Sobrevenda ou Sobrecompra)
+    if (data.rsi_value && (data.rsi_value > 70 || data.rsi_value < 30)) {
+        count++;
+    }
+
+    return count;
 };
 
 export const formatTime = (seconds: number) => {

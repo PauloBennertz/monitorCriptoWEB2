@@ -11,7 +11,11 @@ export interface CryptoData {
     macd_signal:string;
     mme_cross: string;
     hilo_signal: string;
-    isLoading?: boolean; // Added for optimistic UI updates
+    isLoading?: boolean; 
+    hma?: number;
+    hma_active?: boolean;
+    vwap?: number;
+    vwap_active?: boolean;
 }
 
 export interface Alert {
@@ -106,6 +110,14 @@ export const INDICATOR_TOOLTIPS: Record<string, Record<string, string>> = {
         'HiLo Buy': 'Sinal de compra do indicador HiLo. O preço cruzou acima da média móvel das máximas.',
         'HiLo Sell': 'Sinal de venda do indicador HiLo. O preço cruzou abaixo da média móvel das mínimas.',
         'Nenhum': 'Nenhum sinal do indicador HiLo.'
+    },
+    hma: {
+        active: "Preço acima da Hull Moving Average (HMA). Indica uma tendência de alta rápida com baixo atraso.",
+        inactive: "Preço abaixo da Hull Moving Average (HMA). Indica uma tendência de baixa ou correção rápida."
+    },
+    vwap: {
+        active: "Preço acima do VWAP. Indica que o preço atual está acima do preço médio ponderado pelo volume, sinal de força compradora.",
+        inactive: "Preço abaixo do VWAP. Indica que o preço atual está abaixo do preço médio ponderado pelo volume, sinal de pressão vendedora."
     }
 };
 

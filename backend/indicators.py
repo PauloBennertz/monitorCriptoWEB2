@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pandas_ta as ta
 
+
 def calculate_sma(series, period):
     """Calcula a Média Móvel Simples (SMA) para uma série de dados."""
     return series.rolling(window=period).mean()
@@ -10,7 +11,6 @@ def calculate_ema(series, period):
     """Calcula a Média Móvel Exponencial (EMA) para uma série de dados."""
     return series.ewm(span=period, adjust=False).mean()
 
-import pandas_ta as ta
 
 def calculate_rsi(df, period=14):
     """Calcula o Índice de Força Relativa (RSI) para um DataFrame."""
@@ -162,3 +162,38 @@ def calculate_media_movel_cross(df, period=17, return_series=False):
         return "Cruzamento de Baixa"
 
     return "Nenhum"
+
+def calculate_hma(series, period):
+    """
+    Calcula a Hull Moving Average (HMA).
+    A HMA resolve o problema de atraso das médias móveis comuns.
+    """
+    if len(series) < period:
+        return pd.Series(np.nan, index=series.index)
+    
+    # Cálculo da HMA: WMA(2*WMA(n/2) - WMA(n)), sqrt(n))
+    half_length = int(period / 2)
+    sqrt_length = int(np.sqrt(period))
+    
+    def wma(s, p):
+        return s.rolling(window=p).apply(lambda x: np.dot(x, np.arange(1, p + 1)) / np.arange(1, p + 1).sum(), raw=True)
+    
+    wma_half = wma(series, half_length)
+    wma_full = wma(series, period)
+    
+    diff = 2 * wma_half - wma_full
+    hma = wma(diff, sqrt_length)
+    
+    return hma
+
+def calculate_vwap(df):
+    """
+    Calcula o VWAP (Volume Weighted Average Price).
+    Mostra o preço médio ponderado pelo volume.
+    """
+    # Garante que os dados são numéricos
+    v = df['volume'].astype(float)
+    p = df['close'].astype(float)
+    
+    # O VWAP acumulado é a soma de (Preço * Volume) / Soma do Volume
+    return (p * v).cumsum() / v.cumsum()

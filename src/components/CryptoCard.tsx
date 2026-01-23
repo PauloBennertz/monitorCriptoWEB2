@@ -11,7 +11,7 @@ const getRsiData = (data: CryptoData) => {
 };
 
 const LoadingCard = ({ symbol }: { symbol: string }) => (
-    <div className="crypto-card loading-placeholder">
+    <div className="crypto-card loaading-placeholder">
         <div className="card-header">
             <span className="card-symbol">{symbol.replace('USDT', '')}</span>
             <span className="card-name">Carregando...</span>
@@ -25,14 +25,13 @@ const LoadingCard = ({ symbol }: { symbol: string }) => (
             <div className="metric-item"><span className="metric-label">Volume 24h</span><span className="metric-value">--</span></div>
             <div className="metric-item"><span className="metric-label">Cap. Mercado</span><span className="metric-value">--</span></div>
             <div className="metric-item"><span className="metric-label">RSI</span><span className="metric-value">--</span></div>
-            <div className="metric-item"><span className="metric-label">Bandas B.</span><span className="metric-value">--</span></div>
+            <div className="metric-item"><span className="metric-label">HMA</span><span className="metric-value">--</span></div>
+            <div className="metric-item"><span className="metric-label">VWAP</span><span className="metric-value">--</span></div>
             <div className="metric-item"><span className="metric-label">MACD</span><span className="metric-value">--</span></div>
-            <div className="metric-item"><span className="metric-label">MME Cross</span><span className="metric-value">--</span></div>
             <div className="metric-item"><span className="metric-label">HiLo</span><span className="metric-value">--</span></div>
         </div>
     </div>
 );
-
 
 interface CryptoCardProps {
     data: CryptoData;
@@ -97,30 +96,55 @@ const CryptoCard = ({ data, isBlinkVisible, onClick }: CryptoCardProps) => {
                     <span className="metric-label">Cap. Mercado</span>
                     <span className="metric-value">{formatLargeNumber(data.market_cap)}</span>
                 </div>
+                
+                {/* Indicador HMA com Tooltip */}
+                <div className="metric-item">
+                    <Tooltip text={data.hma_active ? INDICATOR_TOOLTIPS.hma.active : INDICATOR_TOOLTIPS.hma.inactive}>
+                        <span className="metric-label">HMA</span>
+                    </Tooltip>
+                    <span className={`metric-value ${data.hma_active ? 'positive' : ''}`}>
+                        {data.hma ? formatCurrency(data.hma) : 'N/A'}
+                    </span>
+                </div>
+
+{/* Indicador VWAP com Tooltip */}
+<div className="metric-item">
+    <Tooltip text={data.vwap_active ? INDICATOR_TOOLTIPS.vwap.active : INDICATOR_TOOLTIPS.vwap.inactive}>
+        <span className="metric-label">VWAP</span>
+    </Tooltip>
+    <span className={`metric-value ${data.vwap_active ? 'positive' : ''}`}>
+        {data.vwap ? formatCurrency(data.vwap) : 'N/A'}
+    </span>
+</div>
+
                 <div className="metric-item">
                     <Tooltip text={rsiData.tooltip}>
                         <span className="metric-label">RSI</span>
                     </Tooltip>
                     <span className={`metric-value rsi-value ${rsiData.className}`}>{rsiData.text} ({data.rsi_value.toFixed(2)})</span>
                 </div>
-                 <div className="metric-item">
+                
+                <div className="metric-item">
                     <Tooltip text={INDICATOR_TOOLTIPS.bollinger_signal[data.bollinger_signal]}>
                         <span className="metric-label">Bandas B.</span>
                     </Tooltip>
                     <span className="metric-value">{data.bollinger_signal}</span>
                 </div>
-                 <div className="metric-item">
+                
+                <div className="metric-item">
                      <Tooltip text={INDICATOR_TOOLTIPS.macd_signal[data.macd_signal]}>
                         <span className="metric-label">MACD</span>
                     </Tooltip>
                     <span className="metric-value">{data.macd_signal}</span>
                 </div>
-                 <div className="metric-item">
+                
+                <div className="metric-item">
                      <Tooltip text={INDICATOR_TOOLTIPS.mme_cross[data.mme_cross]}>
                         <span className="metric-label">MME Cross</span>
                     </Tooltip>
                     <span className="metric-value">{data.mme_cross}</span>
                 </div>
+
                 <div className="metric-item">
                      <Tooltip text={INDICATOR_TOOLTIPS.hilo_signal[data.hilo_signal]}>
                         <span className="metric-label">HiLo</span>

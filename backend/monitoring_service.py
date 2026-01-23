@@ -6,11 +6,21 @@ import copy
 from datetime import datetime, timedelta
 from . import robust_services
 import os
-from .indicators import calculate_rsi, calculate_bollinger_bands, calculate_macd, calculate_emas, calculate_hilo_signals, calculate_media_movel_cross
+from .indicators import (
+    calculate_rsi, 
+    calculate_bollinger_bands, 
+    calculate_macd, 
+    calculate_emas, 
+    calculate_hilo_signals, 
+    calculate_media_movel_cross,
+    calculate_hma,    
+    calculate_vwap
+)
 from .notification_service import send_telegram_alert
 from pycoingecko import CoinGeckoAPI
 from .app_state import load_coin_list_cache, save_coin_list_cache
 from .notification_service import send_telegram_alert
+
 
 cg_client = CoinGeckoAPI()
 
@@ -304,10 +314,36 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
     base_asset = symbol.replace('USDT', '')
     coin_name = coingecko_mapping.get(base_asset, base_asset) if coingecko_mapping else base_asset
 
+    # 1. Primeiro buscamos os dados (df)
+    df = get_klines_data(symbol)
+    
+    # Se não houver dados, retornamos um dicionário básico para evitar erro
+    if df is None or df.empty:
+        return {
+            'symbol': symbol, 'name': coin_name, 'price': 0.0,
+            'hma_active': False, 'vwap_active': False
+        }
+
+    # 2. Agora calculamos os novos indicadores (PRECISAM VIR ANTES DO DICIONÁRIO)
+    # Cálculo da HMA
+    hma_series = calculate_hma(df['close'], period=21)
+    latest_hma = hma_series.iloc[-1] if not hma_series.empty else 0.0
+
+    # Cálculo do VWAP
+    vwap_series = calculate_vwap(df)
+    latest_vwap = vwap_series.iloc[-1] if not vwap_series.empty else 0.0
+
+    current_price = float(df['close'].iloc[-1])
+    
+    # Lógica de ativação (Preço acima da HMA e acima do VWAP)
+    hma_active = bool(current_price > latest_hma) if latest_hma != 0 else False
+    vwap_active = bool(current_price > latest_vwap) if latest_vwap != 0 else False
+
+    # 3. Agora montamos o dicionário com todas as variáveis já definidas
     analysis_result = {
         'symbol': symbol,
         'name': coin_name,
-        'price': 0.0,
+        'price': current_price,
         'price_change_24h': 0.0,
         'volume_24h': 0.0,
         'market_cap': market_cap or 0,
@@ -321,25 +357,27 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
         'mme_cross': "Nenhum",
         'mme_200': 0.0,
         'hilo_signal': "Nenhum",
-        'media_movel_cross': {}
+        'media_movel_cross': {},
+        'hma': float(latest_hma),
+        'hma_active': hma_active,
+        'vwap': float(latest_vwap),
+        'vwap_active': vwap_active,
+        'timestamp': datetime.now().isoformat()
     }
 
+    # 4. Preenchemos os dados extras do ticker
     symbol_ticker = ticker_data.get(symbol, {})
-    analysis_result['price'] = robust_services.DataValidator.safe_price(symbol_ticker.get('lastPrice'))
     analysis_result['price_change_24h'] = robust_services.DataValidator.safe_float(symbol_ticker.get('priceChangePercent'))
     analysis_result['volume_24h'] = robust_services.DataValidator.safe_float(symbol_ticker.get('quoteVolume'))
 
-    df = get_klines_data(symbol)
-    if df is None or df.empty:
-        return analysis_result
-
+    # 5. Calculamos o restante dos indicadores antigos
     rsi_series, _, _ = calculate_rsi(df)
     upper_band_series, lower_band_series, _ = calculate_bollinger_bands(df)
     macd_signal, macd_value, macd_signal_line, macd_histogram = calculate_macd(df)
     _, _, hilo_signal = calculate_hilo_signals(df)
     emas = calculate_emas(df, periods=[50, 200])
 
-    # Get the latest numeric value from each indicator series, handling potential NaNs
+    # Extração de valores do RSI e Bandas
     rsi_value = rsi_series.iloc[-1] if not rsi_series.empty and pd.notna(rsi_series.iloc[-1]) else 0.0
     upper_band = upper_band_series.iloc[-1] if not upper_band_series.empty and pd.notna(upper_band_series.iloc[-1]) else 0.0
     lower_band = lower_band_series.iloc[-1] if not lower_band_series.empty and pd.notna(lower_band_series.iloc[-1]) else 0.0
@@ -348,6 +386,7 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
     analysis_result['rsi_value'] = rsi_value
     analysis_result['rsi_signal'] = f"{rsi_value:.2f}" if rsi_value > 0 else "N/A"
 
+    # Lógica de Bollinger
     if upper_band > 0 and analysis_result['price'] > 0:
         if analysis_result['price'] > upper_band:
             analysis_result['bollinger_signal'] = "Acima da Banda"
@@ -359,6 +398,7 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
     analysis_result['macd_signal_line'] = macd_signal_line
     analysis_result['macd_histogram'] = macd_histogram
 
+    # Lógica de Médias Móveis (MME 200 e Cruzamentos)
     if 200 in emas and not emas[200].empty and pd.notna(emas[200].iloc[-1]):
         analysis_result['mme_200'] = emas[200].iloc[-1]
 
@@ -373,6 +413,7 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
         if media_movel_signal != "Nenhum":
             analysis_result['media_movel_cross'][period] = media_movel_signal
 
+    # O único return deve ficar no FINAL da função
     return analysis_result
 
 def run_monitoring_cycle(config, coingecko_mapping):
