@@ -14,14 +14,14 @@ from .indicators import (
 logging.basicConfig(level=logging.INFO)
 
 
-def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert_config: dict, timeframes_config: dict = None):
+async def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert_config: dict, timeframes_config: dict = None):
     """
     Analyzes historical data for a symbol to find when alert conditions would have been met,
     using a highly efficient and vectorized pandas approach.
     """
     logging.info(f"Starting vectorized historical alert analysis for {symbol} from {start_date} to {end_date}.")
 
-    historical_df = fetch_historical_data(symbol, start_date, end_date, interval='1h')
+    historical_df = await fetch_historical_data(symbol, start_date, end_date, interval='1h')
     if historical_df.empty:
         logging.warning(f"No historical data found for {symbol} in the given date range.")
         return [], pd.DataFrame()
@@ -144,7 +144,7 @@ def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert
             timeframes_config = {
                 '15m': 15, '30m': 30, '1h': 60, '4h': 240, '24h': 1440
             }
-        alerts_df = calculate_hit_rate(alerts_df, symbol, timeframes_config)
+        alerts_df = await calculate_hit_rate(alerts_df, symbol, timeframes_config)
         result = alerts_df.to_dict('records')
 
     return result, historical_df
@@ -164,7 +164,7 @@ SIGNAL_TYPE_MAPPING = {
     'media_movel_baixo': 'sell',
 }
 
-def calculate_hit_rate(alerts_df: pd.DataFrame, symbol: str, timeframes_config: dict):
+async def calculate_hit_rate(alerts_df: pd.DataFrame, symbol: str, timeframes_config: dict):
     """
     Calculates the hit rate of alerts by analyzing price movements after each alert.
     Optimized to fetch future data in a single batch.
@@ -191,7 +191,7 @@ def calculate_hit_rate(alerts_df: pd.DataFrame, symbol: str, timeframes_config: 
     future_end_date = (max_alert_time + timedelta(days=2)).strftime('%Y-%m-%d')
 
     logging.info(f"Fetching 1-minute data from {future_start_date} to {future_end_date} for analysis.")
-    future_df = fetch_historical_data(symbol, future_start_date, future_end_date, interval='1m')
+    future_df = await fetch_historical_data(symbol, future_start_date, future_end_date, interval='1m')
 
     if future_df.empty:
         logging.warning("Could not fetch future data for hit rate analysis. Aborting and returning.")
