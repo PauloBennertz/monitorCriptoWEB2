@@ -8,6 +8,7 @@ import threading
 import queue
 import pandas as pd
 from datetime import datetime
+import asyncio
 
 import json
 from .historical_analyzer import analyze_historical_alerts
@@ -356,9 +357,9 @@ Regras de Alerta Atuais:
         if cached_results:
             alerts = cached_results.get("alerts")
             # We still fetch historical data for the chart, not from cache.
-            _, df = analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config={})
+            _, df = asyncio.run(analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config={}))
         else:
-            alerts, df = analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config)
+            alerts, df = asyncio.run(analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config))
             if alerts:
                 save_to_cache(cache_key, {"alerts": alerts}) # Cache new results
 

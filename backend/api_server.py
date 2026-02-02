@@ -118,7 +118,7 @@ async def run_backtest_endpoint(request: BacktestRequest):
     """
     try:
         logging.info(f"Received backtest request: {request}")
-        historical_data = fetch_historical_data(request.symbol, request.start_date, request.end_date)
+        historical_data = await fetch_historical_data(request.symbol, request.start_date, request.end_date)
         if historical_data.empty:
             raise HTTPException(status_code=404, detail="No historical data found for the given parameters.")
 
@@ -158,7 +158,7 @@ async def get_historical_alerts(request: HistoricalAlertsRequest):
     try:
         logging.info(f"Received historical alert analysis request for {request.symbol}")
 
-        triggered_alerts = analyze_historical_alerts(
+        triggered_alerts = await analyze_historical_alerts(
             symbol=request.symbol,
             start_date=request.start_date,
             end_date=request.end_date,
@@ -198,7 +198,7 @@ async def historical_klines_endpoint(
     otimizado para bibliotecas de gráficos de alta performance como Lightweight Charts.
     """
     try:
-        df = fetch_historical_data(symbol, start_date, end_date, interval=interval)
+        df = await fetch_historical_data(symbol, start_date, end_date, interval=interval)
 
         if df.empty:
             return []
@@ -224,7 +224,7 @@ async def get_historical_data_endpoint(
     Fetches raw historical k-line data for a given symbol and date range.
     """
     try:
-        historical_data = fetch_historical_data(symbol, start_date, end_date)
+        historical_data = await fetch_historical_data(symbol, start_date, end_date)
         if historical_data.empty:
             raise HTTPException(status_code=404, detail="No historical data found for the given parameters.")
 
@@ -645,7 +645,7 @@ async def get_chart_data(symbol: str):
     end_date = datetime.now(timezone.utc)
     start_date_data = end_date - timedelta(days=30)
     
-    df = fetch_historical_data(symbol, start_date_data.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"), interval='1h')
+    df = await fetch_historical_data(symbol, start_date_data.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"), interval='1h')
     if df.empty:
         raise HTTPException(status_code=404, detail="Nenhum dado histórico encontrado para gerar o gráfico.")
 
@@ -719,7 +719,7 @@ async def get_historical_analysis_chart_html(request: ChartGenerationRequest, ba
     """Gera um gráfico a partir dos resultados da análise histórica e retorna um HTML interativo."""
     html_path = None
     try:
-        df = fetch_historical_data(request.symbol, request.start_date, request.end_date, interval='1h')
+        df = await fetch_historical_data(request.symbol, request.start_date, request.end_date, interval='1h')
         if df.empty:
             raise HTTPException(status_code=404, detail="Nenhum dado histórico encontrado para o período.")
 
