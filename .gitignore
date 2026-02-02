@@ -19,7 +19,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
+*-output.txt
+*-output.md
 # Virtual Environment
 venv/
 venv_novo/
