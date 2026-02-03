@@ -1,79 +1,123 @@
-# type: ignore
-# 🚀 Crypto Monitor Pro
+🚀 Crypto Monitor Pro
+O Crypto Monitor Pro é uma ferramenta completa para monitoramento de criptomoedas em tempo real e análise histórica (backtesting). Ele combina um painel web moderno com uma ferramenta desktop robusta para testar estratégias.
+📋 Funcionalidades
+Monitoramento Web em Tempo Real: Acompanhe preços, RSI, MACD e tendências de várias moedas simultaneamente.
+Alertas Inteligentes: Configure avisos para condições específicas (ex: RSI Sobrevendido, Cruzamento de Médias).
+Backtester Desktop Pro: Uma ferramenta dedicada para simular estratégias (SMA, HMA, VWAP) em dados passados e calcular a rentabilidade (ROI).
+Análise de Hit Rate: Verifique a taxa de acerto dos seus indicadores.
+🛠️ Tecnologias
+Frontend: React, TypeScript, Vite
+Backend: Python, FastAPI
+Interface Desktop: Python (Tkinter/TTKBootstrap)
+⚙️ Instalação Passo a Passo
+Siga estes passos se você nunca rodou o projeto antes.
+1. Pré-requisitos
+Certifique-se de ter instalado no seu computador:
+Python (versão 3.8 ou superior): Baixar Python (Na instalação, marque a opção "Add Python to PATH").
+Node.js: Baixar Node.js (Necessário para o site).
+Git: Baixar Git.
+2. Baixando o Projeto
+Abra o seu terminal (CMD, PowerShell ou Terminal) e digite:
 
-Monitor de criptomoedas em tempo real com sistema de alertas configurável, construído com React e FastAPI. # type: ignore
+Bash
 
-## 📋 Descrição
-Esta aplicação web fornece uma visão geral do mercado de criptomoedas, permitindo aos usuários monitorar métricas chave em tempo real e configurar alertas personalizados para várias condições de mercado. # pyright: ignore[reportUndefinedVariable]
 
-## 🛠️ Tecnologias
-- **Frontend**: React, TypeScript, Vite
-- **Backend**: Python, FastAPI
-- **APIs de Dados**: CoinGecko, Binance
-- **Gerenciamento de Pacotes**: npm (frontend), pip (backend)
+git clone https://github.com/PauloBennertz/MonitorCriptoWEB2.git
+cd MonitorCriptoWEB2
 
-## 🚀 Instalação e Execução
 
-### Pré-requisitos
-- Node.js e npm
-- Python 3.8+ e pip
+3. Configurando o Backend (Python)
+É recomendável criar um ambiente virtual para não misturar as bibliotecas.
+No Windows:
 
-### Passos
-1.  **Clone o repositório:**
-    ```bash
-    git clone https://github.com/PauloBennertz/MonitorCriptomoedas3.1.git
-    cd MonitorCriptomoedas3.1
-    ```
+Bash
 
-2.  **Instale as dependências do Backend:**
-    Recomenda-se o uso de um ambiente virtual.
-    ```bash # type: ignore
-    pip install -r backend/requirements.txt
-    ```
 
-3.  **Instale as dependências do Frontend:**
-    ```bash
-    npm install
-    ```
+python -m venv venv
+venv\Scripts\activate
 
-4.  **Execute o Servidor da API (Backend):** # type: ignore
-    A partir do diretório raiz do projeto, execute:
-    ```bash
-    uvicorn backend.api_server:app --reload --port 8000
-    ```
-    O servidor da API estará disponível em `http://localhost:8000`.
 
-5.  **Execute a Aplicação (Frontend):**
-    Em um novo terminal, a partir do diretório raiz do projeto, execute:
-    ```bash
-    npm run dev
-    ```
-    A aplicação web estará acessível em `http://localhost:5173`.
+No Linux/Mac:
 
-## 📁 Estrutura do Projeto (Simplificada)
-```
-/
-├── backend/                # Código da API em Python/FastAPI
-│   ├── api_server.py       # Ponto de entrada e rotas da API
-│   ├── monitoring_service.py # Lógica de busca e análise de dados
-│   └── ...
-├── src/                    # Código do frontend em React/TypeScript (a ser criado)
-│   ├── components/         # Componentes React reutilizáveis (a ser criado)
-│   ├── index.css           # Estilos globais
-│   └── index.tsx           # Ponto de entrada da aplicação React
-├── package.json            # Dependências e scripts do frontend
-└── README.md               # Este arquivo
-```
+Bash
 
-## 🎯 Funcionalidades
-- **Monitoramento em Tempo Real**: Veja preços, capitalização de mercado, volume e indicadores técnicos atualizados automaticamente.
-- **Alertas Configuráveis**: Configure alertas para condições como RSI, cruzamentos de médias móveis, sinais de MACD e mais.
-- **Interface Intuitiva**: Um painel de controle claro e fácil de usar para visualizar os dados.
-- **Adicionar/Remover Moedas**: Personalize sua lista de moedas monitoradas.
 
-## 🤝 Contribuição
-1.  Fork o projeto
-2.  Crie uma branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit suas mudanças (`git commit -m 'Add AmazingFeature'`) # type: ignore
-4.  Push para a branch (`git push origin feature/AmazingFeature`)
-5.  Abra um Pull Request
+python3 -m venv venv
+source venv/bin/activate
+
+
+(Se aparecer (venv) no começo da linha do terminal, deu certo!)
+Agora, instale as bibliotecas necessárias:
+
+Bash
+
+
+pip install -r requirements.txt
+
+
+⚠️ Importante: Como adicionamos novas funções recentemente, execute também este comando para garantir que tudo funcione:
+
+Bash
+
+
+pip install matplotlib pandas_ta
+
+
+4. Configurando o Frontend (Site)
+Ainda na pasta do projeto, instale as dependências do site:
+
+Bash
+
+
+npm install
+
+
+▶️ Como Executar
+O sistema possui duas partes principais. Você precisará de dois terminais abertos para rodar o sistema web completo.
+1. Iniciar o Servidor (API)
+Este passo liga o "cérebro" do sistema. No primeiro terminal (com o ambiente virtual ativado), execute:
+
+Bash
+
+
+uvicorn backend.api_server:app --reload
+
+
+Se tudo der certo, você verá mensagens dizendo que o servidor iniciou em http://127.0.0.1:8000.
+Deixe esse terminal aberto.
+2. Iniciar o Painel Web
+No segundo terminal, execute:
+
+Bash
+
+
+npm run dev
+
+
+O terminal mostrará um link (geralmente http://localhost:5173).
+Abra esse link no seu navegador para ver o painel de monitoramento.
+3. Iniciar o Backtester Desktop (Ferramenta de Análise)
+Se você quiser usar a ferramenta de simulação histórica (que calcula lucro, prejuízo e taxa de acerto) sem abrir o navegador, você pode rodar a interface dedicada.
+Em um terminal (com o venv ativado), execute:
+
+Bash
+
+
+python -m backend.gui_backtester
+
+
+Isso abrirá uma janela onde você pode:
+Escolher a moeda (ex: BTCUSDT).
+Definir datas e capital inicial.
+Escolher a estratégia (SMA, HMA, VWAP).
+Ver gráficos detalhados de performance.
+❓ Resolução de Problemas Comuns
+Erro "module not found": Certifique-se de que ativou o ambiente virtual (venv\Scripts\activate) antes de rodar os comandos Python.
+O gráfico não aparece: Verifique se instalou o matplotlib conforme indicado no passo 3.
+Erro de Permissão no Windows: Se o PowerShell bloquear a ativação do venv, abra-o como Administrador e rode: Set-ExecutionPolicy RemoteSigned.
+🤝 Contribuição
+Faça um Fork do projeto
+Crie uma Branch (git checkout -b feature/NovaFeature)
+Commit suas mudanças (git commit -m 'Adiciona nova feature')
+Push para a Branch (git push origin feature/NovaFeature)
+Abra um Pull Request

@@ -1,22 +1,25 @@
 # --- Framework Web ---
 fastapi
 uvicorn
+python-multipart
 
 # --- Manipulação de Dados e Cálculos ---
 pandas
 numpy
-openpyxl # Usado pelo pandas para ler/escrever ficheiros Excel
+pandas_ta
+openpyxl
 
 # --- Requisições de Rede e APIs ---
 requests
 httpx
 pycoingecko
 
-# --- Geração de Gráficos ---
+# --- Geração de Gráficos e Interface ---
 plotly
-kaleido # ESSENCIAL: Permite exportar os gráficos do Plotly como imagens de alta qualidade
-
-# --- Ferramentas de Interface Gráfica e Empacotamento (Manter se usar outras partes do projeto) ---
+kaleido
+matplotlib
 ttkbootstrap
 Pillow
+
+# --- Empacotamento ---
 pyinstaller
