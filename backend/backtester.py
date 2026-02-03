@@ -1,8 +1,9 @@
 import pandas as pd
 import logging
 import time
-from .indicators import calculate_sma
 import numpy as np
+from .indicators import calculate_sma, calculate_hma, calculate_vwap
+
 
 class MovingAverageCrossoverStrategy:
     def __init__(self, short_window=40, long_window=100):
@@ -17,6 +18,58 @@ class MovingAverageCrossoverStrategy:
         signals.loc[signals.index[self.long_window:], 'signal'] = np.where(
             signals['short_mavg'][self.long_window:] > signals['long_mavg'][self.long_window:], 1.0, 0.0
         )
+        signals['positions'] = signals['signal'].diff()
+        return signals['positions']
+
+class HMAStrategy:
+    """
+    Estratégia baseada na Hull Moving Average (HMA).
+    Compra quando o preço fecha ACIMA da HMA.
+    Vende quando o preço fecha ABAIXO da HMA.
+    """
+    def __init__(self, period=21):
+        self.period = period
+
+    def generate_signals(self, data):
+        signals = pd.DataFrame(index=data.index)
+        signals['signal'] = 0.0
+        
+        # Calcula a HMA usando a função existente em indicators.py
+        hma = calculate_hma(data['close'], self.period)
+        
+        # Lógica: Preço > HMA = 1 (Comprado), Preço < HMA = 0 (Neutro/Vendido)
+        # Começamos a verificar após o período necessário para o cálculo
+        signals.loc[signals.index[self.period:], 'signal'] = np.where(
+            data['close'][self.period:] > hma[self.period:], 1.0, 0.0
+        )
+        
+        signals['positions'] = signals['signal'].diff()
+        return signals['positions']
+
+class VWAPStrategy:
+    """
+    Estratégia baseada no VWAP (Volume Weighted Average Price).
+    Compra quando o preço cruza ACIMA do VWAP.
+    Vende quando o preço cruza ABAIXO do VWAP.
+    """
+    def __init__(self):
+        # VWAP geralmente não tem parametros fixos além do inicio da contagem (que será o inicio do backtest)
+        pass
+
+    def generate_signals(self, data):
+        signals = pd.DataFrame(index=data.index)
+        signals['signal'] = 0.0
+        
+        # Calcula o VWAP usando a função existente em indicators.py
+        vwap = calculate_vwap(data)
+        
+        # O VWAP precisa de volume. Se não houver volume, retorna vazio.
+        if vwap is None or vwap.empty:
+            logging.warning("VWAP calculation failed due to missing volume data.")
+            return signals['signal']
+
+        signals['signal'] = np.where(data['close'] > vwap, 1.0, 0.0)
+        
         signals['positions'] = signals['signal'].diff()
         return signals['positions']
 

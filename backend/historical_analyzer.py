@@ -9,6 +9,8 @@ from .indicators import (
     calculate_emas,
     calculate_hilo_signals,
     calculate_media_movel_cross,
+    calculate_hma, 
+    calculate_vwap,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -35,6 +37,8 @@ async def analyze_historical_alerts(symbol: str, start_date: str, end_date: str,
     macd_cross_series = calculate_macd(historical_df, return_series=True)
     emas = calculate_emas(historical_df, periods=[50, 200])
     hilo_signal_series = calculate_hilo_signals(historical_df, return_series=True)[2]
+    hma_series = calculate_hma(historical_df['close'], period=21)
+    vwap_series = calculate_vwap(historical_df)
 
     # --- 2. Define a helper to create an alert DataFrame from a mask ---
     def create_alert_df(mask, condition_key, description_template):
@@ -156,12 +160,19 @@ SIGNAL_TYPE_MAPPING = {
     'mme_cruz_dourada': 'buy',
     'hilo_compra': 'buy',
     'media_movel_cima': 'buy',
+    # --- NOVOS SINAIS ADICIONADOS ---
+    'hma_cruz_alta': 'buy',
+    'vwap_cruz_alta': 'buy',
+
     'rsi_sobrecomprado': 'sell',
     'bollinger_acima': 'sell',
     'macd_cruz_baixa': 'sell',
     'mme_cruz_morte': 'sell',
     'hilo_venda': 'sell',
     'media_movel_baixo': 'sell',
+    # --- NOVOS SINAIS ADICIONADOS ---
+    'hma_cruz_baixa': 'sell',
+    'vwap_cruz_baixa': 'sell',
 }
 
 async def calculate_hit_rate(alerts_df: pd.DataFrame, symbol: str, timeframes_config: dict):

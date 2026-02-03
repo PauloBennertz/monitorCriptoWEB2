@@ -1,3 +1,4 @@
+from backend.backtester import Backtester, MovingAverageCrossoverStrategy, HMAStrategy, VWAPStrategy
 import logging
 import os
 import json
@@ -110,6 +111,9 @@ class BacktestRequest(BaseModel):
     start_date: str
     end_date: str
     initial_capital: float = 100000
+    strategy: str = "SMA"  # Opções: SMA, HMA, VWAP
+    parameters: Dict[str, Any] = {} # Ex: {"period": 21} para HMA
+    
 
 @app.post("/api/backtest")
 async def run_backtest_endpoint(request: BacktestRequest):
@@ -122,7 +126,24 @@ async def run_backtest_endpoint(request: BacktestRequest):
         if historical_data.empty:
             raise HTTPException(status_code=404, detail="No historical data found for the given parameters.")
 
-        strategy = MovingAverageCrossoverStrategy()
+        # Seleção da Estratégia
+        strategy = None
+        if request.strategy == "SMA":
+            # Pega parametros do request ou usa padrão
+            short_w = int(request.parameters.get("short_window", 40))
+            long_w = int(request.parameters.get("long_window", 100))
+            strategy = MovingAverageCrossoverStrategy(short_window=short_w, long_window=long_w)
+            
+        elif request.strategy == "HMA":
+            period = int(request.parameters.get("period", 21))
+            strategy = HMAStrategy(period=period)
+            
+        elif request.strategy == "VWAP":
+            strategy = VWAPStrategy()
+            
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown strategy: {request.strategy}")
+
         backtester = Backtester(historical_data, strategy, request.initial_capital)
         chart_result = backtester.run(coin_id=request.symbol)
 

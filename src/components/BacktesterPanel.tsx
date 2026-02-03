@@ -12,6 +12,13 @@ const BacktesterPanel: React.FC<BacktesterPanelProps> = ({ isOpen, onClose }) =>
     const [startDate, setStartDate] = useState('2023-01-01');
     const [endDate, setEndDate] = useState('2024-01-01');
     const [initialCapital, setInitialCapital] = useState(100000);
+    
+    // Novos estados para Estratégia
+    const [strategy, setStrategy] = useState('SMA');
+    const [hmaPeriod, setHmaPeriod] = useState(21);
+    const [smaShort, setSmaShort] = useState(40);
+    const [smaLong, setSmaLong] = useState(100);
+
     const [chartData, setChartData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -20,6 +27,15 @@ const BacktesterPanel: React.FC<BacktesterPanelProps> = ({ isOpen, onClose }) =>
         setIsLoading(true);
         setError(null);
         setChartData(null);
+
+        // Monta o objeto de parâmetros baseado na estratégia escolhida
+        let params = {};
+        if (strategy === 'SMA') {
+            params = { short_window: smaShort, long_window: smaLong };
+        } else if (strategy === 'HMA') {
+            params = { period: hmaPeriod };
+        }
+        // VWAP não precisa de parâmetros extras por enquanto
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/backtest`, {
@@ -30,6 +46,8 @@ const BacktesterPanel: React.FC<BacktesterPanelProps> = ({ isOpen, onClose }) =>
                     start_date: startDate,
                     end_date: endDate,
                     initial_capital: initialCapital,
+                    strategy: strategy, // Envia a estratégia
+                    parameters: params  // Envia os parâmetros
                 }),
             });
 
@@ -56,7 +74,7 @@ const BacktesterPanel: React.FC<BacktesterPanelProps> = ({ isOpen, onClose }) =>
         <div className="modal-overlay">
             <div className="modal-content" style={{ width: '80%', maxWidth: '1200px' }}>
                 <div className="modal-header">
-                    <h2>Backtester</h2>
+                    <h2>Backtester Pro</h2>
                     <button onClick={onClose} className="close-button">&times;</button>
                 </div>
                 <div className="modal-body">
@@ -65,25 +83,65 @@ const BacktesterPanel: React.FC<BacktesterPanelProps> = ({ isOpen, onClose }) =>
                             <label>Symbol:</label>
                             <input type="text" value={symbol} onChange={(e) => setSymbol(e.target.value)} />
                         </div>
+                        
+                        {/* Seletor de Estratégia */}
                         <div className="form-group">
-                            <label>Start Date:</label>
+                            <label>Estratégia:</label>
+                            <select value={strategy} onChange={(e) => setStrategy(e.target.value)}>
+                                <option value="SMA">Cruzamento SMA</option>
+                                <option value="HMA">Tendência HMA</option>
+                                <option value="VWAP">Tendência VWAP</option>
+                            </select>
+                        </div>
+
+                        {/* Parâmetros Dinâmicos */}
+                        {strategy === 'SMA' && (
+                            <>
+                                <div className="form-group">
+                                    <label>SMA Curta:</label>
+                                    <input type="number" value={smaShort} onChange={(e) => setSmaShort(Number(e.target.value))} />
+                                </div>
+                                <div className="form-group">
+                                    <label>SMA Longa:</label>
+                                    <input type="number" value={smaLong} onChange={(e) => setSmaLong(Number(e.target.value))} />
+                                </div>
+                            </>
+                        )}
+
+                        {strategy === 'HMA' && (
+                            <div className="form-group">
+                                <label>Período HMA:</label>
+                                <input type="number" value={hmaPeriod} onChange={(e) => setHmaPeriod(Number(e.target.value))} />
+                            </div>
+                        )}
+                        
+                        {strategy === 'VWAP' && (
+                             <div className="form-group" style={{fontStyle: 'italic', fontSize: '0.9em', color: '#888'}}>
+                                VWAP usa o volume ponderado desde o início do período selecionado.
+                            </div>
+                        )}
+
+                        <div className="form-group">
+                            <label>Data Início:</label>
                             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                         </div>
                         <div className="form-group">
-                            <label>End Date:</label>
+                            <label>Data Fim:</label>
                             <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                         </div>
                         <div className="form-group">
-                            <label>Initial Capital:</label>
+                            <label>Capital Inicial ($):</label>
                             <input type="number" value={initialCapital} onChange={(e) => setInitialCapital(parseFloat(e.target.value))} />
                         </div>
-                        <button onClick={handleRunBacktest} disabled={isLoading}>
-                            {isLoading ? 'Running...' : 'Run Backtest'}
+                        
+                        <button onClick={handleRunBacktest} disabled={isLoading} style={{marginTop: '20px'}}>
+                            {isLoading ? 'Rodando Simulação...' : 'Executar Backtest'}
                         </button>
                     </div>
+                    
                     <div className="backtester-chart">
-                        {isLoading && <p>Loading chart...</p>}
-                        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+                        {isLoading && <p>Carregando gráfico...</p>}
+                        {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
                         {chartData && (
                             <Plot
                                 data={chartData.data}
