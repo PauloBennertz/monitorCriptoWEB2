@@ -251,7 +251,7 @@
         "top_n": 100,
         "min_market_cap": 1000000,
         "display_limit": 0,
-        "grid_layout_columns": 6
+        "grid_layout_columns": 3
     },
     "telegram_config": {
         "bot_token": "123456:ABC-DEF1234567890",

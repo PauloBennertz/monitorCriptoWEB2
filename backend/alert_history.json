@@ -1,5 +1,37 @@
 [
     {
+        "id": "ENAUSDT-HILO_COMPRA-1770858855117",
+        "symbol": "ENAUSDT",
+        "condition": "Sinal de Compra HiLo",
+        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
+        "timestamp": "2026-02-12T01:14:15.117Z",
+        "snapshot": {
+            "symbol": "ENAUSDT",
+            "name": "Ethena",
+            "price": 0.1139,
+            "price_change_24h": -0.785,
+            "volume_24h": 13119904.8194,
+            "market_cap": 931862308,
+            "rsi_value": 56.48517568832309,
+            "rsi_signal": "56.49",
+            "bollinger_signal": "Acima da Banda",
+            "macd_signal": "Nenhum",
+            "macd_value": -0.0002823423128872904,
+            "macd_signal_line": 0,
+            "macd_histogram": 0,
+            "mme_cross": "Nenhum",
+            "mme_200": 0.12274193314239426,
+            "hilo_signal": "HiLo Buy",
+            "media_movel_cross": {},
+            "hma": 0.11248529004329004,
+            "hma_active": true,
+            "vwap": 0.12863585608503103,
+            "vwap_active": false,
+            "timestamp": "2026-02-11T22:14:14.250780",
+            "lastPrice": 0.1139
+        }
+    },
+    {
         "id": "LINKUSDT-MACD_ALTA-1770153716651",
         "symbol": "LINKUSDT",
         "condition": "Cruzamento de Alta (MACD)",
@@ -23381,31 +23413,6 @@
             "hilo_signal": "Nenhum",
             "media_movel_cross": {},
             "lastPrice": 110318.07
-        }
-    },
-    {
-        "id": "ARBUSDT-HILO_COMPRA-1759081179438",
-        "symbol": "ARBUSDT",
-        "condition": "Sinal de Compra HiLo",
-        "description": "Dispara quando o indicador HiLo Activator gera um sinal de compra.",
-        "timestamp": "2025-09-28T17:39:39.438Z",
-        "snapshot": {
-            "symbol": "ARBUSDT",
-            "name": "Osmosis allARB",
-            "price": 0.4217,
-            "price_change_24h": 0.285,
-            "volume_24h": 12875414.58164,
-            "market_cap": 476919,
-            "rsi_value": 56.542056074766414,
-            "rsi_signal": "56.54",
-            "bollinger_signal": "Nenhum",
-            "macd_signal": "Nenhum",
-            "mme_cross": "Nenhum",
-            "hilo_signal": "HiLo Buy",
-            "media_movel_cross": {
-                "72": "Cruzamento de Alta"
-            },
-            "lastPrice": 0.4208
         }
     }
 ]
