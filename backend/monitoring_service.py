@@ -195,11 +195,16 @@ def _get_sound_for_trigger(trigger_key, sound_config):
 
     return os.path.join('sons', sound_file)
 
-def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config):
+def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config, parameters=None):
     """
     Verifica as condições de alerta para um símbolo e retorna uma lista de alertas disparados.
     Refatorado para não ter dependências de GUI (data_queue, sound_config).
     """
+    if parameters is None: parameters = {}
+
+    rsi_oversold = parameters.get('rsi_oversold', 30)
+    rsi_overbought = parameters.get('rsi_overbought', 75)
+
     triggered_alerts = []
     conditions = alert_config.get('conditions', {})
     triggered_conditions = alert_config.get('triggered_conditions', {})
@@ -224,8 +229,8 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
     alert_definitions = {
         'preco_baixo': {'key': 'PRECO_ABAIXO', 'msg': f"Preço Abaixo de ${conditions.get('preco_baixo', {}).get('value', 0):.2f}"},
         'preco_alto': {'key': 'PRECO_ACIMA', 'msg': f"Preço Acima de ${conditions.get('preco_alto', {}).get('value', 0):.2f}"},
-        'rsi_sobrevendido': {'key': 'RSI_SOBREVENDA', 'msg': f"RSI em Sobrevenda (<= {conditions.get('rsi_sobrevendido', {}).get('value', 30):.1f})"},
-        'rsi_sobrecomprado': {'key': 'RSI_SOBRECOMPRA', 'msg': f"RSI em Sobrecompra (>= {conditions.get('rsi_sobrecomprado', {}).get('value', 75):.1f})"},
+        'rsi_sobrevendido': {'key': 'RSI_SOBREVENDA', 'msg': f"RSI em Sobrevenda (<= {conditions.get('rsi_sobrevendido', {}).get('value', rsi_oversold):.1f})"},
+        'rsi_sobrecomprado': {'key': 'RSI_SOBRECOMPRA', 'msg': f"RSI em Sobrecompra (>= {conditions.get('rsi_sobrecomprado', {}).get('value', rsi_overbought):.1f})"},
         'bollinger_abaixo': {'key': 'PRECO_ABAIXO_BANDA_INFERIOR', 'msg': "Preço Abaixo da Banda de Bollinger"},
         'bollinger_acima': {'key': 'PRECO_ACIMA_BANDA_SUPERIOR', 'msg': "Preço Acima da Banda de Bollinger"},
         'macd_cruz_baixa': {'key': 'CRUZAMENTO_MACD_BAIXA', 'msg': "MACD: Cruzamento de Baixa"},
@@ -245,13 +250,16 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
     if conditions.get('rsi_sobrevendido', {}).get('enabled') and rsi <= conditions['rsi_sobrevendido']['value']: active_triggers.append(alert_definitions['rsi_sobrevendido'])
 
     if (config := conditions.get('rsi_sobrecomprado', {})) and config.get('enabled'):
-        if rsi >= config.get('value', 75):
+        if rsi >= config.get('value', rsi_overbought):
             active_triggers.append(alert_definitions['rsi_sobrecomprado'])
 
     if conditions.get('bollinger_abaixo', {}).get('enabled') and analysis_data.get('bollinger_signal') == "Abaixo da Banda": active_triggers.append(alert_definitions['bollinger_abaixo'])
     if conditions.get('bollinger_acima', {}).get('enabled') and analysis_data.get('bollinger_signal') == "Acima da Banda": active_triggers.append(alert_definitions['bollinger_acima'])
     if conditions.get('macd_cruz_baixa', {}).get('enabled') and analysis_data.get('macd_signal') == "Cruzamento de Baixa": active_triggers.append(alert_definitions['macd_cruz_baixa'])
-    if conditions.get('macd_cruz_alta', {}).get('enabled') and analysis_data.get('macd_signal') == "Cruzamento de Alta" and rsi < 30: active_triggers.append(alert_definitions['macd_cruz_alta'])
+
+    # MACD Buy Signal requires RSI < Oversold Threshold
+    if conditions.get('macd_cruz_alta', {}).get('enabled') and analysis_data.get('macd_signal') == "Cruzamento de Alta" and rsi < rsi_oversold: active_triggers.append(alert_definitions['macd_cruz_alta'])
+
     if conditions.get('mme_cruz_morte', {}).get('enabled') and analysis_data.get('mme_cross') == "Cruz da Morte" and current_price < analysis_data.get('mme_200', float('inf')): active_triggers.append(alert_definitions['mme_cruz_morte'])
     if conditions.get('mme_cruz_dourada', {}).get('enabled') and analysis_data.get('mme_cross') == "Cruz Dourada": active_triggers.append(alert_definitions['mme_cruz_dourada'])
 
@@ -309,13 +317,22 @@ def _check_and_trigger_alerts(symbol, alert_config, analysis_data, global_config
     # Retorna os alertas disparados e o estado atualizado dos cooldowns
     return triggered_alerts, triggered_conditions
 
-def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None):
+def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None, interval='1h', parameters=None):
     """Coleta e analisa todos os dados técnicos para um único símbolo."""
+    if parameters is None: parameters = {}
+
+    rsi_period = parameters.get('rsi_period', 14)
+    macd_fast = parameters.get('macd_fast', 12)
+    macd_slow = parameters.get('macd_slow', 26)
+    macd_signal = parameters.get('macd_signal', 9)
+    bb_period = parameters.get('bb_period', 20)
+    bb_std = parameters.get('bb_std', 2.0)
+
     base_asset = symbol.replace('USDT', '')
     coin_name = coingecko_mapping.get(base_asset, base_asset) if coingecko_mapping else base_asset
 
     # 1. Busca os dados (df)
-    df = get_klines_data(symbol)
+    df = get_klines_data(symbol, interval=interval)
     
     # Se não houver dados, retornamos um dicionário básico para evitar erro
     if df is None or df.empty:
@@ -381,9 +398,9 @@ def _analyze_symbol(symbol, ticker_data, market_cap=None, coingecko_mapping=None
 
     # 5. Indicadores técnicos avançados
     try:
-        rsi_series, _, _ = calculate_rsi(df)
-        upper_band_series, lower_band_series, _ = calculate_bollinger_bands(df)
-        macd_signal, macd_value, macd_signal_line, macd_histogram = calculate_macd(df)
+        rsi_series, _, _ = calculate_rsi(df, period=rsi_period)
+        upper_band_series, lower_band_series, _ = calculate_bollinger_bands(df, period=bb_period, std_dev=bb_std)
+        macd_signal, macd_value, macd_signal_line, macd_histogram = calculate_macd(df, fast=macd_fast, slow=macd_slow, signal=macd_signal)
         _, _, hilo_signal = calculate_hilo_signals(df)
         emas = calculate_emas(df, periods=[50, 200])
 
@@ -437,11 +454,15 @@ def run_monitoring_cycle(config, coingecko_mapping):
         if not symbol or not robust_services.DataValidator.validate_symbol(symbol):
             continue
 
-        analysis_data = _analyze_symbol(symbol, ticker_data, market_caps_data.get(symbol), coingecko_mapping)
+        # Use defaults for now as they are not in config
+        interval = '1h'
+        parameters = {}
+
+        analysis_data = _analyze_symbol(symbol, ticker_data, market_caps_data.get(symbol), coingecko_mapping, interval=interval, parameters=parameters)
         all_analysis_data.append(analysis_data)
 
         if alert_config := crypto_config.get('alert_config'):
-            triggered_alerts, updated_cooldowns = _check_and_trigger_alerts(symbol, alert_config, analysis_data, config)
+            triggered_alerts, updated_cooldowns = _check_and_trigger_alerts(symbol, alert_config, analysis_data, config, parameters=parameters)
             if triggered_alerts:
                 all_triggered_alerts.extend(triggered_alerts)
                 # Atualiza o estado do cooldown na configuração principal
@@ -463,17 +484,21 @@ def run_single_symbol_update(symbol, config, coingecko_mapping):
         logging.warning(f"Nenhuma configuração encontrada para {symbol}. Não é possível atualizar.")
         return None, None
 
+    # Defaults
+    interval = '1h'
+    parameters = {}
+
     ticker_data = get_ticker_data()
     if not ticker_data:
         logging.error(f"Não foi possível obter dados do ticker para a atualização de {symbol}.")
         return None, None
 
     market_caps_data = get_market_caps_coingecko([symbol], coingecko_mapping)
-    analysis_data = _analyze_symbol(symbol, ticker_data, market_caps_data.get(symbol), coingecko_mapping)
+    analysis_data = _analyze_symbol(symbol, ticker_data, market_caps_data.get(symbol), coingecko_mapping, interval=interval, parameters=parameters)
 
     triggered_alerts = []
     if alert_config := crypto_config.get('alert_config'):
-        triggered_alerts, updated_cooldowns = _check_and_trigger_alerts(symbol, alert_config, analysis_data, config)
+        triggered_alerts, updated_cooldowns = _check_and_trigger_alerts(symbol, alert_config, analysis_data, config, parameters=parameters)
         if triggered_alerts:
              alert_config['triggered_conditions'] = updated_cooldowns
 

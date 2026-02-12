@@ -8,7 +8,7 @@ CACHE_DIR = os.path.join(os.path.dirname(__file__), '..', '.cache')
 if not os.path.exists(CACHE_DIR):
     os.makedirs(CACHE_DIR)
 
-def generate_cache_key(symbol: str, start_date: str, end_date: str, alert_config: Dict[str, Any], timeframes_config: Dict[str, int]) -> str:
+def generate_cache_key(symbol: str, start_date: str, end_date: str, alert_config: Dict[str, Any], timeframes_config: Dict[str, int], interval: str = '1h', parameters: Dict[str, Any] = None) -> str:
     """
     Gera uma chave de cache única baseada nos parâmetros do backtest.
     """
@@ -19,7 +19,9 @@ def generate_cache_key(symbol: str, start_date: str, end_date: str, alert_config
         'start_date': start_date,
         'end_date': end_date,
         'alert_config': alert_config,
-        'timeframes_config': timeframes_config
+        'timeframes_config': timeframes_config,
+        'interval': interval,
+        'parameters': parameters
     }, sort_keys=True)
 
     # Usa SHA256 para criar um hash da string de parâmetros
