@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-from ttkbootstrap.scrolled import ScrolledText
 from ttkbootstrap.widgets import DateEntry
 import threading
 import queue
@@ -46,11 +45,84 @@ class BacktesterGUI:
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
 
         # --- Right Frame (for alert configurations) ---
-        right_frame = ttk.Labelframe(top_frame, text="Configuração dos Alertas", padding=10)
+        right_frame = ttk.Labelframe(top_frame, text="Configuração dos Indicadores", padding=10)
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(5, 0))
 
-        self.alert_info_text = ScrolledText(right_frame, wrap=tk.WORD, height=10)
-        self.alert_info_text.pack(fill=tk.BOTH, expand=True)
+        # Interval
+        interval_frame = ttk.Frame(right_frame)
+        interval_frame.pack(fill=tk.X, pady=2)
+        ttk.Label(interval_frame, text="Intervalo de Dados:").pack(side=tk.LEFT)
+        self.interval_combo = ttk.Combobox(interval_frame, values=['15m', '30m', '1h', '2h', '4h', '1d'], width=5)
+        self.interval_combo.set('1h')
+        self.interval_combo.pack(side=tk.RIGHT)
+
+        # RSI Settings
+        rsi_frame = ttk.Labelframe(right_frame, text="RSI", padding=5)
+        rsi_frame.pack(fill=tk.X, pady=5)
+
+        row1 = ttk.Frame(rsi_frame)
+        row1.pack(fill=tk.X)
+        ttk.Label(row1, text="Período:").pack(side=tk.LEFT)
+        self.rsi_period_entry = ttk.Entry(row1, width=5)
+        self.rsi_period_entry.insert(0, "14")
+        self.rsi_period_entry.pack(side=tk.RIGHT)
+
+        row2 = ttk.Frame(rsi_frame)
+        row2.pack(fill=tk.X, pady=2)
+        ttk.Label(row2, text="Sobrecompra:").pack(side=tk.LEFT)
+        self.rsi_overbought_entry = ttk.Entry(row2, width=5)
+        self.rsi_overbought_entry.insert(0, "75")
+        self.rsi_overbought_entry.pack(side=tk.RIGHT)
+
+        row3 = ttk.Frame(rsi_frame)
+        row3.pack(fill=tk.X)
+        ttk.Label(row3, text="Sobrevenda:").pack(side=tk.LEFT)
+        self.rsi_oversold_entry = ttk.Entry(row3, width=5)
+        self.rsi_oversold_entry.insert(0, "30")
+        self.rsi_oversold_entry.pack(side=tk.RIGHT)
+
+        # MACD Settings
+        macd_frame = ttk.Labelframe(right_frame, text="MACD", padding=5)
+        macd_frame.pack(fill=tk.X, pady=5)
+
+        row4 = ttk.Frame(macd_frame)
+        row4.pack(fill=tk.X)
+        ttk.Label(row4, text="Rápido:").pack(side=tk.LEFT)
+        self.macd_fast_entry = ttk.Entry(row4, width=5)
+        self.macd_fast_entry.insert(0, "12")
+        self.macd_fast_entry.pack(side=tk.RIGHT)
+
+        row5 = ttk.Frame(macd_frame)
+        row5.pack(fill=tk.X, pady=2)
+        ttk.Label(row5, text="Lento:").pack(side=tk.LEFT)
+        self.macd_slow_entry = ttk.Entry(row5, width=5)
+        self.macd_slow_entry.insert(0, "26")
+        self.macd_slow_entry.pack(side=tk.RIGHT)
+
+        row6 = ttk.Frame(macd_frame)
+        row6.pack(fill=tk.X)
+        ttk.Label(row6, text="Sinal:").pack(side=tk.LEFT)
+        self.macd_signal_entry = ttk.Entry(row6, width=5)
+        self.macd_signal_entry.insert(0, "9")
+        self.macd_signal_entry.pack(side=tk.RIGHT)
+
+        # Bollinger Settings
+        bb_frame = ttk.Labelframe(right_frame, text="Bollinger Bands", padding=5)
+        bb_frame.pack(fill=tk.X, pady=5)
+
+        row7 = ttk.Frame(bb_frame)
+        row7.pack(fill=tk.X)
+        ttk.Label(row7, text="Período:").pack(side=tk.LEFT)
+        self.bb_period_entry = ttk.Entry(row7, width=5)
+        self.bb_period_entry.insert(0, "20")
+        self.bb_period_entry.pack(side=tk.RIGHT)
+
+        row8 = ttk.Frame(bb_frame)
+        row8.pack(fill=tk.X, pady=2)
+        ttk.Label(row8, text="Desvio:").pack(side=tk.LEFT)
+        self.bb_std_entry = ttk.Entry(row8, width=5)
+        self.bb_std_entry.insert(0, "2")
+        self.bb_std_entry.pack(side=tk.RIGHT)
 
          # --- Input Frame ---
         input_frame = ttk.Labelframe(left_frame, text="Parâmetros da Análise", padding=10)
@@ -135,65 +207,7 @@ class BacktesterGUI:
         self.root.after(100, self.process_queue)
 
         # --- Display Alert Configurations ---
-        self._display_alert_configurations()
-
-    def _display_alert_configurations(self):
-        """
-        Reads, formats, and displays the hardcoded alert logic in the right-side panel.
-        This provides users with a clear view of the current alert rules.
-        """
-        config_text = """
-Regras de Alerta Atuais:
-
---- COMPRA ---
-
-1. RSI Sobrevenda:
-   - Condição: RSI(14) <= 30
-   - Descrição: Indica que o ativo pode estar sobrevendido e prestes a reverter a tendência de baixa.
-
-2. Cruzamento de Alta do MACD:
-   - Condição: Cruzamento de alta no MACD(12,26,9) E RSI(14) < 30.
-   - Descrição: Sinal de compra forte, combinando momento (MACD) com condição de sobrevenda (RSI).
-
-3. Cruz Dourada (Golden Cross):
-   - Condição: MME(50) cruza para cima da MME(200).
-   - Descrição: Sinal clássico de início de uma tendência de alta de longo prazo. Também desativa o "Modo Filtro".
-
-4. HiLo Compra (Modo Filtro):
-   - Condição: Preço cruza para cima do HiLo(34) E "Cruz da Morte" NÃO está ativa.
-   - Descrição: Sinal de compra baseado no indicador HiLo, mas é ignorado se uma tendência de baixa de longo prazo ("Cruz da Morte") estiver em vigor.
-
-5. Média Móvel para Cima (Modo Filtro):
-   - Condição: Preço cruza para cima da MME(200) E MACD > 0 E "Cruz da Morte" NÃO está ativa.
-   - Descrição: Confirmação de tendência de alta com o preço acima da média longa e momento positivo do MACD. Também é ignorado durante o "Modo Filtro".
-
---- VENDA ---
-
-1. RSI Sobrecompra:
-   - Condição: RSI(14) >= 75
-   - Descrição: Indica que o ativo pode estar sobrecomprado e prestes a corrigir.
-
-2. Cruzamento de Baixa do MACD:
-   - Condição: Cruzamento de baixa no MACD(12,26,9).
-   - Descrição: Sinal de possível reversão para uma tendência de baixa.
-
-3. Cruz da Morte (Death Cross):
-   - Condição: MME(50) cruza para baixo da MME(200) E o preço está abaixo da MME(200).
-   - Descrição: Sinal forte de tendência de baixa. Ativa o "Modo Filtro", que desabilita os alertas 'HiLo Compra' e 'Média Móvel para Cima'.
-
-4. HiLo Venda:
-   - Condição: Preço cruza para baixo do HiLo(34).
-   - Descrição: Sinal de venda baseado no indicador HiLo.
-
-5. Média Móvel para Baixo:
-   - Condição: Preço cruza para baixo da MME(17).
-   - Descrição: Sinal de curto prazo que indica uma possível perda de força do preço.
-"""
-        # Enable the text widget to insert text, then disable it again
-        self.alert_info_text.text.config(state="normal") 
-        self.alert_info_text.delete("1.0", tk.END)
-        self.alert_info_text.insert(tk.END, config_text)
-        self.alert_info_text.text.config(state="disabled")
+        # Removed as per new requirement
 
     def setup_results_display(self, timeframes):
         """ Dynamically configures the Treeview and summary labels based on selected timeframes. """
@@ -328,36 +342,65 @@ Regras de Alerta Atuais:
         for i in self.results_tree.get_children():
             self.results_tree.delete(i)
 
+        # Collect User Parameters
+        try:
+            interval = self.interval_combo.get()
+            parameters = {
+                'rsi_period': int(self.rsi_period_entry.get()),
+                'rsi_overbought': float(self.rsi_overbought_entry.get()),
+                'rsi_oversold': float(self.rsi_oversold_entry.get()),
+                'macd_fast': int(self.macd_fast_entry.get()),
+                'macd_slow': int(self.macd_slow_entry.get()),
+                'macd_signal': int(self.macd_signal_entry.get()),
+                'bb_period': int(self.bb_period_entry.get()),
+                'bb_std': float(self.bb_std_entry.get())
+            }
+        except ValueError:
+            messagebox.showerror("Erro de Entrada", "Por favor, verifique se todos os campos de configuração são numéricos.")
+            self.gui_task_done()
+            self.run_button.config(state="normal")
+            return
+
         thread = threading.Thread(
             target=self.run_backtest_logic,
-            args=(symbol, start_date, end_date, selected_timeframes),
+            args=(symbol, start_date, end_date, selected_timeframes, interval, parameters),
             daemon=True
         )
         thread.start()
 
-    def run_backtest_logic(self, symbol, start_date, end_date, timeframes_config):
+    def run_backtest_logic(self, symbol, start_date, end_date, timeframes_config, interval, parameters):
         try:
             with open('backend/config.json', 'r') as f:
                 config = json.load(f)
+            # Find existing config or create a basic default
             crypto_config = next((c for c in config.get("cryptos_to_monitor", []) if c['symbol'] == symbol), {})
             alert_config = crypto_config.get('alert_config', {})
+
+            # If no specific alert config exists, we can create a default one or use the one from parameters
             if not alert_config:
-                self.queue.put({"type": "status", "msg": f"AVISO: Nenhuma configuração de alerta para {symbol}."})
+                 alert_config = {'conditions': {}}
+
+            # Override/Inject parameters into alert_config logic (conceptual, passed separately to analyzer)
+            # Note: In a real scenario, we might want to update the alert_config dict itself to reflect these overrides
+            # so that analyze_historical_alerts uses them if it relies on alert_config structure.
+            # For now, we will pass 'parameters' as a separate argument to analyze_historical_alerts.
+
         except Exception as e:
             self.queue.put({"type": "error", "msg": f"ERRO ao ler config.json: {e}"})
             self.queue.put({"type": "task_done"})
             return
 
         # --- Cache Logic ---
-        cache_key = generate_cache_key(symbol, start_date, end_date, alert_config, timeframes_config)
+        # Include parameters in cache key to ensure unique results for different settings
+        cache_key = generate_cache_key(symbol, start_date, end_date, alert_config, timeframes_config, interval, parameters)
         cached_results = load_from_cache(cache_key)
 
         if cached_results:
             alerts = cached_results.get("alerts")
             # We still fetch historical data for the chart, not from cache.
-            _, df = asyncio.run(analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config={}))
+            _, df = asyncio.run(analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config={}, interval=interval, parameters=parameters))
         else:
-            alerts, df = asyncio.run(analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config))
+            alerts, df = asyncio.run(analyze_historical_alerts(symbol, start_date, end_date, alert_config, timeframes_config, interval=interval, parameters=parameters))
             if alerts:
                 save_to_cache(cache_key, {"alerts": alerts}) # Cache new results
 

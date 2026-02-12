@@ -197,25 +197,3 @@ def calculate_vwap(df):
     
     # O VWAP acumulado é a soma de (Preço * Volume) / Soma do Volume
     return (p * v).cumsum() / v.cumsum()
-
-def calculate_hma(series, period=21):
-    """Calcula a Hull Moving Average (HMA)."""
-    if len(series) < period:
-        return pd.Series(np.nan, index=series.index)
-    
-    half_length = int(period / 2)
-    sqrt_length = int(np.sqrt(period))
-    
-    def wma(s, p):
-        return s.rolling(window=p).apply(lambda x: np.dot(x, np.arange(1, p + 1)) / np.arange(1, p + 1).sum(), raw=True)
-    
-    wma_half = wma(series, half_length)
-    wma_full = wma(series, period)
-    diff = 2 * wma_half - wma_full
-    return wma(diff, sqrt_length)
-
-def calculate_vwap(df):
-    """Calcula o VWAP (Volume Weighted Average Price)."""
-    v = df['volume']
-    p = df['close']
-    return (p * v).cumsum() / v.cumsum()

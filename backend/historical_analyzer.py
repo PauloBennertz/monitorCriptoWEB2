@@ -16,14 +16,29 @@ from .indicators import (
 logging.basicConfig(level=logging.INFO)
 
 
-async def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert_config: dict, timeframes_config: dict = None):
+async def analyze_historical_alerts(symbol: str, start_date: str, end_date: str, alert_config: dict, timeframes_config: dict = None, interval: str = '1h', parameters: dict = None):
     """
     Analyzes historical data for a symbol to find when alert conditions would have been met,
     using a highly efficient and vectorized pandas approach.
     """
-    logging.info(f"Starting vectorized historical alert analysis for {symbol} from {start_date} to {end_date}.")
+    logging.info(f"Starting vectorized historical alert analysis for {symbol} from {start_date} to {end_date} with interval {interval}.")
 
-    historical_df = await fetch_historical_data(symbol, start_date, end_date, interval='1h')
+    if parameters is None:
+        parameters = {}
+
+    # Extract parameters with defaults
+    rsi_period = parameters.get('rsi_period', 14)
+    rsi_overbought = parameters.get('rsi_overbought', 75)
+    rsi_oversold = parameters.get('rsi_oversold', 30)
+
+    macd_fast = parameters.get('macd_fast', 12)
+    macd_slow = parameters.get('macd_slow', 26)
+    macd_signal = parameters.get('macd_signal', 9)
+
+    bb_period = parameters.get('bb_period', 20)
+    bb_std = parameters.get('bb_std', 2.0)
+
+    historical_df = await fetch_historical_data(symbol, start_date, end_date, interval=interval)
     if historical_df.empty:
         logging.warning(f"No historical data found for {symbol} in the given date range.")
         return [], pd.DataFrame()
@@ -32,9 +47,9 @@ async def analyze_historical_alerts(symbol: str, start_date: str, end_date: str,
     alert_dfs = [] # List to hold DataFrames of alerts for each condition
 
     # --- 1. Calculate all indicators at once ---
-    rsi_series = calculate_rsi(historical_df)[0]
-    upper_band, lower_band, _ = calculate_bollinger_bands(historical_df)
-    macd_cross_series = calculate_macd(historical_df, return_series=True)
+    rsi_series = calculate_rsi(historical_df, period=rsi_period)[0]
+    upper_band, lower_band, _ = calculate_bollinger_bands(historical_df, period=bb_period, std_dev=bb_std)
+    macd_cross_series = calculate_macd(historical_df, fast=macd_fast, slow=macd_slow, signal=macd_signal, return_series=True)
     emas = calculate_emas(historical_df, periods=[50, 200])
     hilo_signal_series = calculate_hilo_signals(historical_df, return_series=True)[2]
     hma_series = calculate_hma(historical_df['close'], period=21)
@@ -57,13 +72,15 @@ async def analyze_historical_alerts(symbol: str, start_date: str, end_date: str,
         return None
 
     # --- 3. Generate alerts for each condition ---
+    # Use parameters from GUI if available, otherwise fallback to config or defaults
+
     if conditions.get('rsi_sobrevendido', {}).get('enabled'):
-        mask = rsi_series <= conditions.get('rsi_sobrevendido', {}).get('value', 30)
+        mask = rsi_series <= rsi_oversold
         df = create_alert_df(mask, 'rsi_sobrevendido', 'RSI em Sobrevenda ({rsi})')
         if df is not None: alert_dfs.append(df)
 
     if conditions.get('rsi_sobrecomprado', {}).get('enabled'):
-        mask = rsi_series >= conditions.get('rsi_sobrecomprado', {}).get('value', 70)
+        mask = rsi_series >= rsi_overbought
         df = create_alert_df(mask, 'rsi_sobrecomprado', 'RSI em Sobrecompra ({rsi})')
         if df is not None: alert_dfs.append(df)
 
@@ -78,7 +95,8 @@ async def analyze_historical_alerts(symbol: str, start_date: str, end_date: str,
         if df is not None: alert_dfs.append(df)
 
     if conditions.get('macd_cruz_alta', {}).get('enabled'):
-        mask = macd_cross_series == "Cruzamento de Alta"
+        # MACD Buy Signal requires RSI < Oversold Threshold
+        mask = (macd_cross_series == "Cruzamento de Alta") & (rsi_series < rsi_oversold)
         df = create_alert_df(mask, 'macd_cruz_alta', 'MACD: Cruzamento de Alta')
         if df is not None: alert_dfs.append(df)
 
