@@ -4,7 +4,9 @@ import os
 import json
 import subprocess
 import sys
-from threading import Lock
+import asyncio
+import aiofiles
+from asyncio import Lock
 from fastapi import FastAPI, HTTPException, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -343,18 +345,19 @@ async def get_alert_configs():
             logging.warning("config.json not found.")
             return {"cryptos_to_monitor": [], "market_analysis_config": {}}
 
-        with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-            try:
-                content = f.read()
-                if not content.strip():
-                    logging.warning("config.json is empty.")
-                    return {"cryptos_to_monitor": [], "market_analysis_config": {}}
+        async with CONFIG_LOCK:
+            async with aiofiles.open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                try:
+                    content = await f.read()
+                    if not content.strip():
+                        logging.warning("config.json is empty.")
+                        return {"cryptos_to_monitor": [], "market_analysis_config": {}}
 
-                config_data = json.loads(content)
-                return config_data
-            except json.JSONDecodeError:
-                logging.error("Failed to decode config.json.")
-                raise HTTPException(status_code=500, detail="Failed to parse configuration file.")
+                    config_data = json.loads(content)
+                    return config_data
+                except json.JSONDecodeError:
+                    logging.error("Failed to decode config.json.")
+                    raise HTTPException(status_code=500, detail="Failed to parse configuration file.")
     except Exception as e:
         logging.error(f"Error reading configuration file: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An internal server error occurred while reading config: {str(e)}")
@@ -368,9 +371,9 @@ async def save_alert_configs(config_data: Dict[str, Any]):
         if 'cryptos_to_monitor' not in config_data or 'market_analysis_config' not in config_data:
             raise HTTPException(status_code=400, detail="Invalid configuration structure.")
 
-        with CONFIG_LOCK:
-            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(config_data, f, indent=4)
+        async with CONFIG_LOCK:
+            async with aiofiles.open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+                await f.write(json.dumps(config_data, indent=4))
         logging.info("Successfully saved configuration to config.json")
         return {"message": "Configuration saved successfully."}
     except HTTPException:
@@ -387,12 +390,12 @@ async def add_monitored_coin(request: CoinAddRequest):
     """
     Adds a new coin to the monitoring list in the configuration.
     """
-    with CONFIG_LOCK:
+    async with CONFIG_LOCK:
         try:
             config = {"cryptos_to_monitor": [], "market_analysis_config": {}}
             if os.path.exists(CONFIG_FILE_PATH):
-                with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-                    content = f.read()
+                async with aiofiles.open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                    content = await f.read()
                     if content:
                         config = json.loads(content)
 
@@ -417,8 +420,8 @@ async def add_monitored_coin(request: CoinAddRequest):
             }
             config['cryptos_to_monitor'].append(new_coin_config)
 
-            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(config, f, indent=4)
+            async with aiofiles.open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+                await f.write(json.dumps(config, indent=4))
 
             logging.info(f"Successfully added {request.symbol} to monitored coins.")
             return {"message": f"Coin {request.symbol} added successfully."}
@@ -432,13 +435,14 @@ async def remove_monitored_coin(symbol: str):
     """
     Removes a coin from the monitoring list in the configuration.
     """
-    with CONFIG_LOCK:
+    async with CONFIG_LOCK:
         try:
             if not os.path.exists(CONFIG_FILE_PATH):
                 raise HTTPException(status_code=404, detail="Configuration file not found.")
 
-            with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-                config = json.load(f)
+            async with aiofiles.open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                content = await f.read()
+                config = json.loads(content)
 
             initial_count = len(config['cryptos_to_monitor'])
             config['cryptos_to_monitor'] = [
@@ -449,8 +453,8 @@ async def remove_monitored_coin(symbol: str):
                 logging.warning(f"Attempted to remove non-existent coin {symbol}.")
                 raise HTTPException(status_code=404, detail=f"Coin {symbol} not found in monitored list.")
 
-            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(config, f, indent=4)
+            async with aiofiles.open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+                await f.write(json.dumps(config, indent=4))
 
             logging.info(f"Successfully removed {symbol} from monitored coins.")
             return {"message": f"Coin {symbol} removed successfully."}
@@ -473,11 +477,11 @@ class Alert(BaseModel):
 @app.get("/api/alerts", response_model=List[Alert])
 async def get_alert_history(start_date: Optional[str] = Query(None, description="Start date for filtering (YYYY-MM-DD)"), end_date: Optional[str] = Query(None, description="End date for filtering (YYYY-MM-DD)")):
     try:
-        with HISTORY_LOCK:
+        async with HISTORY_LOCK:
             if not os.path.exists(ALERT_HISTORY_FILE_PATH): return []
-            with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+            async with aiofiles.open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
                 try:
-                    content = f.read()
+                    content = await f.read()
                     if not content: return []
                     history = json.loads(content)
                     if not isinstance(history, list): history = []
@@ -503,12 +507,13 @@ async def save_alert(alert: Alert):
     Saves a new alert to the alert history.
     """
     try:
-        with HISTORY_LOCK:
+        async with HISTORY_LOCK:
             history = []
             if os.path.exists(ALERT_HISTORY_FILE_PATH) and os.path.getsize(ALERT_HISTORY_FILE_PATH) > 0:
-                with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+                async with aiofiles.open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
                     try:
-                        history = json.load(f)
+                        content = await f.read()
+                        history = json.loads(content)
                         if not isinstance(history, list):
                             logging.warning("Alert history was not a list, re-initializing.")
                             history = []
@@ -522,8 +527,8 @@ async def save_alert(alert: Alert):
             if len(history) > MAX_HISTORY_SIZE:
                 history = history[:MAX_HISTORY_SIZE]
 
-            with open(ALERT_HISTORY_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(history, f, indent=4)
+            async with aiofiles.open(ALERT_HISTORY_FILE_PATH, 'w', encoding='utf-8') as f:
+                await f.write(json.dumps(history, indent=4))
 
         logging.info(f"Successfully saved alert for {alert.symbol}")
         return {"message": "Alert saved successfully"}
@@ -543,10 +548,12 @@ async def get_telegram_config():
     try:
         if not os.path.exists(CONFIG_FILE_PATH):
             return {"bot_token": "", "chat_id": ""}
-        with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-            config_data = json.load(f)
-            telegram_config = config_data.get("telegram_config", {"bot_token": "", "chat_id": ""})
-            return telegram_config
+        async with CONFIG_LOCK:
+            async with aiofiles.open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                content = await f.read()
+                config_data = json.loads(content)
+                telegram_config = config_data.get("telegram_config", {"bot_token": "", "chat_id": ""})
+                return telegram_config
     except Exception as e:
         logging.error(f"Error reading Telegram configuration: {e}")
         raise HTTPException(status_code=500, detail="Failed to read Telegram configuration.")
@@ -556,19 +563,19 @@ async def save_telegram_config(telegram_config: TelegramConfigRequest):
     """
     Saves the Telegram configuration.
     """
-    with CONFIG_LOCK:
+    async with CONFIG_LOCK:
         try:
             config = {}
             if os.path.exists(CONFIG_FILE_PATH):
-                with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-                    content = f.read()
+                async with aiofiles.open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                    content = await f.read()
                     if content:
                         config = json.loads(content)
 
             config["telegram_config"] = telegram_config.model_dump()
 
-            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(config, f, indent=4)
+            async with aiofiles.open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+                await f.write(json.dumps(config, indent=4))
 
             logging.info("Successfully saved Telegram configuration.")
             return {"message": "Telegram configuration saved successfully."}
@@ -583,13 +590,13 @@ async def test_telegram_endpoint():
     Envia uma mensagem de teste para o Telegram usando as credenciais configuradas.
     """
     try:
-        with CONFIG_LOCK:
+        async with CONFIG_LOCK:
             if not os.path.exists(CONFIG_FILE_PATH):
                 raise HTTPException(status_code=404, detail="Arquivo de configuração não encontrado.")
 
             config = {}
-            with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-                content = f.read()
+            async with aiofiles.open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                content = await f.read()
                 if content:
                     config = json.loads(content)
 
@@ -638,10 +645,11 @@ async def get_coin_details(symbol: str):
         recent_alerts = []
 
         if os.path.exists(ALERT_HISTORY_FILE_PATH):
-            with HISTORY_LOCK:
-                with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+            async with HISTORY_LOCK:
+                async with aiofiles.open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
                     try:
-                        history = json.load(f)
+                        content = await f.read()
+                        history = json.loads(content)
                         if isinstance(history, list):
                             symbol_alerts = [
                                 alert for alert in history
@@ -672,11 +680,13 @@ async def get_chart_data(symbol: str):
 
     history = []
     if os.path.exists(ALERT_HISTORY_FILE_PATH):
-        with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
-            try:
-                history = json.load(f)
-            except json.JSONDecodeError:
-                history = []
+        async with HISTORY_LOCK:
+            async with aiofiles.open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+                try:
+                    content = await f.read()
+                    history = json.loads(content)
+                except json.JSONDecodeError:
+                    history = []
 
     start_date_alerts = end_date - timedelta(days=7)
     recent_alerts = [

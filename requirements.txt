@@ -13,6 +13,7 @@ openpyxl
 requests
 httpx
 pycoingecko
+aiofiles
 
 # --- Geração de Gráficos e Interface ---
 plotly
