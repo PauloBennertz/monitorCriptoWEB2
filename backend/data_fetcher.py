@@ -3,6 +3,7 @@ import pandas as pd
 import logging
 import httpx
 import time
+import asyncio
 from datetime import datetime, timezone
 import numpy as np
 
@@ -32,35 +33,39 @@ async def fetch_historical_data(symbol, start_date, end_date, interval='1h'):
                 'endTime': end_ms,
                 'limit': MAX_LIMIT
             }
-            try:
-                response = await client.get(BINANCE_API_URL, params=params, timeout=15.0)
-                response.raise_for_status()
-                data = response.json()
-                if not data:
+
+            success = False
+            max_retries = 3
+            retry_delay = 2
+
+            for attempt in range(max_retries):
+                try:
+                    response = await client.get(BINANCE_API_URL, params=params, timeout=15.0)
+                    response.raise_for_status()
+                    data = response.json()
+
+                    if not data:
+                        success = True # Consider it a success, just no more data
+                        break
+
+                    all_data.extend(data)
+                    last_timestamp = data[-1][0]
+                    start_ms = last_timestamp + 1
+                    logging.info(f"Fetched {len(data)} records. Next start time: {datetime.fromtimestamp(start_ms / 1000, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}")
+                    success = True
                     break
-                all_data.extend(data)
-                last_timestamp = data[-1][0]
-                start_ms = last_timestamp + 1
-                logging.info(f"Fetched {len(data)} records. Next start time: {datetime.fromtimestamp(start_ms / 1000, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}")
-            except (httpx.RequestError, httpx.HTTPStatusError) as e:
-                logging.error(f"Network error while fetching data for {symbol}: {e}")
-                # WORKAROUND: Return hardcoded sample data for sandbox/offline testing.
-                logging.warning("API call failed. Returning hardcoded sample data for verification.")
-                num_records = 720  # Approx 30 days of hourly data
-                end_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-                timestamps = pd.to_datetime(pd.date_range(end=end_dt, periods=num_records, freq='h'))
-                price_data = 40000 + (np.random.randn(num_records).cumsum() * 10)
-                sample_df = pd.DataFrame({
-                    'timestamp': timestamps,
-                    'open': price_data - np.random.uniform(-10, 10, num_records),
-                    'high': price_data + np.random.uniform(0, 20, num_records),
-                    'low': price_data - np.random.uniform(0, 20, num_records),
-                    'close': price_data,
-                    'volume': np.random.uniform(100, 1000, num_records)
-                }).set_index('timestamp')
-                return sample_df
-            except Exception as e:
-                logging.error(f"An unexpected error occurred: {e}")
+                except (httpx.RequestError, httpx.HTTPStatusError) as e:
+                    logging.error(f"Network error while fetching data for {symbol} (attempt {attempt + 1}/{max_retries}): {e}")
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(retry_delay)
+                        retry_delay *= 2
+                    else:
+                        logging.error(f"Max retries reached for {symbol} at {start_ms}.")
+                except Exception as e:
+                    logging.error(f"An unexpected error occurred for {symbol}: {e}")
+                    break
+
+            if not success or (not data if 'data' in locals() else True):
                 break
 
     if not all_data:
