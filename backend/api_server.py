@@ -2,6 +2,7 @@ from backend.backtester import Backtester, MovingAverageCrossoverStrategy, HMASt
 import logging
 import os
 import json
+import anyio
 import subprocess
 import sys
 from threading import Lock
@@ -333,31 +334,37 @@ async def get_crypto_data(symbols: List[str] = Query(..., description="A list of
         raise HTTPException(status_code=500, detail=f"An internal error occurred: {str(e)}")
 
 
+def _read_config_sync():
+    with CONFIG_LOCK:
+        if not os.path.exists(CONFIG_FILE_PATH):
+            logging.warning("config.json not found.")
+            return {"cryptos_to_monitor": [], "market_analysis_config": {}}
+
+        with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+            content = f.read()
+            if not content.strip():
+                logging.warning("config.json is empty.")
+                return {"cryptos_to_monitor": [], "market_analysis_config": {}}
+            return json.loads(content)
+
 @app.get("/api/alert_configs")
 async def get_alert_configs():
     """
     Returns the contents of the monitoring configuration file.
     """
     try:
-        if not os.path.exists(CONFIG_FILE_PATH):
-            logging.warning("config.json not found.")
-            return {"cryptos_to_monitor": [], "market_analysis_config": {}}
-
-        with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-            try:
-                content = f.read()
-                if not content.strip():
-                    logging.warning("config.json is empty.")
-                    return {"cryptos_to_monitor": [], "market_analysis_config": {}}
-
-                config_data = json.loads(content)
-                return config_data
-            except json.JSONDecodeError:
-                logging.error("Failed to decode config.json.")
-                raise HTTPException(status_code=500, detail="Failed to parse configuration file.")
+        return await anyio.to_thread.run_sync(_read_config_sync)
+    except json.JSONDecodeError:
+        logging.error("Failed to decode config.json.")
+        raise HTTPException(status_code=500, detail="Failed to parse configuration file.")
     except Exception as e:
         logging.error(f"Error reading configuration file: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An internal server error occurred while reading config: {str(e)}")
+
+def _write_config_sync(config_data):
+    with CONFIG_LOCK:
+        with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(config_data, f, indent=4)
 
 @app.post("/api/alert_configs")
 async def save_alert_configs(config_data: Dict[str, Any]):
@@ -368,9 +375,7 @@ async def save_alert_configs(config_data: Dict[str, Any]):
         if 'cryptos_to_monitor' not in config_data or 'market_analysis_config' not in config_data:
             raise HTTPException(status_code=400, detail="Invalid configuration structure.")
 
-        with CONFIG_LOCK:
-            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(config_data, f, indent=4)
+        await anyio.to_thread.run_sync(_write_config_sync, config_data)
         logging.info("Successfully saved configuration to config.json")
         return {"message": "Configuration saved successfully."}
     except HTTPException:
@@ -382,84 +387,92 @@ async def save_alert_configs(config_data: Dict[str, Any]):
 class CoinAddRequest(BaseModel):
     symbol: str
 
+def _add_monitored_coin_sync(symbol):
+    with CONFIG_LOCK:
+        config = {"cryptos_to_monitor": [], "market_analysis_config": {}}
+        if os.path.exists(CONFIG_FILE_PATH):
+            with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                content = f.read()
+                if content:
+                    config = json.loads(content)
+
+        monitored_symbols = [c['symbol'] for c in config['cryptos_to_monitor']]
+        if symbol in monitored_symbols:
+            return {"message": f"Coin {symbol} is already monitored."}, False
+
+        new_coin_config = {
+            "symbol": symbol,
+            "alert_config": {
+                "conditions": {
+                    "rsi_sobrevendido": {"enabled": True, "blinking": True},
+                    "rsi_sobrecomprado": {"enabled": True, "blinking": True},
+                    "hilo_compra": {"enabled": True, "blinking": True},
+                    "mme_cruz_dourada": {"enabled": True, "blinking": True},
+                    "mme_cruz_morte": {"enabled": True, "blinking": True},
+                    "macd_cruz_alta": {"enabled": True, "blinking": True},
+                    "macd_cruz_baixa": {"enabled": True, "blinking": True},
+                }
+            }
+        }
+        config['cryptos_to_monitor'].append(new_coin_config)
+
+        with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=4)
+        return {"message": f"Coin {symbol} added successfully."}, True
+
 @app.post("/api/monitored_coins")
 async def add_monitored_coin(request: CoinAddRequest):
     """
     Adds a new coin to the monitoring list in the configuration.
     """
-    with CONFIG_LOCK:
-        try:
-            config = {"cryptos_to_monitor": [], "market_analysis_config": {}}
-            if os.path.exists(CONFIG_FILE_PATH):
-                with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    if content:
-                        config = json.loads(content)
-
-            monitored_symbols = [c['symbol'] for c in config['cryptos_to_monitor']]
-            if request.symbol in monitored_symbols:
-                logging.warning(f"Attempted to add existing coin {request.symbol}. No action taken.")
-                return {"message": f"Coin {request.symbol} is already monitored."}
-
-            new_coin_config = {
-                "symbol": request.symbol,
-                "alert_config": {
-                    "conditions": {
-                        "rsi_sobrevendido": {"enabled": True, "blinking": True},
-                        "rsi_sobrecomprado": {"enabled": True, "blinking": True},
-                        "hilo_compra": {"enabled": True, "blinking": True},
-                        "mme_cruz_dourada": {"enabled": True, "blinking": True},
-                        "mme_cruz_morte": {"enabled": True, "blinking": True},
-                        "macd_cruz_alta": {"enabled": True, "blinking": True},
-                        "macd_cruz_baixa": {"enabled": True, "blinking": True},
-                    }
-                }
-            }
-            config['cryptos_to_monitor'].append(new_coin_config)
-
-            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(config, f, indent=4)
-
+    try:
+        result, success = await anyio.to_thread.run_sync(_add_monitored_coin_sync, request.symbol)
+        if not success:
+            logging.warning(f"Attempted to add existing coin {request.symbol}. No action taken.")
+        else:
             logging.info(f"Successfully added {request.symbol} to monitored coins.")
-            return {"message": f"Coin {request.symbol} added successfully."}
+        return result
+    except Exception as e:
+        logging.error(f"Error adding monitored coin: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to add coin to configuration.")
 
-        except Exception as e:
-            logging.error(f"Error adding monitored coin: {e}", exc_info=True)
-            raise HTTPException(status_code=500, detail="Failed to add coin to configuration.")
+def _remove_monitored_coin_sync(symbol):
+    with CONFIG_LOCK:
+        if not os.path.exists(CONFIG_FILE_PATH):
+            raise FileNotFoundError("Configuration file not found.")
+
+        with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+
+        initial_count = len(config['cryptos_to_monitor'])
+        config['cryptos_to_monitor'] = [
+            c for c in config['cryptos_to_monitor'] if c.get('symbol') != symbol
+        ]
+
+        if len(config['cryptos_to_monitor']) == initial_count:
+            raise KeyError(f"Coin {symbol} not found in monitored list.")
+
+        with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=4)
+        return {"message": f"Coin {symbol} removed successfully."}
 
 @app.delete("/api/monitored_coins/{symbol}")
 async def remove_monitored_coin(symbol: str):
     """
     Removes a coin from the monitoring list in the configuration.
     """
-    with CONFIG_LOCK:
-        try:
-            if not os.path.exists(CONFIG_FILE_PATH):
-                raise HTTPException(status_code=404, detail="Configuration file not found.")
-
-            with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-
-            initial_count = len(config['cryptos_to_monitor'])
-            config['cryptos_to_monitor'] = [
-                c for c in config['cryptos_to_monitor'] if c.get('symbol') != symbol
-            ]
-
-            if len(config['cryptos_to_monitor']) == initial_count:
-                logging.warning(f"Attempted to remove non-existent coin {symbol}.")
-                raise HTTPException(status_code=404, detail=f"Coin {symbol} not found in monitored list.")
-
-            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(config, f, indent=4)
-
-            logging.info(f"Successfully removed {symbol} from monitored coins.")
-            return {"message": f"Coin {symbol} removed successfully."}
-
-        except HTTPException:
-            raise
-        except Exception as e:
-            logging.error(f"Error removing monitored coin: {e}", exc_info=True)
-            raise HTTPException(status_code=500, detail="Failed to remove coin from configuration.")
+    try:
+        result = await anyio.to_thread.run_sync(_remove_monitored_coin_sync, symbol)
+        logging.info(f"Successfully removed {symbol} from monitored coins.")
+        return result
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except KeyError as e:
+        logging.warning(f"Attempted to remove non-existent coin {symbol}.")
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logging.error(f"Error removing monitored coin: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to remove coin from configuration.")
 
 
 class Alert(BaseModel):
@@ -470,32 +483,57 @@ class Alert(BaseModel):
     timestamp: str
     snapshot: Dict[str, Any]
 
+def _get_alert_history_sync(start_date, end_date):
+    with HISTORY_LOCK:
+        if not os.path.exists(ALERT_HISTORY_FILE_PATH): return []
+        with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+            try:
+                content = f.read()
+                if not content: return []
+                history = json.loads(content)
+                if not isinstance(history, list): history = []
+            except json.JSONDecodeError: history = []
+        if not history: return []
+        if start_date and end_date:
+            start_dt = datetime.fromisoformat(start_date + "T00:00:00")
+            end_dt = datetime.fromisoformat(end_date + "T23:59:59")
+            filtered_history = [alert for alert in history if start_dt <= datetime.fromisoformat(alert['timestamp']) <= end_dt]
+            return filtered_history
+        return history
+
 @app.get("/api/alerts", response_model=List[Alert])
 async def get_alert_history(start_date: Optional[str] = Query(None, description="Start date for filtering (YYYY-MM-DD)"), end_date: Optional[str] = Query(None, description="End date for filtering (YYYY-MM-DD)")):
     try:
-        with HISTORY_LOCK:
-            if not os.path.exists(ALERT_HISTORY_FILE_PATH): return []
-            with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
-                try:
-                    content = f.read()
-                    if not content: return []
-                    history = json.loads(content)
-                    if not isinstance(history, list): history = []
-                except json.JSONDecodeError: history = []
-            if not history: return []
-            if start_date and end_date:
-                try:
-                    start_dt = datetime.fromisoformat(start_date + "T00:00:00")
-                    end_dt = datetime.fromisoformat(end_date + "T23:59:59")
-                    filtered_history = [alert for alert in history if start_dt <= datetime.fromisoformat(alert['timestamp']) <= end_dt]
-                    return filtered_history
-                except (ValueError, TypeError) as e:
-                    logging.error(f"Invalid date format provided: {e}")
-                    raise HTTPException(status_code=400, detail="Invalid date format. Please use YYYY-MM-DD.")
-            return history
+        return await anyio.to_thread.run_sync(_get_alert_history_sync, start_date, end_date)
+    except (ValueError, TypeError) as e:
+        logging.error(f"Invalid date format provided: {e}")
+        raise HTTPException(status_code=400, detail="Invalid date format. Please use YYYY-MM-DD.")
     except Exception as e:
         logging.error(f"Error reading or filtering alert history file: {e}")
         raise HTTPException(status_code=500, detail="Error reading or filtering alert history file.")
+
+def _save_alert_sync(alert_data, symbol):
+    with HISTORY_LOCK:
+        history = []
+        if os.path.exists(ALERT_HISTORY_FILE_PATH) and os.path.getsize(ALERT_HISTORY_FILE_PATH) > 0:
+            with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+                try:
+                    history = json.load(f)
+                    if not isinstance(history, list):
+                        logging.warning("Alert history was not a list, re-initializing.")
+                        history = []
+                except json.JSONDecodeError:
+                    logging.warning("Could not decode alert history, re-initializing.")
+                    history = []
+
+        history.insert(0, alert_data)
+
+        MAX_HISTORY_SIZE = 1000
+        if len(history) > MAX_HISTORY_SIZE:
+            history = history[:MAX_HISTORY_SIZE]
+
+        with open(ALERT_HISTORY_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(history, f, indent=4)
 
 @app.post("/api/alerts")
 async def save_alert(alert: Alert):
@@ -503,28 +541,7 @@ async def save_alert(alert: Alert):
     Saves a new alert to the alert history.
     """
     try:
-        with HISTORY_LOCK:
-            history = []
-            if os.path.exists(ALERT_HISTORY_FILE_PATH) and os.path.getsize(ALERT_HISTORY_FILE_PATH) > 0:
-                with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
-                    try:
-                        history = json.load(f)
-                        if not isinstance(history, list):
-                            logging.warning("Alert history was not a list, re-initializing.")
-                            history = []
-                    except json.JSONDecodeError:
-                        logging.warning("Could not decode alert history, re-initializing.")
-                        history = []
-
-            history.insert(0, alert.model_dump())
-
-            MAX_HISTORY_SIZE = 1000
-            if len(history) > MAX_HISTORY_SIZE:
-                history = history[:MAX_HISTORY_SIZE]
-
-            with open(ALERT_HISTORY_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(history, f, indent=4)
-
+        await anyio.to_thread.run_sync(_save_alert_sync, alert.model_dump(), alert.symbol)
         logging.info(f"Successfully saved alert for {alert.symbol}")
         return {"message": "Alert saved successfully"}
     except Exception as e:
@@ -535,46 +552,51 @@ class TelegramConfigRequest(BaseModel):
     bot_token: str
     chat_id: str
 
+def _get_telegram_config_sync():
+    with CONFIG_LOCK:
+        if not os.path.exists(CONFIG_FILE_PATH):
+            return {"bot_token": "", "chat_id": ""}
+        with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+            return config_data.get("telegram_config", {"bot_token": "", "chat_id": ""})
+
 @app.get("/api/telegram_config")
 async def get_telegram_config():
     """
     Returns the Telegram configuration.
     """
     try:
-        if not os.path.exists(CONFIG_FILE_PATH):
-            return {"bot_token": "", "chat_id": ""}
-        with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-            config_data = json.load(f)
-            telegram_config = config_data.get("telegram_config", {"bot_token": "", "chat_id": ""})
-            return telegram_config
+        return await anyio.to_thread.run_sync(_get_telegram_config_sync)
     except Exception as e:
         logging.error(f"Error reading Telegram configuration: {e}")
         raise HTTPException(status_code=500, detail="Failed to read Telegram configuration.")
+
+def _save_telegram_config_sync(telegram_config_data):
+    with CONFIG_LOCK:
+        config = {}
+        if os.path.exists(CONFIG_FILE_PATH):
+            with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
+                content = f.read()
+                if content:
+                    config = json.loads(content)
+
+        config["telegram_config"] = telegram_config_data
+
+        with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=4)
 
 @app.post("/api/telegram_config")
 async def save_telegram_config(telegram_config: TelegramConfigRequest):
     """
     Saves the Telegram configuration.
     """
-    with CONFIG_LOCK:
-        try:
-            config = {}
-            if os.path.exists(CONFIG_FILE_PATH):
-                with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    if content:
-                        config = json.loads(content)
-
-            config["telegram_config"] = telegram_config.model_dump()
-
-            with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(config, f, indent=4)
-
-            logging.info("Successfully saved Telegram configuration.")
-            return {"message": "Telegram configuration saved successfully."}
-        except Exception as e:
-            logging.error(f"Error saving Telegram configuration: {e}")
-            raise HTTPException(status_code=500, detail="Failed to save Telegram configuration.")
+    try:
+        await anyio.to_thread.run_sync(_save_telegram_config_sync, telegram_config.model_dump())
+        logging.info("Successfully saved Telegram configuration.")
+        return {"message": "Telegram configuration saved successfully."}
+    except Exception as e:
+        logging.error(f"Error saving Telegram configuration: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save Telegram configuration.")
 
 
 @app.post("/api/test_telegram")
@@ -583,15 +605,11 @@ async def test_telegram_endpoint():
     Envia uma mensagem de teste para o Telegram usando as credenciais configuradas.
     """
     try:
-        with CONFIG_LOCK:
-            if not os.path.exists(CONFIG_FILE_PATH):
-                raise HTTPException(status_code=404, detail="Arquivo de configuração não encontrado.")
-
-            config = {}
-            with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
-                content = f.read()
-                if content:
-                    config = json.loads(content)
+        config = await anyio.to_thread.run_sync(_read_config_sync)
+        if not config or (not config.get("cryptos_to_monitor") and not config.get("market_analysis_config") and not config.get("telegram_config")):
+             # If _read_config_sync returned empty because file not found, handle it.
+             # Actually _read_config_sync returns default if not found.
+             pass
 
         telegram_config = config.get("telegram_config", {})
         bot_token = telegram_config.get("bot_token")
@@ -627,6 +645,24 @@ async def test_telegram_endpoint():
         raise HTTPException(status_code=500, detail=f"Ocorreu um erro inesperado: {str(e)}")
 
 
+def _get_coin_details_sync(symbol, start_date_alerts):
+    recent_alerts = []
+    if os.path.exists(ALERT_HISTORY_FILE_PATH):
+        with HISTORY_LOCK:
+            with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+                try:
+                    history = json.load(f)
+                    if isinstance(history, list):
+                        symbol_alerts = [
+                            alert for alert in history
+                            if alert.get('symbol') == symbol and
+                            pd.to_datetime(alert.get('timestamp')).tz_convert('UTC') >= start_date_alerts
+                        ]
+                        recent_alerts = sorted(symbol_alerts, key=lambda x: x['timestamp'], reverse=True)
+                except (json.JSONDecodeError, IndexError, TypeError):
+                    pass
+    return recent_alerts
+
 @app.get("/api/coin_details/{symbol}")
 async def get_coin_details(symbol: str):
     """
@@ -635,29 +671,31 @@ async def get_coin_details(symbol: str):
     try:
         end_date = datetime.now(timezone.utc)
         start_date_alerts = end_date - timedelta(days=7)
-        recent_alerts = []
-
-        if os.path.exists(ALERT_HISTORY_FILE_PATH):
-            with HISTORY_LOCK:
-                with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
-                    try:
-                        history = json.load(f)
-                        if isinstance(history, list):
-                            symbol_alerts = [
-                                alert for alert in history
-                                if alert.get('symbol') == symbol and
-                                pd.to_datetime(alert.get('timestamp')).tz_convert('UTC') >= start_date_alerts
-                            ]
-                            recent_alerts = sorted(symbol_alerts, key=lambda x: x['timestamp'], reverse=True)
-                    except (json.JSONDecodeError, IndexError, TypeError):
-                        pass
-
+        recent_alerts = await anyio.to_thread.run_sync(_get_coin_details_sync, symbol, start_date_alerts)
         return {"alerts": recent_alerts}
 
     except Exception as e:
         logging.error(f"Error fetching alert details for {symbol}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An internal server error occurred while fetching alert details for {symbol}: {str(e)}")
 
+
+def _get_history_for_chart_sync(symbol, start_date_alerts):
+    history = []
+    if os.path.exists(ALERT_HISTORY_FILE_PATH):
+        with HISTORY_LOCK:
+            with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
+                try:
+                    history = json.load(f)
+                except json.JSONDecodeError:
+                    history = []
+
+    recent_alerts = [
+        alert for alert in history
+        if isinstance(alert, dict) and alert.get('symbol') == symbol and
+        pd.to_datetime(alert.get('timestamp')).tz_convert('UTC') >= start_date_alerts
+    ]
+
+    return [{'timestamp': pd.to_datetime(a['timestamp']), 'price': a['snapshot']['price'], 'message': a['condition']} for a in recent_alerts]
 
 async def get_chart_data(symbol: str):
     """
@@ -670,22 +708,8 @@ async def get_chart_data(symbol: str):
     if df.empty:
         raise HTTPException(status_code=404, detail="Nenhum dado histórico encontrado para gerar o gráfico.")
 
-    history = []
-    if os.path.exists(ALERT_HISTORY_FILE_PATH):
-        with open(ALERT_HISTORY_FILE_PATH, 'r', encoding='utf-8') as f:
-            try:
-                history = json.load(f)
-            except json.JSONDecodeError:
-                history = []
-
     start_date_alerts = end_date - timedelta(days=7)
-    recent_alerts = [
-        alert for alert in history
-        if isinstance(alert, dict) and alert.get('symbol') == symbol and
-        pd.to_datetime(alert.get('timestamp')).tz_convert('UTC') >= start_date_alerts
-    ]
-    
-    chart_alerts = [{'timestamp': pd.to_datetime(a['timestamp']), 'price': a['snapshot']['price'], 'message': a['condition']} for a in recent_alerts]
+    chart_alerts = await anyio.to_thread.run_sync(_get_history_for_chart_sync, symbol, start_date_alerts)
     
     return df, chart_alerts
 
