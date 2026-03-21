@@ -80,11 +80,20 @@ def get_market_caps_coingecko(symbols_to_monitor, all_coins):
         logging.error("A lista de moedas da CoinGecko não está disponível.")
         return {}
 
+    # Pre-computa um mapeamento de símbolo para moeda para evitar busca O(N) dentro do loop
+    # Usamos um dicionário para garantir que a busca seja O(1)
+    # Mapeamos apenas a primeira ocorrência para manter paridade com o comportamento do next()
+    coin_symbol_map = {}
+    for item in all_coins:
+        sym = item['symbol'].lower()
+        if sym not in coin_symbol_map:
+            coin_symbol_map[sym] = item
+
     for binance_symbol in symbols_to_monitor:
         base_asset = binance_symbol.replace('USDT', '').lower()
 
-        # Busca case-insensitive pelo símbolo
-        coin_info = next((item for item in all_coins if item['symbol'].lower() == base_asset), None)
+        # Busca O(1) no mapeamento pré-computado
+        coin_info = coin_symbol_map.get(base_asset)
 
         if coin_info:
             coin_id = coin_info['id']
