@@ -121,6 +121,7 @@ const App = () => {
                                     enabled: conditions[beKey].enabled,
                                     cooldown: prevAlertConfigs[symbol]?.[feKey]?.cooldown ?? DEFAULT_ALERT_CONFIG.cooldown,
                                     blinking: conditions[beKey].blinking ?? DEFAULT_ALERT_CONFIG.blinking,
+                                    value: conditions[beKey].value ?? prevAlertConfigs[symbol]?.[feKey]?.value ?? DEFAULT_ALERT_CONFIG.value,
                                 };
                             }
                         });
