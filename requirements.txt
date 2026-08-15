@@ -6,7 +6,7 @@ python-multipart
 # --- Manipulação de Dados e Cálculos ---
 pandas
 numpy
-pandas_ta
+pandas-ta
 openpyxl
 
 # --- Requisições de Rede e APIs ---

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { CryptoData, AlertConfigs, AlertConfig, BasicCoin, ALERT_DEFINITIONS, COOLDOWN_OPTIONS, DEFAULT_ALERT_CONFIG } from '../types';
+import { CryptoData, AlertConfigs, AlertConfig, BasicCoin, ALERT_DEFINITIONS, COOLDOWN_OPTIONS, DEFAULT_ALERT_CONFIG, API_BASE_URL } from '../types';
 
 const SettingsModal = ({
     isOpen,
@@ -39,7 +39,7 @@ const SettingsModal = ({
             // Reset test status when modal opens
             setTestStatus({ fired: false, success: false, message: '' });
 
-            fetch('/api/telegram_config')
+            fetch(`${API_BASE_URL}/api/telegram_config`)
                 .then(res => res.json())
                 .then(data => {
                     setTelegramBotToken(data.bot_token || '');
@@ -57,7 +57,7 @@ const SettingsModal = ({
 
     const handleSaveTelegramConfig = () => {
         setTestStatus({ fired: false, success: false, message: '' }); // Reset on save
-        fetch('/api/telegram_config', {
+        fetch(`${API_BASE_URL}/api/telegram_config`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ bot_token: telegramBotToken, chat_id: telegramChatId }),
@@ -76,7 +76,7 @@ const SettingsModal = ({
 
         // Use a timeout to ensure the save operation can be processed by the server
         setTimeout(() => {
-            fetch('/api/test_telegram', { method: 'POST' })
+            fetch(`${API_BASE_URL}/api/test_telegram`, { method: 'POST' })
                 .then(async (res) => {
                     const data = await res.json();
                     if (!res.ok) {
