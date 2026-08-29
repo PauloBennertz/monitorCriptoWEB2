@@ -1,7 +1,7 @@
 import { CryptoData } from './types';
 
 export const formatCurrency = (value: number) => {
-    const options = {
+    const options: Intl.NumberFormatOptions = {
         style: 'currency',
         currency: 'USD',
         minimumFractionDigits: 2,

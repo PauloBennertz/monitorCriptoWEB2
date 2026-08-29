@@ -190,7 +190,7 @@ const HistoricalAnalysisPanel: React.FC<HistoricalAnalysisPanelProps> = ({ isOpe
                                 <ul className="coin-search-results">
                                     {filteredCoins.length > 0 ? (
                                         filteredCoins.map(coin => (
-                                            <li key={coin.id} onClick={() => handleCoinSelect(coin)}>
+                                            <li key={coin.symbol} onClick={() => handleCoinSelect(coin)}>
                                                 {coin.name} ({coin.symbol})
                                             </li>
                                         ))
